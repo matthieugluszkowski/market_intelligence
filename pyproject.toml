@@ -1,0 +1,37 @@
+[project]
+name = "market-intelligence"
+version = "0.1.0"
+description = "Couche data pour screener de decote multi-actifs (regression log-lineaire + position concurrentielle)"
+requires-python = ">=3.11"
+dependencies = [
+    # --- socle L0 ---
+    "psycopg[binary]>=3.2",
+    "python-dotenv>=1.0",
+    # --- ingestion (L2, L3, L6) ---
+    "requests>=2.32",
+    "pandas>=2.2",
+    "pyarrow>=17.0",
+    "yfinance>=0.2.40",
+    # --- moteur analytique (L4) ---
+    "numpy>=1.26",
+    "statsmodels>=0.14",
+    "scipy>=1.13",
+]
+
+[project.optional-dependencies]
+dashboard = ["streamlit>=1.38", "plotly>=5.24"]
+dev = ["pytest>=8.3", "ruff>=0.6"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
