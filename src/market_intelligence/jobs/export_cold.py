@@ -37,7 +37,13 @@ def run(freqs: tuple[str, ...] = ("1w", "1d")) -> dict:
 
     with connect() as conn:
         for freq in freqs:
-            frame = pd.read_sql(QUERY, conn, params={"freq": freq})
+            # Lecture par le curseur plutot que pandas.read_sql : pandas ne
+            # supporte officiellement que SQLAlchemy et emet un avertissement
+            # sur une connexion psycopg brute.
+            with conn.cursor() as cur:
+                cur.execute(QUERY, {"freq": freq})
+                colonnes = [d.name for d in cur.description]
+                frame = pd.DataFrame(cur.fetchall(), columns=colonnes)
             if frame.empty:
                 print(f"{freq} : aucune barre, rien a exporter")
                 continue

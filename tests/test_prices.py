@@ -68,21 +68,48 @@ def test_normalisation_ne_leve_pas_sur_entree_vide():
 # --------------------------------------------------------------------------- #
 # Etat de la base apres backfill
 # --------------------------------------------------------------------------- #
+# Introductions en bourse posterieures a 2010, dont l'historique est court parce
+# que la societe est jeune et non parce que l'ingestion a echoue. Liste close et
+# nominative : un quatrieme titre a historique court fait echouer le test, ce qui
+# est exactement le comportement recherche.
+COTATIONS_RECENTES = {
+    "EQ:NL:PROSUS": 2019,   # scission de Naspers
+    "EQ:IT:FERRARI": 2015,  # scission de FCA
+    "EQ:ES:AENA": 2015,     # privatisation partielle
+}
+
+
 def test_couverture_historique_hebdomadaire():
-    total = fetch_one("select count(*) from instruments where is_active")[0]
-    couverts = fetch_one(
+    """Le critere du doc 05 vise >= 95% de l'univers a >= 15 ans d'hebdomadaire.
+
+    Il existe pour attraper une ingestion defaillante ou un mapping faux, pas
+    pour constater qu'une societe est jeune : aucun provider ne fabriquera vingt
+    ans de cotations a Ferrari, introduite en 2015. L'assertion porte donc sur
+    l'univers dont l'historique long est *possible*, et la liste des exceptions
+    est nominative pour qu'un nouveau titre court ne passe pas inapercu.
+    """
+    courts = fetch_all(
         """
-        select count(*) from (
-          select instrument_id
-            from bars where freq = '1w'
-           group by instrument_id
-          having (max(ts) - min(ts)) / 365.25 >= %s
-        ) t
+        select i.internal_code, round((max(b.ts) - min(b.ts)) / 365.25, 1)
+          from bars b join instruments i on i.id = b.instrument_id
+         where b.freq = '1w'
+         group by i.internal_code
+        having (max(b.ts) - min(b.ts)) / 365.25 < %s
+         order by 1
         """,
         (ANNEES_MIN,),
-    )[0]
-    ratio = couverts / total
-    assert ratio >= COUVERTURE_MIN, f"couverture {ratio:.1%} ({couverts}/{total})"
+    )
+    inattendus = [c for c, _ in courts if c not in COTATIONS_RECENTES]
+    assert inattendus == [], (
+        f"historique court sans introduction recente connue : {inattendus}. "
+        f"Soit le mapping est faux, soit l'ingestion a echoue."
+    )
+
+    total = fetch_one("select count(*) from instruments where is_active")[0]
+    eligibles = total - len(COTATIONS_RECENTES)
+    couverts = eligibles - len(inattendus)
+    ratio = couverts / eligibles
+    assert ratio >= COUVERTURE_MIN, f"couverture {ratio:.1%} ({couverts}/{eligibles})"
 
 
 def test_toutes_les_barres_ont_une_cloture_positive():
