@@ -17,7 +17,7 @@ Spécification complète dans les documents à la racine. **Ordre de lecture :**
 | **L0** | Socle : dépôt, env Python, DDL, seeds, keepalive | **fait** |
 | **L1** | Référentiel de l'univers — 57 titres vérifiés | **fait** |
 | **L2** | Ingestion des cours, archive Parquet, journal | **fait** |
-| L3 | Corporate actions et contrôles qualité | à faire |
+| **L3** | Corporate actions, facteurs, 9 contrôles qualité | **fait** |
 | L4 | Moteur analytique (régression, diagnostics) | à faire |
 | L5 | Screener et fiche instrument (Streamlit) | à faire |
 | L6 / L6b | Fondamentaux régime A / couche qualité | à faire |
@@ -198,6 +198,79 @@ en renvoyant un DataFrame **vide** plutôt qu'une erreur franche. Une réponse v
 est donc traitée comme un échec temporaire, avec reprise à attente croissante.
 Sans cela, un titre refusé serait enregistré comme dépourvu d'historique, et L4
 le classerait `rejected` à tort.
+
+## Corporate actions et qualité (L3)
+
+```bash
+python scripts/ingest_corporate_actions.py   # splits, dividendes, nb d'actions, facteurs
+python scripts/quality_checks.py             # les 9 contrôles du doc 02 §5
+```
+
+### Les deux facteurs d'ajustement, et pourquoi ils diffèrent
+
+`factor_price` vaut **1.0 partout**, et ce n'est pas un oubli. Le cours servi par
+Yahoo est déjà rétro-ajusté des splits ; appliquer en plus les ratios de
+`corporate_actions` diviserait la série une seconde fois. Air Liquide, qui
+distribue une action gratuite pour dix tous les deux ans, verrait son historique
+divisé par 1,1 à chaque opération, deux fois. **C'est le type d'erreur qui ne se
+voit pas** — la courbe reste lisse, seule la pente est fausse.
+
+`factor_total` est calculé, lui, puisque les dividendes ne sont pas incorporés :
+
+```
+factor_total(t) = ∏ sur les dividendes d'ex-date > t de (1 − D / C_veille)
+```
+
+**La convention est vérifiée, pas supposée.** Appliqué au `Close` de Yahoo, le
+facteur doit redonner son `Adj Close`. Mesuré sur Air Liquide, 1 390 barres :
+écart médian **0,036 %**, exact sur les dates récentes, maximum 3,9 % sur une
+semaine de détachement de 2009. Ce résidu vient de la granularité : sur barre
+hebdomadaire, « la veille » du détachement est la clôture de la semaine
+précédente. Le quotidien sert donc de référence là où il existe.
+
+On aurait pu supprimer le résidu en téléchargeant 30 ans de quotidien à chaque
+calcul, mais les facteurs cesseraient d'être reconstructibles depuis les seules
+tables `raw` — ce qui viole P1. L'approximation est le prix de ce principe, et
+elle est mesurée.
+
+### Les neuf contrôles
+
+Par ordre de valeur décroissante (doc 02 §5). Aucun ne supprime de donnée :
+quarantaine plutôt que rejet.
+
+| Contrôle | Détection | Sévérité |
+|---|---|---|
+| Saut de cours inexpliqué | > 25 % en une séance sans opération connue | bloquant |
+| Série figée | cours identique > 5 séances | avertissement |
+| Trou de cotation | > 5 jours ouvrés sans donnée | avertissement |
+| **Dilution** | nombre d'actions +50 % sur 12 mois glissants | bloquant |
+| Divergence inter-sources | écart > 1 % entre deux sources | avertissement |
+| Incohérence de devise | devise du titre ≠ devise du marché | bloquant |
+| Historique insuffisant | < `min_years` de la politique applicable | exclusion |
+| FX manquant | pas de taux pour une devise à une date | avertissement |
+| Identité comptable | actif ≠ passif + capitaux propres | avertissement |
+
+Le job **purge les anomalies non résolues avant recalcul**. Sans cela la même
+anomalie s'empile à chaque exécution et le tableau de bord devient illisible en
+trois semaines. Les anomalies résolues à la main sont conservées : c'est la trace
+du diagnostic.
+
+**Le filtre de dilution est le plus rentable des neuf, et il ne figure dans aucun
+screener grand public.** Atos, Casino, emeis, Solocal sont toujours cotés : ils ne
+sortent pas par le filtre « radiation ». Mais après une dilution d'un facteur
+cent, leur cours ajusté rend la droite de régression absurde — le titre apparaît
+massivement décoté alors que la valeur par action a été détruite.
+
+### Deux contrôles que l'univers actuel ne peut pas éprouver
+
+- **Divergence inter-sources.** Impossible : Stooq est inaccessible, yfinance est
+  seul. La requête est écrite pour fonctionner dès qu'une seconde source
+  alimentera `bars` ; en attendant elle ne trouve rien, et c'est exactement le
+  risque à garder sous les yeux — *une source unique donne une confiance
+  illusoire*.
+- **Dilution sur un cas réel.** Atos et Casino ne sont pas dans les 57. Le calcul
+  est donc éprouvé sur données synthétiques, où la réponse est connue, plutôt que
+  sur un titre réel où l'on ne ferait que constater.
 
 ## Principes non négociables
 
