@@ -1,0 +1,16 @@
+# Chrome de l application. La palette des graphes vit dans dashboard/theme.py :
+# elle doit basculer clair/sombre sans redemarrage, ce que ce fichier ne permet pas.
+[theme]
+base = "light"
+primaryColor = "#2a78d6"
+backgroundColor = "#fcfcfb"
+secondaryBackgroundColor = "#f0efec"
+textColor = "#0b0b0b"
+font = "sans serif"
+
+[server]
+headless = true
+port = 8501
+
+[browser]
+gatherUsageStats = false

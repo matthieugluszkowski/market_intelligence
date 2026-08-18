@@ -19,7 +19,7 @@ Spécification complète dans les documents à la racine. **Ordre de lecture :**
 | **L2** | Ingestion des cours, archive Parquet, journal | **fait** |
 | **L3** | Corporate actions, facteurs, 9 contrôles qualité | **fait** |
 | **L4** | Moteur analytique, diagnostics, `regression_fits` | **fait** |
-| L5 | Screener et fiche instrument (Streamlit) | à faire |
+| **L5** | Screener et fiche instrument (Streamlit) | **fait** |
 | L6 / L6b | Fondamentaux régime A / couche qualité | à faire |
 | L7 | Orchestration et rapport hebdomadaire | à faire |
 
@@ -404,6 +404,75 @@ relative vaut 1/√(2(n−2)) = 2,2 % sur 1 040 points, quel que soit σ — il 
 Les tests vérifient donc trois choses plus fortes que le critère littéral :
 la pente à 1 % quand c'est possible, l'absence de biais sur 300 tirages (écart
 0,11 %), et le fait que l'écart d'un tirage unique reste dans 3 erreurs-types.
+
+## Screener et fiche instrument (L5)
+
+```bash
+.venv/Scripts/python.exe -m streamlit run dashboard/Screener.py
+```
+
+Deux écrans : le screener avec sa rangée de filtres, et la fiche instrument en
+quatre blocs — graphe, diagnostics, statistiques de régime, position
+concurrentielle. Thème clair et sombre, chaque graphe doublé de sa vue tabulaire.
+
+Trois principes portés par l'interface :
+
+- **Le silence est une fonctionnalité.** Aucune notification, aucun
+  rafraîchissement temps réel. Thaler, Tversky, Kahneman & Schwartz (1997) ont
+  montré que plus le feedback est fréquent, plus la prise de risque diminue et
+  plus le rendement accumulé baisse : un outil qui augmente la fréquence de
+  consultation détruit ce qu'il prétend améliorer. Le dashboard sert à creuser un
+  titre, pas à surveiller.
+- **L'incertitude est affichée.** Un fit `weak` s'affiche `weak`, avec son motif
+  en clair. Le cas majoritaire est « on ne sait pas trancher », et l'interface le
+  rend normal plutôt que honteux.
+- **Toute visualisation a un jumeau tabulaire.** Exigence d'accessibilité, et
+  seule façon de vérifier qu'un graphe ne ment pas.
+
+**Le graphe montre ce que le screener a classé, pas un recalcul.** La droite est
+reconstruite depuis l'`intercept` et le `slope_annual` écrits en base — un test
+vérifie que le z-score du graphe égale celui stocké à 1e-9 près. Recalculer à
+l'affichage laisserait le graphe diverger en silence de la ligne qui a classé le
+titre, et c'est le graphe qu'on regarde pour décider.
+
+Tous les titres s'affichent en `unqualified`, avec un bandeau qui l'explique.
+C'est leur statut réel tant que L6b n'existe pas : un signal de prix sans
+évaluation de la position concurrentielle est la moitié de la méthode, et c'est
+la moitié qui produit les value traps.
+
+### Le critère d'acceptation, et ce que je n'ai pas pu faire
+
+> « le graphe d'un titre est superposable à celui de Hiboo pour le même titre,
+> aux conventions d'ajustement près. »
+
+**Cette confrontation reste à faire.** Hiboo est un service sur abonnement ;
+déclarer une superposition sans l'avoir constatée serait exactement la validation
+fictive que ce projet cherche à éviter. Le script produit la pièce à conviction :
+
+```bash
+python scripts/export_comparaison.py EQ:DE:BMW
+```
+
+**Prendre un titre sans split** — 26 des 57 n'en ont aucun, dont BMW, Sanofi,
+Kering, Heineken, Arkema. Leur série ajustée est identique au nominal, le graphe
+doit se superposer directement.
+
+Sur un titre avec splits, l'écart attendu est un **facteur multiplicatif
+constant** : L'Oréal ressort divisé par 20, EssilorLuxottica par 20,44. Un écart
+constant valide la forme ; un écart qui dérive dans le temps signale un vrai
+problème.
+
+Ce qui doit coïncider : la forme de la courbe, la pente, et surtout le **z-score
+courant** — c'est lui qui déclenche les décisions. Ce qui peut légitimement
+différer : le niveau absolu, la largeur des bandes si Hiboo n'utilise pas une
+fenêtre de 20 ans, et les extrémités.
+
+Ce qui **est** vérifié automatiquement (18 tests) : que le graphe montre les
+paramètres stockés, que l'axe soit logarithmique, qu'il n'y ait qu'un seul axe y,
+que les bandes soient des gris neutres et non une teinte de série, qu'aucun filet
+ne soit pointillé, que chaque statut porte icône et libellé — la couleur ne
+portant jamais seule l'information — et que tout motif produit par le moteur ait
+une traduction en clair.
 
 ## Principes non négociables
 

@@ -26,3 +26,6 @@ Thumbs.db
 .streamlit/secrets.toml
 logs/
 *.log
+
+# Exports de comparaison, regenerables
+data/comparaison_*.csv
