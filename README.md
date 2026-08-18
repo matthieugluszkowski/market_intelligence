@@ -16,7 +16,7 @@ Spécification complète dans les documents à la racine. **Ordre de lecture :**
 |---|---|---|
 | **L0** | Socle : dépôt, env Python, DDL, seeds, keepalive | **fait** |
 | **L1** | Référentiel de l'univers — 57 titres vérifiés | **fait** |
-| L2 | Ingestion des cours | à faire |
+| **L2** | Ingestion des cours, archive Parquet, journal | **fait** |
 | L3 | Corporate actions et contrôles qualité | à faire |
 | L4 | Moteur analytique (régression, diagnostics) | à faire |
 | L5 | Screener et fiche instrument (Streamlit) | à faire |
@@ -140,6 +140,64 @@ CSV, écartées du chargement, en attente d'une seconde source. Le seuil est
 volontairement dur : sous un an d'historique, ce n'est pas une jeune société,
 c'est un flux cassé, et charger la ligne donnerait une régression sur trois
 points.
+
+## Ingestion des cours (L2)
+
+```bash
+python scripts/backfill_prices.py     # hebdo sur tout l'historique + quotidien 3 ans
+python scripts/export_cold.py         # archive Parquet de la couche froide
+```
+
+Pipeline en quatre étages étanches (doc 02 §4.1) : le collecteur ne valide ni ne
+transforme rien, le normaliseur ne parle pas à la base, le chargeur ne fait
+qu'écrire, le job orchestre et journalise. On peut ainsi rejouer la normalisation
+sans retélécharger.
+
+Le chargement passe par une table de transit alimentée en `COPY` puis un seul
+`insert … select`. Ligne à ligne, les ~120 000 barres de l'univers coûteraient
+autant d'allers-retours vers Supabase, soit des heures.
+
+### L'écart au principe P4, et pourquoi il est acceptable
+
+P4 exige le cours **non ajusté**. Yahoo ne le sert pas : sa colonne `Close` est
+rétro-ajustée des splits — Dassault Systèmes cotait ~133 € en juin 2019, l'API
+renvoie 26,70 €, soit divisé par le 5:1 de juillet 2021. Le cours nominal
+d'époque n'est disponible chez aucune source gratuite.
+
+On stocke donc `Close`, jamais `Adj Close`. Ce n'est pas une commodité : ce que
+P4 protège, c'est la reproductibilité, et les deux colonnes s'y comportent de
+façon opposée.
+
+| | change quand | fréquence |
+|---|---|---|
+| `Adj Close` | à chaque détachement de dividende | plusieurs fois par an |
+| `Close` | aux splits seulement | 2 fois en 12 ans sur Dassault |
+
+Le prix à payer reste réel et doit rester visible : les splits antérieurs à la
+première ingestion sont déjà incorporés, `adjustment_factors` ne les rejouera
+pas, et la comparaison au graphe d'un fournisseur affichant le nominal sera
+décalée d'un facteur constant.
+
+**Le garde-fou.** Le `DO UPDATE` porte un `WHERE` : une barre identique n'est pas
+réécrite. Ce qui est compté comme *révision* est donc exactement une valeur qui a
+changé. Le jour où une société annonce un split, toute sa série se décale d'un
+coup ; au-delà de 5 % des barres révisées, le chargeur inscrit un
+`split_unadjusted` dans `data_quality_issues`. Sans ce contrôle, un rechargement
+écraserait dix ans de cotations en silence et la régression changerait sans
+explication.
+
+*Note d'implémentation :* on aurait préféré `returning (xmax = 0)` en une passe,
+mais Postgres refuse de lire une colonne système dans le `RETURNING` d'un
+`INSERT` sur table partitionnée — et `bars` l'est par fréquence. Le comptage se
+fait donc par jointure avant écriture, pour un aller-retour de plus.
+
+### Débit et reprise
+
+Yahoo rate-limite le backfill — risque noté comme élevé au doc 05 §4 — et le fait
+en renvoyant un DataFrame **vide** plutôt qu'une erreur franche. Une réponse vide
+est donc traitée comme un échec temporaire, avec reprise à attente croissante.
+Sans cela, un titre refusé serait enregistré comme dépourvu d'historique, et L4
+le classerait `rejected` à tort.
 
 ## Principes non négociables
 
