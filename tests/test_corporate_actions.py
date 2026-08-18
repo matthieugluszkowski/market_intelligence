@@ -235,3 +235,115 @@ def test_les_anomalies_ne_sempilent_pas_dune_execution_a_lautre():
         """
     )
     assert doublons == []
+
+
+# --------------------------------------------------------------------------- #
+# Journal des anomalies : y revenir plus tard
+# --------------------------------------------------------------------------- #
+def test_chaque_anomalie_ouverte_porte_une_empreinte():
+    """Sans empreinte, une anomalie ne peut pas etre suivie d'un recalcul a
+    l'autre - elle serait recreee, et son age perdu."""
+    sans = fetch_one(
+        "select count(*) from data_quality_issues "
+        "where resolved_at is null and fingerprint is null"
+    )[0]
+    assert sans == 0
+
+
+def test_une_seule_anomalie_ouverte_par_empreinte():
+    doublons = fetch_all(
+        "select fingerprint, count(*) from data_quality_issues "
+        "where resolved_at is null group by 1 having count(*) > 1"
+    )
+    assert doublons == []
+
+
+def test_un_recalcul_revoit_les_anomalies_au_lieu_de_les_recreer():
+    """La date de premiere detection est l'age de l'anomalie : elle ne bouge pas.
+
+    `run_count` compte les recalculs qui l'ont revue - une anomalie vue vingt
+    fois n'a pas le meme statut qu'une anomalie apparue ce matin.
+    """
+    from market_intelligence.jobs.quality_checks import run
+
+    avant = {
+        f: (i, d, r) for f, i, d, r in fetch_all(
+            "select fingerprint, id, detected_at, run_count from data_quality_issues "
+            "where resolved_at is null and fingerprint is not null"
+        )
+    }
+    assert avant, "aucune anomalie ouverte : le test ne demontre rien"
+
+    run()
+
+    apres = {
+        f: (i, d, r) for f, i, d, r in fetch_all(
+            "select fingerprint, id, detected_at, run_count from data_quality_issues "
+            "where resolved_at is null and fingerprint is not null"
+        )
+    }
+    for empreinte, (ident, detecte, runs) in avant.items():
+        assert empreinte in apres, f"anomalie {empreinte} perdue au recalcul"
+        nouvel_ident, nouveau_detecte, nouveaux_runs = apres[empreinte]
+        assert nouvel_ident == ident, "l'anomalie a ete recreee au lieu d'etre revue"
+        assert nouveau_detecte == detecte, "la date de premiere detection a bouge"
+        assert nouveaux_runs == runs + 1
+
+
+
+def test_un_acquittement_manuel_nest_pas_resignale_au_recalcul():
+    """Defaut trouve en testant, pas en relisant.
+
+    Une premiere version resignalait au recalcul suivant une anomalie resolue a
+    la main : la condition sous-jacente etait toujours vraie. La liste ne
+    diminuait donc jamais et la revue manuelle ne servait a rien - alors que
+    c'est precisement ce qu'on veut pouvoir faire.
+
+    Une cloture automatique, elle, doit se rouvrir : une condition qui revient
+    est une recidive.
+    """
+    from market_intelligence.db import connect_direct
+    from market_intelligence.jobs.quality_checks import run
+
+    cible = fetch_one(
+        "select id from data_quality_issues where resolved_at is null "
+        "and issue_type = 'short_history' limit 1"
+    )
+    if cible is None:
+        pytest.skip("aucune anomalie a resoudre")
+
+    # On passe par le vrai chemin de resolution plutot que par un UPDATE direct :
+    # c'est lui qui pose `resolved_kind`, et c'est justement ce qui distingue un
+    # acquittement d'une cloture automatique.
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from anomalies import resoudre
+
+    note = "test : introduction en bourse recente, comportement attendu"
+    with connect_direct() as conn, conn.cursor() as cur:
+        assert resoudre(cur, cible[0], note) == 0
+        conn.commit()
+
+    run()
+
+    apres = fetch_one(
+        "select resolved_at, resolution, resolved_kind from data_quality_issues "
+        "where id = %s", (cible[0],),
+    )
+    assert apres[0] is not None, "la resolution manuelle a ete effacee"
+    assert apres[1] == note
+    assert apres[2] == "manual"
+
+    empreinte = fetch_one(
+        "select fingerprint from data_quality_issues where id = %s", (cible[0],))[0]
+    rouvertes = fetch_one(
+        "select count(*) from data_quality_issues "
+        "where fingerprint = %s and resolved_at is null", (empreinte,))[0]
+    assert rouvertes == 0, "l'anomalie acquittee a ete resignalee"
+
+    # Remise en etat : on annule l'acquittement pour les tests suivants.
+    with connect_direct() as conn, conn.cursor() as cur:
+        cur.execute(
+            "update data_quality_issues set resolved_at = null, resolved_kind = null, "
+            "resolution = null where id = %s", (cible[0],),
+        )
+        conn.commit()

@@ -13,6 +13,7 @@ apparait massivement decote alors que la valeur par action a ete detruite.
 
 from __future__ import annotations
 
+import hashlib
 import json
 
 # --------------------------------------------------------------------------- #
@@ -208,56 +209,90 @@ select instrument_id, period_end, actif, passif + capitaux,
    and abs(actif - (passif + capitaux)) / nullif(actif, 0) > %(tolerance)s;
 """
 
-INSERT_ISSUE = """
+# Upsert sur l'empreinte : une anomalie deja ouverte est revue, pas recreee.
+# `detected_at` reste la premiere detection - c'est l'age de l'anomalie, et c'est
+# l'information qu'on veut en retrouvant la liste trois semaines plus tard.
+UPSERT_ISSUE = """
 insert into data_quality_issues
-  (instrument_id, issue_type, severity, ts_from, ts_to, details)
-values (%(instrument_id)s, %(issue_type)s, %(severity)s, %(ts_from)s, %(ts_to)s, %(details)s);
+  (instrument_id, issue_type, severity, ts_from, ts_to, details,
+   fingerprint, last_seen_at, run_count)
+select %(instrument_id)s, %(issue_type)s, %(severity)s, %(ts_from)s, %(ts_to)s,
+       %(details)s, %(fingerprint)s, now(), 1
+-- Acquittement : une anomalie qu'un humain a regardee et tranchee n'est pas
+-- resignalee tant qu'elle est la meme. Sans cette clause, la liste ne diminue
+-- jamais - la condition sous-jacente est toujours vraie au recalcul suivant -
+-- et la revue manuelle ne sert a rien. Une cloture automatique, elle, se rouvre :
+-- une condition qui revient est une recidive.
+ where not exists (
+   select 1 from data_quality_issues acquittee
+    where acquittee.fingerprint = %(fingerprint)s
+      and acquittee.resolved_kind = 'manual'
+ )
+on conflict (fingerprint) where resolved_at is null
+do update set details = excluded.details,
+              severity = excluded.severity,
+              last_seen_at = now(),
+              run_count = data_quality_issues.run_count + 1;
 """
 
 
-def _issue(cur, instrument_id, issue_type, severity, ts_from, ts_to, details) -> None:
-    cur.execute(INSERT_ISSUE, {
+def empreinte(instrument_id, issue_type: str, ts_from, ts_to, cle: str = "") -> str:
+    """Empreinte stable d'une anomalie : meme probleme, meme empreinte."""
+    brut = f"{instrument_id}|{issue_type}|{ts_from}|{ts_to}|{cle}"
+    return hashlib.sha256(brut.encode("utf-8")).hexdigest()[:32]
+
+
+def _issue(cur, instrument_id, issue_type, severity, ts_from, ts_to, details,
+           cle: str = "") -> str:
+    fingerprint = empreinte(instrument_id, issue_type, ts_from, ts_to, cle)
+    cur.execute(UPSERT_ISSUE, {
         "instrument_id": instrument_id, "issue_type": issue_type, "severity": severity,
         "ts_from": ts_from, "ts_to": ts_to,
         "details": json.dumps(details, ensure_ascii=False, default=str),
+        "fingerprint": fingerprint,
     })
+    return fingerprint
 
 
-def saut_de_cours(cur, seuil: float) -> int:
+def saut_de_cours(cur, seuil: float) -> list[str]:
     cur.execute(SAUT, {"seuil": seuil})
     lignes = cur.fetchall()
-    for instrument_id, ts, precedent, close, variation in lignes:
+    return [
         _issue(cur, instrument_id, "outlier_jump", "blocking", ts, ts,
                {"precedent": precedent, "close": close, "variation": round(variation, 4),
                 "diagnostic": "variation d'une seance non expliquee par une operation "
                               "connue : split non declare ou erreur de cotation"})
-    return len(lignes)
+        for instrument_id, ts, precedent, close, variation in lignes
+    ]
 
 
-def serie_figee(cur, seuil_seances: int) -> int:
+def serie_figee(cur, seuil_seances: int) -> list[str]:
     cur.execute(FIGEE, {"seuil": seuil_seances})
     lignes = cur.fetchall()
-    for instrument_id, debut, fin, seances, close in lignes:
+    return [
         _issue(cur, instrument_id, "stale_series", "warning", debut, fin,
                {"seances": seances, "close": close})
-    return len(lignes)
+        for instrument_id, debut, fin, seances, close in lignes
+    ]
 
 
-def trou_de_cotation(cur, seuil_jours: int) -> int:
+def trou_de_cotation(cur, seuil_jours: int) -> list[str]:
     cur.execute(TROU, {"seuil_jours": seuil_jours})
     lignes = cur.fetchall()
-    for instrument_id, debut, fin, jours in lignes:
+    return [
         _issue(cur, instrument_id, "gap", "warning", debut, fin,
                {"jours_calendaires": jours})
-    return len(lignes)
+        for instrument_id, debut, fin, jours in lignes
+    ]
 
 
-def dilution(cur, seuil: float) -> int:
+def dilution(cur, seuil: float) -> list[str]:
     cur.execute(DILUTION, {"seuil": seuil})
     lignes = cur.fetchall()
+    empreintes = []
     for (instrument_id, debut, fin, observations, variation_max,
          date_du_pic, plancher_au_pic, shares_au_pic) in lignes:
-        _issue(cur, instrument_id, "dilution", "blocking", debut, fin,
+        empreintes.append(_issue(cur, instrument_id, "dilution", "blocking", debut, fin,
                {"variation_max": round(variation_max, 4),
                 "date_du_pic": date_du_pic,
                 "plancher_12m_base_constante": plancher_au_pic,
@@ -265,58 +300,64 @@ def dilution(cur, seuil: float) -> int:
                 "observations_en_franchissement": observations,
                 "diagnostic": "le nombre d'actions a bondi hors effet de split : la "
                               "regression sur la fenetre anterieure ne mesure plus la "
-                              "meme chose"})
-    return len(lignes)
+                              "meme chose"}))
+    return empreintes
 
 
-def divergence_inter_sources(cur, seuil: float) -> int:
+def divergence_inter_sources(cur, seuil: float) -> list[str]:
     cur.execute(DIVERGENCE, {"seuil": seuil})
     lignes = cur.fetchall()
-    for instrument_id, ts, source_a, source_b, close_a, close_b, ecart in lignes:
+    return [
         _issue(cur, instrument_id, "source_divergence", "warning", ts, ts,
                {"source_a": source_a, "source_b": source_b,
                 "close_a": close_a, "close_b": close_b, "ecart": round(ecart, 4)})
-    return len(lignes)
+        for instrument_id, ts, source_a, source_b, close_a, close_b, ecart in lignes
+    ]
 
 
-def incoherence_devise(cur) -> int:
+def incoherence_devise(cur) -> list[str]:
     cur.execute(DEVISE)
     lignes = cur.fetchall()
-    for instrument_id, internal_code, devise_titre, devise_marche in lignes:
+    return [
         _issue(cur, instrument_id, "currency_mismatch", "blocking", None, None,
                {"internal_code": internal_code, "devise_instrument": devise_titre,
-                "devise_marche": devise_marche})
-    return len(lignes)
+                "devise_marche": devise_marche}, cle=internal_code)
+        for instrument_id, internal_code, devise_titre, devise_marche in lignes
+    ]
 
 
-def historique_insuffisant(cur) -> int:
+def historique_insuffisant(cur) -> list[str]:
     cur.execute(HISTORIQUE)
     lignes = cur.fetchall()
+    empreintes = []
     for instrument_id, internal_code, politique, min_years, annees, n_obs in lignes:
-        _issue(cur, instrument_id, "short_history", "warning", None, None,
+        empreintes.append(_issue(cur, instrument_id, "short_history", "warning", None, None,
                {"internal_code": internal_code, "politique": politique,
                 "min_years": min_years, "annees_disponibles": round(float(annees), 1),
                 "n_obs": n_obs,
                 "diagnostic": "exclu du screener tant que la profondeur exigee par la "
-                              "politique n'est pas atteinte"})
-    return len(lignes)
+                              "politique n'est pas atteinte"}, cle=politique))
+    return empreintes
 
 
-def fx_manquant(cur) -> int:
+def fx_manquant(cur) -> list[str]:
     cur.execute(FX_MANQUANT)
     lignes = cur.fetchall()
-    for (devise,) in lignes:
+    return [
         _issue(cur, None, "fx_missing", "warning", None, None,
                {"devise": devise, "diagnostic": "aucun taux vers EUR ; sans effet sur la "
-                                                "regression, qui se calcule en devise locale"})
-    return len(lignes)
+                                                "regression, qui se calcule en devise locale"},
+               cle=devise)
+        for (devise,) in lignes
+    ]
 
 
-def identite_comptable(cur, tolerance: float) -> int:
+def identite_comptable(cur, tolerance: float) -> list[str]:
     cur.execute(IDENTITE_COMPTABLE, {"tolerance": tolerance})
     lignes = cur.fetchall()
-    for instrument_id, period_end, actif, passif_et_capitaux, ecart in lignes:
+    return [
         _issue(cur, instrument_id, "accounting_identity", "warning", period_end, period_end,
                {"actif": actif, "passif_plus_capitaux": passif_et_capitaux,
                 "ecart_relatif": round(ecart, 4)})
-    return len(lignes)
+        for instrument_id, period_end, actif, passif_et_capitaux, ecart in lignes
+    ]

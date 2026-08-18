@@ -250,10 +250,43 @@ quarantaine plutôt que rejet.
 | FX manquant | pas de taux pour une devise à une date | avertissement |
 | Identité comptable | actif ≠ passif + capitaux propres | avertissement |
 
-Le job **purge les anomalies non résolues avant recalcul**. Sans cela la même
-anomalie s'empile à chaque exécution et le tableau de bord devient illisible en
-trois semaines. Les anomalies résolues à la main sont conservées : c'est la trace
-du diagnostic.
+### Le journal des anomalies : y revenir plus tard
+
+```bash
+python scripts/anomalies.py                        # ce qui est ouvert, le plus grave d'abord
+python scripts/anomalies.py --detail 287           # une anomalie en entier
+python scripts/anomalies.py --resoudre 287 --note "point aberrant du provider"
+python scripts/anomalies.py --rouvrir 287          # annuler un acquittement
+```
+
+Une première version purgeait les anomalies non résolues avant chaque recalcul,
+pour éviter qu'elles ne s'empilent. Le remède coûtait plus cher que le mal : une
+anomalie vue en août et toujours présente en octobre perdait sa date de première
+détection, et toute note de diagnostic disparaissait au passage suivant. On ne
+pouvait donc pas y revenir — ce qui est pourtant tout l'objet d'une liste
+d'anomalies.
+
+Chaque anomalie porte maintenant une **empreinte stable** — instrument, type,
+périmètre temporel. Un recalcul :
+
+- **revoit** celle qui est toujours là : `last_seen_at` et `run_count` avancent,
+  `detected_at` ne bouge pas — c'est l'âge de l'anomalie, et c'est l'information
+  qu'on cherche en retrouvant la liste trois semaines plus tard ;
+- **clôture** celle qui a disparu, avec la mention, plutôt que de la supprimer ;
+- **respecte** un acquittement humain.
+
+**Clôture automatique et acquittement n'ont pas le même sens**, et la distinction
+est venue d'un test qui échouait : une anomalie résolue à la main réapparaissait
+au recalcul suivant, puisque la condition sous-jacente était toujours vraie. La
+liste ne diminuait jamais et la revue manuelle ne servait à rien.
+
+| `resolved_kind` | Sens | Comportement au recalcul |
+|---|---|---|
+| `auto` | la condition a disparu | se rouvre en cas de récidive |
+| `manual` | un humain a regardé et tranché | n'est plus resignalée à l'identique |
+
+L'acquittement porte sur l'empreinte : un événement différent produit une
+empreinte différente, donc une nouvelle anomalie. On n'étouffe que ce qui a été vu.
 
 **Le filtre de dilution est le plus rentable des neuf, et il ne figure dans aucun
 screener grand public.** Atos, Casino, emeis, Solocal sont toujours cotés : ils ne
