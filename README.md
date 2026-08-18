@@ -88,9 +88,16 @@ touche une table triviale, **indépendamment du pipeline principal** : si
 l'ingestion casse, le ping doit continuer. Code de sortie 1 en cas d'échec, pour
 qu'un cron puisse alerter.
 
+Déployé sur le VPS Lightsail (`ubuntu@3.249.92.28`), dans
+`/opt/market_intelligence`, crontab de l'utilisateur `ubuntu` :
+
 ```cron
 17 6 * * * cd /opt/market_intelligence && .venv/bin/python scripts/keepalive.py >> logs/keepalive.log 2>&1
 ```
+
+Le `.env` du VPS est une copie locale en `chmod 600`, hors dépôt. Après une
+modification de configuration, le redéployer explicitement — il ne suit pas le
+`git pull`.
 
 ## Principes non négociables
 
