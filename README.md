@@ -18,7 +18,7 @@ Spécification complète dans les documents à la racine. **Ordre de lecture :**
 | **L1** | Référentiel de l'univers — 57 titres vérifiés | **fait** |
 | **L2** | Ingestion des cours, archive Parquet, journal | **fait** |
 | **L3** | Corporate actions, facteurs, 9 contrôles qualité | **fait** |
-| L4 | Moteur analytique (régression, diagnostics) | à faire |
+| **L4** | Moteur analytique, diagnostics, `regression_fits` | **fait** |
 | L5 | Screener et fiche instrument (Streamlit) | à faire |
 | L6 / L6b | Fondamentaux régime A / couche qualité | à faire |
 | L7 | Orchestration et rapport hebdomadaire | à faire |
@@ -271,6 +271,106 @@ massivement décoté alors que la valeur par action a été détruite.
 - **Dilution sur un cas réel.** Atos et Casino ne sont pas dans les 57. Le calcul
   est donc éprouvé sur données synthétiques, où la réponse est connue, plutôt que
   sur un titre réel où l'on ne ferait que constater.
+
+## Moteur analytique (L4)
+
+```bash
+python scripts/compute_fits.py                     # calcul du jour
+python scripts/compute_fits.py --as-of 2024-06-30  # rejouer une date passée
+```
+
+Régression `log(P_t) = α + β·t + ε_t` sur fenêtre glissante de 20 ans, barres
+hebdomadaires, MCO sans pondération. Chaque exécution **insère** une ligne dans
+`regression_fits` et n'en réécrit jamais aucune — c'est le principe P5, et au
+bout d'un an il produit 52 observations réellement hors échantillon.
+
+### L'erreur que ce moteur ne commet pas
+
+Le test de racine unitaire porte sur le **log-prix, avec constante et tendance**,
+jamais sur les résidus. Un ADF appliqué aux résidus d'une régression aux
+coefficients estimés invalide les valeurs critiques et sur-rejette massivement :
+on obtiendrait une liste de titres « stationnaires » entièrement fictive, sans
+que rien ne le signale. Un test dédié le vérifie en montrant que la version
+fautive rejette à tort sur une marche aléatoire (p < 0,05) là où la bonne ne
+rejette pas (p > 0,10).
+
+### Résultat sur l'univers : aucun `good`, et c'est le bon résultat
+
+| Verdict | Titres |
+|---|---|
+| `weak` | 38 |
+| `rejected` | 19 (14 non-stationnaires, 3 historiques courts, 2 dilution) |
+| `good` | **0** |
+
+Quatre titres seulement rejettent la racine unitaire au seuil brut de 5 % —
+Ahold, Getlink, Michelin, Hermès. Sur 54 tests, un taux de rejet de 7,4 % est
+**statistiquement indiscernable du taux de faux positifs de 5 %**. La correction
+Benjamini-Hochberg-Yekutieli, qui divise le seuil par 4,56, n'en laisse donc
+passer aucun.
+
+Autrement dit : sur vingt ans, l'hypothèse d'une tendance déterministe autour de
+laquelle le cours reviendrait n'est établie pour aucune valeur de l'univers. Le
+système le dit au lieu de le masquer. Le doc 03 §3.3 prévient : *si la
+répartition sortait à 80 % de `good`, ce serait le signe d'un bug, pas d'un
+univers exceptionnel*.
+
+BH**Y** et non BH simple : les titres d'un même marché partagent leurs chocs,
+leurs p-values ne sont pas indépendantes, et BH simple s'appuie précisément sur
+cette indépendance.
+
+### Ce qu'on affiche au lieu d'une probabilité
+
+> « Ce titre est à −2σ, donc il a 95 % de chances de remonter. »
+
+C'est faux, et c'est le contresens central de la méthode telle qu'elle est
+vendue. Les résidus sont fortement autocorrélés : les épisodes hors bande ne sont
+pas des événements indépendants de fréquence 5 %, ce sont des **régimes qui
+durent**.
+
+`regression_fits.regime_stats` porte donc la distribution du temps de premier
+passage. Sur Seb, le cas du podcast, au 18 août 2026 :
+
+| | |
+|---|---|
+| z-score | −2,16 |
+| Épisodes sous −2σ depuis 2006 | 4, soit 6,0 % du temps |
+| Durée médiane / maximale | 8 semaines / 46 semaines |
+| **Épisode en cours** | **46 semaines — le plus long jamais observé** |
+| Creux supplémentaire après franchissement | −7,7 % médian, −17,0 % au pire |
+| Rendement après franchissement (n=3, in-sample) | +75 % à 1 an, +169 % à 3 ans |
+| Demi-vie de retour | 1 256 jours (3,4 ans) |
+
+Ces statistiques sont **in-sample** et décrivent le passé du titre. Elles ne
+prédisent rien — mais « il faut typiquement tenir 8 semaines, parfois 46, avec
+17 % de baisse supplémentaire » est une information de gestion, là où « 95 % de
+chances » n'en est pas une.
+
+### Une limite de l'intervalle AR(1), à ne pas sur-lire
+
+L'intervalle de confiance sur la racine autorégressive est obtenu par bootstrap
+par blocs mobiles. Il reste **anti-conservateur près de la racine unitaire** :
+les résidus sont ceux d'une tendance estimée, donc déjà détendancés, ce qui biaise
+ρ vers le bas, et le bootstrap ne reproduit pas la distribution asymptotique non
+standard de ρ quand la vraie valeur vaut 1.
+
+Constaté sur Seb : l'intervalle ressort à [0,943 ; 0,968], qui exclut 1, alors
+que le DF-GLS sur le même titre ne rejette pas la racine unitaire. **C'est le
+test qui a raison.** L'intervalle sert à comparer des titres entre eux et à
+montrer l'ordre de grandeur de la persistance ; l'arbitrage stationnaire ou non
+revient au DF-GLS, seul à alimenter `fit_quality`. Une inversion de test à la
+Stock (1991) corrigerait ce point ; elle n'est pas prise en v1.
+
+### Sur le critère d'acceptation « paramètres retrouvés à 1 % près »
+
+Atteint pour la pente à rapport signal sur bruit élevé. Il ne l'est **pas** sur
+un tirage unique à σ élevé, et ce n'est pas un défaut du code : à σ = 0,25 et
+pente = 3 %, l'erreur-type théorique de β vaut déjà 4,6 % de β. Pour σ̂, l'erreur-type
+relative vaut 1/√(2(n−2)) = 2,2 % sur 1 040 points, quel que soit σ — il faudrait
+45 000 points pour tenir 1 %.
+
+Les tests vérifient donc trois choses plus fortes que le critère littéral :
+la pente à 1 % quand c'est possible, l'absence de biais sur 300 tirages (écart
+0,11 %), et le fait que l'écart d'un tirage unique reste dans 3 erreurs-types.
 
 ## Principes non négociables
 
