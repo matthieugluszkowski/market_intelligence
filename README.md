@@ -15,8 +15,8 @@ Spécification complète dans les documents à la racine. **Ordre de lecture :**
 | Lot | Contenu | Statut |
 |---|---|---|
 | **L0** | Socle : dépôt, env Python, DDL, seeds, keepalive | **fait** |
-| L1 | Référentiel de l'univers (~50 titres puis 250) | à faire |
-| L2 | Ingestion des cours (Stooq) | à faire |
+| **L1** | Référentiel de l'univers — 57 titres vérifiés | **fait** |
+| L2 | Ingestion des cours | à faire |
 | L3 | Corporate actions et contrôles qualité | à faire |
 | L4 | Moteur analytique (régression, diagnostics) | à faire |
 | L5 | Screener et fiche instrument (Streamlit) | à faire |
@@ -98,6 +98,48 @@ Déployé sur le VPS Lightsail (`ubuntu@3.249.92.28`), dans
 Le `.env` du VPS est une copie locale en `chmod 600`, hors dépôt. Après une
 modification de configuration, le redéployer explicitement — il ne suit pas le
 `git pull`.
+
+## Référentiel de l'univers (L1)
+
+57 titres de la zone euro éligibles PEA : FR 29, DE 10, NL 8, ES 4, BE 3, IT 3.
+Y compris les cas de test cités par la spec — Seb, Arkema, BMW.
+
+```bash
+python scripts/verify_universe.py    # vérifie, écrit le rapport
+python scripts/load_universe.py      # charge ce qui est vérifié, et rien d'autre
+```
+
+Trois contrôles indépendants, parce qu'**un mapping faux ne se voit jamais
+ensuite** — il produit une belle courbe pour la mauvaise société :
+
+1. clé de contrôle ISIN (Luhn mod 10) ;
+2. téléchargement d'une cotation réelle, avec profondeur d'historique ;
+3. concordance de la devise et de la raison sociale rapportées par le provider.
+
+Le contrôle 3 est celui qui attrape le cas du podcast : la similarité entre
+« SEB » et « Skandinaviska Enskilda Banken » est de 0.19, très en dessous du
+seuil. Un symbole qui échoue n'entre pas en base — il est écarté avec son motif.
+
+### Deux constats sur les sources, qui contredisent le doc 02
+
+**Stooq n'est plus utilisable en primaire.** Le doc 02 §2.1 le retient parce
+qu'il « sert des CSV bruts par simple URL, sans dépendance à une bibliothèque
+qui casse ». Ce n'est plus vrai : l'endpoint `/q/d/l/` renvoie désormais une page
+de vérification navigateur à preuve de travail JavaScript — constaté depuis le
+poste de travail comme depuis le VPS. Les symboles Stooq sont conservés dans
+`db/seeds/universe_50.csv` et dans `instruments.attributes`, mais **non vérifiés
+et non chargés dans `instrument_symbols`**. yfinance assure seul la vérification
+L1, et doit être considéré comme source primaire de cours pour L2 tant que
+l'accès Stooq n'est pas rétabli — ce qui contredit le principe « aucune source ne
+doit être un point de défaillance unique » et reste à arbitrer.
+
+**Deux valeurs de Madrid ont un historique tronqué chez yfinance.** Banco
+Santander et Amadeus ne renvoient que 3 barres hebdomadaires, alors qu'Iberdrola,
+Inditex et Telefónica sur le même marché en renvoient 26 ans. Elles sont dans le
+CSV, écartées du chargement, en attente d'une seconde source. Le seuil est
+volontairement dur : sous un an d'historique, ce n'est pas une jeune société,
+c'est un flux cassé, et charger la ligne donnerait une régression sur trois
+points.
 
 ## Principes non négociables
 
