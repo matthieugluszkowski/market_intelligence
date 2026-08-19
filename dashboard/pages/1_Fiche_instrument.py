@@ -17,6 +17,7 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from dashboard import charts, data  # noqa: E402
+from market_intelligence.analytics.quality import quadrant  # noqa: E402
 from dashboard.theme import (  # noqa: E402
     css, motif_en_clair, palette, pastille_statut, vignette,
 )
@@ -203,14 +204,121 @@ else:
 # Bloc D - Position concurrentielle (L6b)
 # --------------------------------------------------------------------------- #
 st.subheader("D · Position concurrentielle")
-st.markdown(
-    "<div class='avertissement'><b>Non evaluee.</b> Leadership, rente et erosion "
-    "arrivent avec le lot L6b. Ce titre est donc <code>unqualified</code> — pas "
-    "« sans barriere », mais « jamais regarde ». La droite de regression est un "
-    "outil statistique, elle a ses limites, et elle doit toujours etre completee "
-    "par l'analyse fondamentale.</div>",
-    unsafe_allow_html=True,
-)
+
+qual = data.qualite(choix)
+if not qual:
+    st.info("Aucun score de qualite. Lancer `python scripts/compute_quality.py`.")
+else:
+    q = qual["score"]
+    couleurs_tier = {"solid": "#0ca30c", "watch": "#fab219",
+                     "eroding": "#d03b3b", "unqualified": "#898781"}
+    icones_tier = {"solid": "●", "watch": "▲", "eroding": "■", "unqualified": "○"}
+    libelles_tier = {
+        "solid": "Position etablie, rente persistante, aucune erosion detectee",
+        "watch": "A surveiller",
+        "eroding": "Rente en erosion",
+        "unqualified": "Position non qualifiee",
+    }
+    tier = q["quality_tier"]
+    st.markdown(
+        f"<span class='pastille' style='color:{couleurs_tier[tier]};"
+        f"border-color:{couleurs_tier[tier]}'>{icones_tier[tier]} "
+        f"{libelles_tier[tier]}</span>  ·  regime <b>{q['regime']}</b>  ·  "
+        f"quadrant <b>{quadrant(tier, float(f['z_score']))}</b>",
+        unsafe_allow_html=True,
+    )
+
+    trois = st.columns(3)
+    with trois[0]:
+        st.caption("Q1 · Leadership")
+        st.dataframe(pd.DataFrame([
+            {"Mesure": "Part relative au plus grand pair",
+             "Valeur": "—" if pd.isna(q["relative_share"]) else f"{q['relative_share']:.2f}"},
+            {"Mesure": "Rang par chiffre d'affaires",
+             "Valeur": "—" if pd.isna(q["rank_by_revenue"]) else int(q["rank_by_revenue"])},
+        ]), use_container_width=True, hide_index=True)
+    with trois[1]:
+        st.caption("Q2 · Rente")
+        st.dataframe(pd.DataFrame([
+            {"Mesure": "ROIC moyen", "Valeur": "—" if pd.isna(q["roic_mean_5y"])
+             else f"{q['roic_mean_5y']:.1%}"},
+            {"Mesure": "Ecart au seuil de 8 %", "Valeur": "—" if pd.isna(q["roic_vs_threshold"])
+             else f"{q['roic_vs_threshold']:+.1%}"},
+            {"Mesure": "Ecart a la mediane des pairs", "Valeur": "—" if pd.isna(q["roic_vs_peers"])
+             else f"{q['roic_vs_peers']:+.1%}"},
+            {"Mesure": "Persistance", "Valeur": f"{q['persistence_years']}/{q['n_years_available']} exercices"},
+            {"Mesure": "Marge brute moyenne", "Valeur": "—" if pd.isna(q["gross_margin_mean"])
+             else f"{q['gross_margin_mean']:.1%}"},
+        ]), use_container_width=True, hide_index=True)
+    with trois[2]:
+        st.caption("Q3 · Erosion — les trois pentes, separement")
+        st.dataframe(pd.DataFrame([
+            {"Pente": "ROIC", "Par an": "—" if pd.isna(q["roic_slope_5y"])
+             else f"{q['roic_slope_5y']:+.2%}"},
+            {"Pente": "Marge brute", "Par an": "—" if pd.isna(q["gross_margin_slope_5y"])
+             else f"{q['gross_margin_slope_5y']:+.2%}"},
+            {"Pente": "Part relative", "Par an": "—" if pd.isna(q["share_slope_5y"])
+             else f"{q['share_slope_5y']:+.2%}"},
+            {"Pente": "Drapeaux d'erosion", "Par an": f"{int(q['erosion_flags'])}/3"},
+        ]), use_container_width=True, hide_index=True)
+        st.caption("Le decompte, pas un verdict : trois pentes negatives se lisent "
+                   "3/3. Plus honnete qu'un feu tricolore.")
+
+    membres = qual["membres"]
+    complet = bool(q["groupe_complet"])
+    st.markdown(f"**Groupe de pairs** : {q['groupe_label'] or '—'} "
+                f"(`{q['groupe_kind'] or '—'}`)")
+    if not membres.empty:
+        st.dataframe(
+            membres.rename(columns={"nom": "Concurrent", "is_in_universe": "Dans l'univers",
+                                    "pays": "Pays", "menace": "Menace identifiee"}),
+            use_container_width=True, hide_index=True,
+        )
+    if not complet:
+        st.markdown(
+            "<div class='avertissement'><b>Groupe incomplet : aucun concurrent hors "
+            "Europe.</b> C'est la limite la plus serieuse du systeme. Les menaces "
+            "reelles viennent presque toujours de l'exterieur de l'univers — "
+            "SharkNinja est americaine, BYD est chinoise, Revolut n'est pas cotee. "
+            "Un groupe purement europeen est d'autant plus rassurant qu'il ne "
+            "contient pas le concurrent. Aucun titre ne peut passer "
+            "<code>solid</code> dans cet etat.</div>",
+            unsafe_allow_html=True)
+
+    evaluation = qual["evaluation"]
+    st.markdown("**Evaluation qualitative**")
+    if evaluation is None:
+        st.markdown(
+            "<div class='avertissement'>Aucune evaluation. Le moat quantitatif "
+            "mesure le <b>passe</b> : un ROIC eleve est la trace d'une barriere qui "
+            "a existe, il ne dit rien de sa resistance a une rupture technologique. "
+            "Seule la jambe qualitative peut ecrire « cette barriere est menacee "
+            "par X », et X n'est jamais dans les comptes. Un LLM peut la rediger ; "
+            "il ne la valide jamais — <code>reviewed_by</code> reste humain.</div>",
+            unsafe_allow_html=True)
+    else:
+        st.dataframe(pd.DataFrame([{
+            "Evaluee le": evaluation["assessed_at"],
+            "Expire le": evaluation["expires_at"],
+            "Position": evaluation["position_verdict"],
+            "Durabilite": evaluation["durability_verdict"],
+            "Auteur": evaluation["authored_by"],
+            "Revue par": evaluation["reviewed_by"] or "NON VALIDEE",
+        }]), use_container_width=True, hide_index=True)
+        if bool(evaluation["perimee"]):
+            st.markdown(
+                "<div class='avertissement'><b>Evaluation perimee.</b> Une "
+                "evaluation de plus de 18 mois inspire exactement la meme confiance "
+                "qu'une recente, et c'est le probleme. Le titre reste dans le "
+                "screener mais son quadrant s'affiche non qualifie.</div>",
+                unsafe_allow_html=True)
+
+    if tier == "eroding":
+        st.markdown(
+            "<div class='avertissement'>Croise avec une decote, ce titre tombe en "
+            "<b>value trap</b> : la decote sur une position qui s'erode n'est pas "
+            "une decote, c'est un ajustement de prix correct.</div>",
+            unsafe_allow_html=True)
 
 # --------------------------------------------------------------------------- #
 # Bloc E - Fondamentaux (regime A)

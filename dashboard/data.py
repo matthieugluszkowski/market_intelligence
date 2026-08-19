@@ -134,6 +134,55 @@ def historique_des_fits(internal_code: str) -> pd.DataFrame:
 
 
 @st.cache_data(ttl=TTL)
+def qualite(internal_code: str) -> dict:
+    """Dernier score de qualite et son groupe de pairs (doc 04, bloc D)."""
+    score = _frame(
+        """
+        select q.*, g.code as groupe_code, g.label as groupe_label,
+               g.kind as groupe_kind, g.is_complete as groupe_complet
+          from quality_scores q
+          join instruments i on i.id = q.instrument_id
+          left join peer_groups g on g.id = q.peer_group_id
+         where i.internal_code = %(code)s
+         order by q.as_of_date desc, q.method_version desc limit 1
+        """,
+        {"code": internal_code},
+    )
+    if score.empty:
+        return {}
+
+    membres = _frame(
+        """
+        select coalesce(pi.name, m.external_name) as nom,
+               m.is_in_universe,
+               coalesce(pi.country_iso2, m.external_ref ->> 'pays') as pays,
+               m.external_ref ->> 'menace' as menace
+          from peer_group_members m
+          left join instruments pi on pi.id = m.instrument_id
+         where m.peer_group_id = %(groupe)s
+         order by m.is_in_universe desc, nom
+        """,
+        {"groupe": int(score["peer_group_id"].iloc[0])}
+        if score["peer_group_id"].iloc[0] is not None else {"groupe": -1},
+    )
+
+    evaluations = _frame(
+        """
+        select a.assessed_at, a.expires_at, a.position_verdict, a.durability_verdict,
+               a.moat_sources, a.threats, a.rationale, a.authored_by, a.reviewed_by,
+               a.expires_at < current_date as perimee
+          from moat_assessments a join instruments i on i.id = a.instrument_id
+         where i.internal_code = %(code)s
+         order by a.assessed_at desc limit 1
+        """,
+        {"code": internal_code},
+    )
+
+    return {"score": score.iloc[0], "membres": membres,
+            "evaluation": None if evaluations.empty else evaluations.iloc[0]}
+
+
+@st.cache_data(ttl=TTL)
 def fondamentaux(internal_code: str, as_of: date) -> dict:
     """Ratios point-in-time et verdict de coherence (doc 04, bloc E).
 

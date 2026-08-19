@@ -21,7 +21,7 @@ Spécification complète dans les documents à la racine. **Ordre de lecture :**
 | **L4** | Moteur analytique, diagnostics, `regression_fits` | **fait** |
 | **L5** | Screener et fiche instrument (Streamlit) | **fait** |
 | **L6** | Fondamentaux régime A, ratios, bloc E | **fait** (hors parseur ESEF) |
-| L6b | Couche qualité et position concurrentielle | à faire |
+| **L6b** | Couche qualité, matrice qualité × prix | **fait** |
 | L7 | Orchestration et rapport hebdomadaire | à faire |
 
 Détail et critères d'acceptation : `05_roadmap-et-lot.md`.
@@ -572,6 +572,115 @@ yfinance couvre le critère d'acceptation à 100 %, et ESEF n'ajouterait de la
 profondeur que depuis 2021. Le vrai argument pour le faire un jour n'est pas la
 couverture : **ESEF porte les vraies dates de dépôt**, ce qui supprimerait
 l'estimation décrite plus haut pour tous les exercices postérieurs à 2021.
+
+## Position concurrentielle (L6b)
+
+```bash
+python scripts/compute_quality.py      # trimestriel, pas hebdomadaire
+```
+
+La seconde jambe de la méthode. Trois questions dans cet ordre — leadership,
+rente, érosion — et **c'est la troisième qui décide** : un leader dont la rente
+s'érode depuis cinq ans n'est pas un leader décoté, c'est un leader en train de
+perdre sa position, et le marché a probablement raison de le vendre.
+
+**Ce qu'on refuse de mesurer.** « Position concurrentielle durable » contient
+deux mots de nature différente. La position se mesure par proxies ; la
+**durabilité** est une affirmation sur l'avenir qu'aucune donnée historique ne
+démontre — Kodak affichait un ROIC élevé et une marque indépassable en 1998. On
+ne mesure donc pas la durabilité : on mesure la position et on teste **l'absence
+d'érosion**. C'est une réfutation, pas une confirmation.
+
+### Résultat sur l'univers
+
+| Niveau | Titres | | Régime | Titres |
+|---|---|---|---|---|
+| `watch` | 49 | | `rent` | 25 |
+| `unqualified` | 7 | | `cyclical` | 15 |
+| `eroding` | 1 | | `no_moat` | 12 |
+| `solid` | **0** | | `eroding` / `unknown` | 1 / 4 |
+
+**Aucune cible, et ce n'est pas une anomalie.** Un titre n'accède à `solid`
+qu'avec deux conditions cumulatives, et la seconde n'est remplie pour aucun titre
+à ce jour :
+
+1. un groupe de pairs contenant **au moins un concurrent hors Europe** ;
+2. une **évaluation qualitative revue par un humain**, non périmée.
+
+### Les deux garde-fous, et pourquoi ils ne sont pas négociables
+
+**Le groupe de pairs incomplet.** C'est la limite la plus sérieuse du système :
+les menaces réelles viennent presque toujours de l'extérieur de l'univers.
+SharkNinja, l'agresseur de Seb, est américaine ; BYD, celui de BMW, est chinoise ;
+Revolut n'est pas cotée. Un screener sectoriel européen sous-estime donc la
+menace, **et d'autant plus qu'il rassure** — le titre reste leader d'un univers
+qui ne contient pas son concurrent. Six groupes manuels sont seedés avec 14
+concurrents hors univers ; les 10 groupes sectoriels automatiques sont marqués
+incomplets par construction.
+
+**L'évaluation qualitative.** Le moat quantitatif mesure le passé : un ROIC élevé
+est la trace d'une barrière **qui a existé**, il ne dit rien de sa résistance à
+une rupture. Seule la jambe qualitative peut écrire « cette barrière est menacée
+par X », et X n'est jamais dans les comptes. Un LLM pourra la rédiger en phase 2 ;
+il ne la valide jamais — `reviewed_by` reste humain.
+
+### Deux défauts trouvés en observant les résultats
+
+**1. Un cyclique classé en value trap.** La première version testait l'érosion
+avant le régime : Arkema sortait `eroding`, donc value trap une fois croisé avec
+un z-score bas. Le doc 08 dit l'inverse — *Arkema : non applicable, régime
+cyclique, bas de cycle, pas érosion*. Une pente de ROIC négative sur un cyclique
+mesure la descente du cycle, pas la perte d'une barrière. Classer cela en value
+trap revenait à **exclure précisément le moment où il faut regarder**.
+
+**2. Un effondrement classé en cyclique.** La correction a d'abord basculé trop
+loin : un ROIC qui s'effondre de 18 % à 2 % a une volatilité très élevée et
+sortait donc `cyclical`, donc protégé du verdict d'érosion. C'était exactement le
+cas Atos, présenté comme un bas de cycle à acheter. Un cycle redescend **et
+remonte** ; un effondrement ne fait que descendre — d'où un discriminant sur la
+part de variance expliquée par la tendance.
+
+**Mais ce discriminant ne suffit pas non plus, et c'est une limite de fond.** Avec
+quatre exercices, la fenêtre ne couvre souvent que la *descente* d'un cycle, et
+une descente de cycle est statistiquement indiscernable d'une érosion : même
+pente, même monotonie. C'est la limite L2 du doc 08 — *cinq ans, c'est court pour
+une notion de durabilité* — et aucune amélioration du code ne la lève.
+
+La sortie retenue est celle que le doc emploie lui-même : il identifie Arkema et
+BMW **par leur métier**, pas par un test. `db/seeds/004_cycliques.sql` déclare
+donc les cycliques à la main, sur le même principe que les groupes de pairs
+manuels — la déclaration prime sur la détection. À revoir quand huit exercices
+seront disponibles : le test statistique redeviendra capable de trancher seul.
+
+### Le seul value trap, et la réserve qui l'accompagne
+
+**LVMH.** ROIC 22,3 % → 15,2 % et marge brute 68,4 % → 66,2 % entre 2022 et 2025,
+les deux pentes significativement négatives à 90 %. La donnée est réelle et le
+verdict conforme à la spécification.
+
+**Mais trois choses doivent être lues avec.** Le ROIC reste à 15,2 %, soit près
+du double du seuil de 8 % — l'érosion porte sur la *tendance*, pas sur le niveau.
+La fenêtre ne compte que 4 points et démarre en 2022, le pic post-Covid du luxe :
+une descente depuis un sommet exceptionnel n'est pas l'érosion d'une barrière. Et
+la borne haute de l'intervalle sur la marge brute est à −0,0000, soit une
+significativité tout juste atteinte.
+
+C'est précisément le genre de cas où le système doit afficher son raisonnement
+plutôt que son verdict — ce que fait le bloc D, en montrant les trois pentes
+séparément et l'écart au seuil à côté du niveau.
+
+### Cas de référence du doc 08
+
+| Titre | Attendu | Obtenu |
+|---|---|---|
+| Arkema | `cyclical`, bas de cycle | `cyclical` / `watch` ✓ |
+| BMW | ≥ 1 pente d'érosion | 1/3, `cyclical` / `watch` ✓ |
+| Seb | à qualifier, pas à trancher | `no_moat` / `watch`, groupe manuel avec SharkNinja ✓ |
+| Nestlé | `solid` | **hors univers** — suisse, non éligible PEA |
+| Atos | `eroding` | **hors univers** — écarté en L1 |
+
+Les deux derniers sont éprouvés sur données synthétiques, où la réponse est
+connue : cela teste la règle, là où un titre réel ne ferait que la constater.
 
 ## Principes non négociables
 
