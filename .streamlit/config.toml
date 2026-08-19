@@ -12,5 +12,23 @@ font = "sans serif"
 headless = true
 port = 8501
 
+# Recharge automatiquement quand un fichier source change - y compris les modules
+# importes, que Streamlit surveille et retire de sys.modules avant de rejouer.
+#
+# Sans cela, Streamlit relance le script a chaque interaction mais **garde les
+# modules importes en cache** : une fonction ajoutee a dashboard/data.py ou une
+# constante ajoutee a intelligence/schema.py reste invisible jusqu'au
+# redemarrage, et l'ecran tombe en AttributeError sur un attribut pourtant
+# present dans le fichier.
+#
+# Le piege s'est produit deux fois pendant le developpement, sur data.qualite
+# puis sur schema.FRAGMENTS. Le message d'erreur designe le fichier, ce qui
+# oriente le diagnostic vers le code alors que le code est correct.
+runOnSave = true
+
+# Ne pas surveiller les dependances : seules les sources du projet nous
+# interessent, et surveiller site-packages coute cher pour rien.
+folderWatchBlacklist = [".venv", "data", "logs", "__pycache__"]
+
 [browser]
 gatherUsageStats = false

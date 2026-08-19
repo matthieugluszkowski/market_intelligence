@@ -16,6 +16,13 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
+# Rechargement des modules du projet si leurs sources ont change. **Doit rester
+# avant les imports qui suivent** : Streamlit garde les modules importes en cache
+# et une purge posterieure laisserait coexister deux versions d une meme classe.
+from dashboard.rechargement import recharge_si_modifie  # noqa: E402
+
+recharge_si_modifie()
+
 from dashboard import charts, data  # noqa: E402
 from market_intelligence.analytics.quality import quadrant  # noqa: E402
 from dashboard.theme import (  # noqa: E402

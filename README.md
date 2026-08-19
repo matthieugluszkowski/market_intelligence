@@ -34,8 +34,36 @@ La base est peuplée : il n'y a rien à recalculer pour consulter le système.
 .venv/Scripts/python.exe -m streamlit run dashboard/Screener.py
 ```
 
-→ **http://localhost:8501**, trois écrans dans la barre latérale : screener,
-fiche instrument, matrice qualité × prix.
+→ **http://localhost:8501**, quatre écrans dans la barre latérale : screener,
+fiche instrument, matrice qualité × prix, dossier concurrentiel.
+
+### Le rechargement du code, et le piège qu'il supprime
+
+Streamlit relance le script à chaque interaction mais **garde les modules
+importés en cache**. Une fonction ajoutée à `dashboard/data.py` ou une constante
+ajoutée à `intelligence/schema.py` restait donc invisible, et l'écran tombait en
+`AttributeError` sur un attribut pourtant présent dans le fichier — le message
+désignant le fichier, il oriente le diagnostic vers le code alors que le code est
+correct.
+
+Le piège s'est produit deux fois : sur `data.qualite`, puis sur
+`schema.FRAGMENTS`.
+
+`runOnSave = true` **ne suffit pas** : le surveillant de Streamlit ne couvre pas
+de façon fiable les modules dont le chemin est ajouté à `sys.path` à l'exécution
+— c'est le cas de `src/` ici — et le dossier est synchronisé par OneDrive, dont
+la virtualisation rend les événements de système de fichiers irréguliers.
+Vérifié : avec `runOnSave` seul, une constante modifiée restait invisible.
+
+`dashboard/rechargement.py` calcule donc l'empreinte des sources du projet et
+**purge `sys.modules`** quand elle change, avant les imports de chaque page. Deux
+précautions : rien n'est purgé quand rien n'a changé — c'est ce qui préserve les
+caches `st.cache_data` dans le cas courant — et la purge précède les imports,
+sinon deux versions d'une même classe coexisteraient et un `isinstance`
+échouerait sans raison visible.
+
+Vérifié de bout en bout : une constante modifiée pendant que le serveur tourne
+est prise en compte au rafraîchissement suivant, sans redémarrage.
 
 **Par où commencer pour juger si le système dit vrai :**
 
