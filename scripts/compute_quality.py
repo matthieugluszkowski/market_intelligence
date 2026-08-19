@@ -23,9 +23,13 @@ def main() -> int:
     parser.add_argument("--as-of", default="")
     parser.add_argument("--limit", type=int, default=0)
     parser.add_argument("--only", default="")
+    parser.add_argument("--recalculer", action="store_true",
+                        help="recalculer la ligne du jour, apres import d un dossier. "
+                             "Refuse sur une date passee (principe P5).")
     args = parser.parse_args()
     as_of = date.fromisoformat(args.as_of) if args.as_of else None
-    resume = run(as_of=as_of, limit=args.limit, only=args.only)
+    resume = run(as_of=as_of, limit=args.limit, only=args.only,
+                 recalculer=args.recalculer)
     return 1 if resume["failed_instruments"] else 0
 
 

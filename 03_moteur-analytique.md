@@ -3,6 +3,8 @@
 **Langage :** Python. **Dépendances :** numpy, pandas, statsmodels, arch (pour DF-GLS et bootstrap).
 **Principe :** le moteur tourne côté VPS, la base ne fait que stocker. Aucun calcul lourd en SQL.
 
+> **État : implémenté et conforme sur l'essentiel.** L'ADF est bien appelé avec `regression="ct"` sur le **log-prix** et non sur les résidus - l'erreur que §3.2 signale comme la plus coûteuse et la plus silencieuse est évitée, documentée en tête de module, et couverte par un test anti-régression qui montre que la version fautive rejette à tort sur une marche aléatoire (p < 0.05) là où la bonne ne rejette pas (p > 0.10). Écarts signalés en ligne par des blocs `⚙ Réel`.
+
 ---
 
 ## 1. Le modèle de base
@@ -67,7 +69,13 @@ où `facteur_cumulé(t)` est le produit des ratios de tous les splits postérieu
 - `factor_price` : splits seuls → comparable aux graphes Hiboo
 - `factor_total` : splits + dividendes réinvestis → économiquement correct
 
-**Décision v1 :** la régression porte sur la série **`factor_price`**, pour rester comparable à la référence. `factor_total` est calculé et stocké, et sert à la mesure de performance. *À challenger - voir doc 01 §6.2.*
+**Décision v1 :** la régression porte sur la série **`factor_price`**, pour rester comparable à la référence. `factor_total` est calculé et stocké, et sert à la mesure de performance.
+
+> **⚙ Réel : `factor_price = 1.0` partout, et ce n'est pas un oubli.** Le `Close` de Yahoo est **déjà rétro-ajusté des splits** ; réappliquer les ratios de `corporate_actions` diviserait la série une seconde fois. Air Liquide, qui distribue une action gratuite pour dix tous les deux ans, verrait son historique divisé par 1.1 à chaque opération. **C'est le type d'erreur qui ne se voit pas : la courbe reste lisse, seule la pente est fausse.** Voir doc 00 P4 amendé et doc 09 D-A.
+>
+> `factor_total` ne porte donc que les dividendes. Vérifié sur Air Liquide, 1 390 barres : **écart médian 0.036%**, exact sur les dates récentes, maximum 3.9% sur une semaine de détachement de 2009. Le résidu vient de la granularité hebdomadaire ; le supprimer exigerait 30 ans de quotidien à chaque calcul, ce qui rendrait les facteurs non reconstructibles depuis les seules tables `raw` - **violation de P1. L'approximation est le prix de ce principe, et elle est mesurée.**
+>
+> **Garde-fou manquant :** rien n'empêche un branchement futur sur une source servant le cours nominal, qui produirait alors silencieusement des pentes fausses.
 
 ### Étape 2 - Filtres d'éligibilité, avant tout calcul
 
@@ -93,6 +101,10 @@ Si nombre d'actions(t) / nombre d'actions(t−12 mois) > 1.5
 ```
 
 *Sans ce filtre, Atos, Casino, Solocal et leurs semblables apparaîtront en tête du screener avec un z-score de −4, parce que la droite historique a été calculée sur une valeur par action qui n'existe plus. C'est le piège le plus coûteux de toute la méthode, et il est invisible sur le graphe.*
+
+> **⚙ Réel : implémenté plus strictement (doc 09 D-I).** Comparaison au **minimum glissant sur 365 jours** plutôt qu'au point à −12 mois, sur un nombre d'actions **neutralisé des splits**. Sans cette neutralisation, quatre faux positifs - Dassault ×5.09, Michelin ×4.0, Aena ×10.7, Prosus ×2.43. Une seule alerte par titre, contre 203 lignes pour Prosus autrement.
+>
+> **Éprouvé sur données synthétiques** : Atos et Casino ne sont pas dans les 57 titres. *Cela teste la règle, là où un titre réel ne ferait que la constater.*
 
 ### Étape 3 - Traitement des trous
 
@@ -137,6 +149,10 @@ adf = adfuller(np.log(prices), regression="ct", autolag="AIC")
 kps = kpss(np.log(prices), regression="ct", nlags="auto")
 ```
 
+> **⚙ Résultat mesuré : 38 `weak`, 19 `rejected`, 0 `good` sur 57 titres.** Quatre titres seulement rejettent la racine unitaire au seuil brut de 5% - Ahold, Getlink, Michelin, Hermès. **Sur 54 tests, un taux de rejet de 7.4% est statistiquement indiscernable du taux de faux positifs de 5%.** La correction BHY divise le seuil par 4.56 et n'en laisse passer aucun.
+>
+> C'est le résultat le plus important du projet à ce stade. §3.3 annonçait que `weak` serait majoritaire ; la réalité est plus dure : **aucun titre européen de l'univers ne présente de retour à la tendance statistiquement établi sur 20 ans.** Le système dit qu'il ne sait pas, ce qui est le comportement voulu - et ce qu'un screener qui afficherait seulement des z-scores ne dirait jamais.
+
 **Ce point précis est celui où l'implémentation naïve échoue silencieusement.** Appliquer un ADF standard aux résidus d'une régression aux coefficients estimés invalide les valeurs critiques et sur-rejette massivement : on obtiendrait une liste de titres « stationnaires » entièrement fictive. Par le théorème de Frisch-Waugh, le test correct est l'ADF avec constante et tendance directement sur le log-prix, avec les valeurs critiques τ_τ (≈ −3.41 à 5%).
 
 **DF-GLS, parce que l'ADF manque de puissance.**
@@ -154,6 +170,8 @@ C'est le point méthodologique le plus important de cette section. Sur 20 ans, a
 
 **On rapporte donc un intervalle** - par inversion du test (méthode de Stock, 1991) ou par bootstrap par blocs - stocké dans `ar1_ci_low` / `ar1_ci_high`. Un intervalle [0.94, 1.02] dit la vérité : on ne sait pas.
 
+> **⚙ Réel : bootstrap par blocs, et il ne décide de rien.** 400 tirages, blocs de 26 semaines, graine dérivée de l'instrument et de la date - donc reproductible. L'intervalle est **anti-conservateur près de la racine unitaire** : sur Seb il ressort à [0.943 ; 0.968], qui exclut 1, alors que le DF-GLS sur le même titre ne rejette pas. **C'est le test qui a raison.** L'intervalle est affiché parce qu'il dit l'incertitude, mais **le DF-GLS arbitre seul `fit_quality`**. Une inversion de test à la Stock corrigerait le point ; non prise en v1.
+
 **Demi-vie du retour à la moyenne.**
 
 ```python
@@ -169,6 +187,10 @@ half_life = -np.log(2) / np.log(1 + lam) if -2 < lam < 0 else np.inf
 **Durbin-Watson**, diagnostic gratuit d'autocorrélation résiduelle, à afficher systématiquement.
 
 ### 3.3 Verdict de qualité
+
+> **⚙ Constantes réelles, dont trois n'étaient pas dans la spec.** Seuil de « DF-GLS très loin du rejet » : `dfgls_crit_5 / 2` ≈ −1.44, un `/2` sans justification statistique qui pilote directement le taux de `rejected`. Bootstrap : 400 tirages, blocs de 26. `min_observations = 500` (≈9.6 ans) est **dominé par `min_years = 15`** et ne peut donc jamais se déclencher seul - le critère est vide de contenu (dette T27).
+>
+> **Dette T12 :** la demi-vie est convertie par `× 7.0` et les horizons de régime par `SEMAINES_PAR_AN`, tous deux codés en dur. La politique `real_deflated` travaille en mensuel : une demi-vie de 10 mois serait écrite 70 jours au lieu de ~304. Latent, se déclenche à la première matière première.
 
 ```
 fit_quality =
@@ -187,7 +209,7 @@ fit_quality =
 
 **`weak` doit être le cas majoritaire, et l'interface doit l'assumer.** Si la répartition sortait à 80% de `good`, ce serait le signe d'un bug, pas d'un univers exceptionnel. Un système honnête dit qu'il ne sait pas la plupart du temps.
 
-*Note : le verdict de qualité est lui-même soumis à la multiplicité - 250 tests à 5% produisent une douzaine de faux `good`. Le seuil doit être corrigé (Benjamini-Hochberg-Yekutieli), ce qui vaut aussi bien ici qu'au chapitre du screening.*
+*Note : le verdict de qualité est lui-même soumis à la multiplicité - sur 54 tests à 5%, on attend près de 3 faux `good`. Le seuil doit être corrigé (Benjamini-Hochberg-Yekutieli), ce qui vaut aussi bien ici qu'au chapitre du screening.*
 
 ---
 
@@ -212,11 +234,19 @@ Pour chaque instrument, calculées sur l'historique disponible et **explicitemen
 | Demi-vie estimée | Vitesse de rappel vers la tendance |
 | Semaines consécutives sous le seuil, en cours | Depuis quand ? |
 
+> **⚙ Réel, sur Seb au 18 août 2026 :** z = −2.16 · 4 épisodes sous −2σ depuis 2006, soit 6.0% du temps · durée médiane 8 semaines, maximum 46 · **épisode en cours 46 semaines, le plus long jamais observé** · creux supplémentaire médian −7.7%, pire −17.0% · rendement post-franchissement +75% à 1 an et +169% à 3 ans, **sur n = 3, in-sample** · demi-vie 3.4 ans.
+>
+> *Exactement ce que ce paragraphe réclamait. « Le plus long épisode jamais observé, avec une demi-vie de 3.4 ans » est une information de gestion. « 95% de chances de remonter » n'en était pas une.*
+>
+> Réserve : la « distribution » des rendements est réduite à min / médiane / max, sans quartiles.
+
 **C'est la distribution du temps de premier passage, et elle change complètement la lecture.** Découvrir qu'un titre reste typiquement 14 mois sous −2σ avec un creux supplémentaire de 20% est une information de gestion, pas une statistique décorative. C'est exactement le vécu que Marie décrit sur Seb : *« on a commencé à l'acheter à −2 écarts-types et on a plongé à −2.66 »*.
 
 ---
 
 ## 5. Le calcul hebdomadaire et l'accumulation hors échantillon
+
+> **⚙ Ce mécanisme n'est pas orchestré, et c'est la dette la plus coûteuse du projet.** Aucun cron n'exécute ce cycle (lot L7, non fait) : il est lancé à la main. Or P5 ne produit sa valeur que par régularité - **chaque semaine sans orchestrateur est une observation hors échantillon définitivement perdue.** Voir doc 09 §7 et doc 06 PO0.
 
 ```
 Chaque dimanche, pour chaque instrument éligible :
@@ -293,6 +323,14 @@ signal_suspect   si  z ≤ seuil mais un critère fondamental est en échec
                      → c'est un value trap potentiel, pas une opportunité
 ```
 
+> **⚙ Deux amendements réels.**
+>
+> **(a) Un troisième verdict, `indéterminable`.** La spec n'avait que `confirmé` et `suspect` : **traiter un critère non évaluable comme un critère réussi fabrique de faux signaux.** Répartition mesurée : 35 `confirmé`, 17 `suspect`, 5 `indéterminable`.
+>
+> **(b) Les ratios sont neutralisés pour le secteur financier (ICB 30).** La notion de chiffre d'affaires n'a pas de définition stable pour un assureur - Allianz sortait à 25% d'écart sur la marge nette là où les industriels tombent à 0.0%. Marges, EV/CA, EV/EBIT, dette nette/EBITDA, gearing et couverture des intérêts passent à `null`, et le critère de levier est neutralisé : **une banque a structurellement un levier de 15 à 20, elle sortirait `suspect` à chaque passage pour une raison qui n'en est pas une.**
+>
+> **Biais connu à corriger (dette T28) :** presque tous les `suspect` le sont pour `ca_non_decroissant`, et la fenêtre de 3 ans démarre en **2022, année du pic d'inflation**. BASF, Engie, Iberdrola, Arkema et Telefónica affichent une croissance négative parce que leur base de départ est exceptionnelle, pas parce qu'elles se délitent. À recalibrer sur une médiane sectorielle plutôt que sur zéro.
+
 **Sortir les signaux suspects est aussi utile que sortir les bons.** C'est la liste des titres qui ont l'air décotés et ne le sont pas - et c'est là qu'on perd de l'argent.
 
 *Ce contrôle est un filtre de solvabilité, pas un jugement de qualité. Une entreprise peut cocher toutes ces cases et perdre sa position concurrentielle - c'est l'objet du doc 08.*
@@ -303,6 +341,8 @@ signal_suspect   si  z ≤ seuil mais un critère fondamental est en échec
 |---|---|
 | Z-score relatif au secteur | z du titre − médiane des z du groupe de pairs |
 | Décote spécifique vs sectorielle | Le groupe entier est-il décoté, ou seulement ce titre ? |
+
+> **⚙ Dette T14 : `z rel. pairs` n'existe nulle part dans le dépôt.** Ni dans `analytics/`, ni dans les jobs, ni au dashboard. C'est la métrique que ce paragraphe qualifie de plus discriminante, et c'est la seule du doc 03 à n'avoir aucune ligne de code.
 
 **C'est la métrique la plus discriminante et la plus négligée.** Un titre à −2σ dans un secteur entièrement à −2σ ne raconte pas la même histoire qu'un titre à −2σ isolé parmi des pairs à leur moyenne. Le premier est un pari sectoriel - le secteur automobile européen du podcast. Le second est un pari idiosyncrasique. Ce sont deux décisions différentes.
 

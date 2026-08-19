@@ -61,14 +61,20 @@ select g.id, i.id, true
 on conflict do nothing;
 """
 
-# Le groupe manuel prime. A defaut, le sectoriel automatique.
+# Ordre de priorite : le groupe issu d un dossier relu, puis le groupe manuel
+# seede, puis le sectoriel automatique. Le dossier prime parce qu il porte le
+# jugement le plus recent et le seul qui soit signe.
 GROUPE_DE = """
 select g.id, g.code, g.kind, g.is_complete
   from peer_groups g
   join peer_group_members m on m.peer_group_id = g.id
  where m.instrument_id = %(instrument_id)s
    and %(as_of)s between m.valid_from and m.valid_to
- order by case g.kind when 'manual' then 0 else 1 end
+ order by case
+            when g.code like 'DOSSIER:%%' then 0
+            when g.kind = 'manual' then 1
+            else 2
+          end
  limit 1;
 """
 
@@ -107,7 +113,21 @@ on conflict (instrument_id, as_of_date, method_version) do nothing;
 """
 
 
-def run(as_of: date | None = None, limit: int = 0, only: str = "") -> dict:
+# P5 protege les observations PASSEES : une ligne ecrite un dimanche enregistre
+# ce que le systeme affirmait ce jour-la et ne se reecrit jamais. La ligne du
+# jour, elle, n est pas encore une observation hors echantillon - c est un
+# brouillon. L autoriser a etre recalculee apres l import d un dossier est donc
+# coherent avec le principe, et necessaire : sans cela, un dossier importe
+# n aurait aucun effet visible avant le lendemain.
+EFFACE_LE_JOUR = """
+delete from quality_scores
+ where as_of_date = %(as_of)s and as_of_date >= current_date
+   and (%(instrument_id)s is null or instrument_id = %(instrument_id)s);
+"""
+
+
+def run(as_of: date | None = None, limit: int = 0, only: str = "",
+        recalculer: bool = False) -> dict:
     settings = get_settings()
     as_of = as_of or date.today()
     resume: dict = {"as_of": as_of.isoformat(), "scores": 0, "par_tier": {},
@@ -132,6 +152,28 @@ def run(as_of: date | None = None, limit: int = 0, only: str = "") -> dict:
                 instruments = [i for i in instruments if i[1] == only]
             if limit:
                 instruments = instruments[:limit]
+
+            if recalculer:
+                if as_of < date.today():
+                    raise ValueError(
+                        "Recalcul refuse : une as_of_date passee enregistre ce "
+                        "que le systeme affirmait ce jour-la et ne se reecrit "
+                        "jamais (principe P5). Seule la date du jour l'est."
+                    )
+                efface = 0
+                with conn.cursor() as cur:
+                    if only or limit:
+                        for ligne in instruments:
+                            cur.execute(EFFACE_LE_JOUR,
+                                        {"as_of": as_of, "instrument_id": ligne[0]})
+                            efface += cur.rowcount
+                    else:
+                        cur.execute(EFFACE_LE_JOUR,
+                                    {"as_of": as_of, "instrument_id": None})
+                        efface = cur.rowcount
+                conn.commit()
+                print(f"Recalcul : {efface} score(s) du jour efface(s) avant "
+                      f"reecriture.")
 
             print(f"{len(instruments)} instruments, as_of = {as_of}\n")
 

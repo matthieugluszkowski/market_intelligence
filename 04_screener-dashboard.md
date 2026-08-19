@@ -2,6 +2,8 @@
 
 **Techno :** Streamlit + Altair. **Déploiement :** VPS, derrière authentification basique.
 
+> **État : 3 écrans sur 6 construits** (screener, fiche instrument, matrice qualité × prix). Écrans 4 et 5 en L8, écran 6 en L7. **Le système visuel est la partie la plus fidèle du projet : aucun hexadécimal de `theme.py` ne s'écarte de la spec, en clair comme en sombre**, et 18 tests vérifient automatiquement l'axe logarithmique, l'axe y unique, les bandes en gris neutre, l'absence de filet pointillé et la présence d'icône + libellé sur chaque statut. Les écarts se concentrent sur le branchement aux données. Registre complet : doc 09 §5.
+
 ---
 
 ## 1. Trois principes d'interface, avant les écrans
@@ -67,6 +69,8 @@ Le z-score porte une **polarité** - décoté d'un côté, surcoté de l'autre, 
 | `weak` | `#fab219` | ▲ | « Test non concluant » |
 | `rejected` | `#d03b3b` | ■ | « Régression invalide » + raison |
 
+> **⚙ Deux dettes sur les statuts.** Le tableau principal affiche `● good` - icône plus **code technique**, et non le libellé complet : l'accessibilité daltonienne est sauve, la lisibilité non (T19). Et la palette est **dupliquée en dur dans la fiche** puis réutilisée pour `quality_tier` et pour la cohérence prix/fondamentaux (T18), alors que `theme.py` énonce lui-même la règle transgressée : *une couleur qui sert à deux choses ne sert plus à rien*. Ces valeurs codées en dur ne suivent pas la bascule clair/sombre.
+
 **Icône et libellé systématiques.** La couleur ne porte jamais seule l'information - deux des statuts passent sous 3:1 sur surface claire, et surtout un daltonien doit pouvoir lire le tableau.
 
 ---
@@ -90,6 +94,8 @@ Le z-score porte une **polarité** - décoté d'un côté, surcoté de l'autre, 
 | **Quadrant** | cible / watchlist / value trap / à éviter / non qualifié | cible + watchlist |
 | **Niveau de qualité** | solide / à surveiller / en érosion / non qualifié | solide + à surveiller |
 | **Régime** | rente / cyclique / érosion / sans barrière | tous |
+
+> **⚙ Réel : 5 filtres sur 11.** Manquent classe d'actif, capitalisation, cohérence fondamentale, quadrant, niveau de qualité et régime - **trois de ces données sont pourtant déjà ramenées par la requête**. Et la colonne `Quadrant` est **une constante littérale `"unqualified"`** (dette T5) : dès qu'un titre en sortira, screener et matrice afficheront des quadrants contradictoires sans que rien ne le signale. **`z rel. pairs` n'existe nulle part dans le dépôt** (dette T14) : la métrique n'est calculée ni au moteur ni au dashboard. Le tri suit `fit_quality` et non le quadrant (T13), conséquence directe de la colonne en dur. Colonnes ajoutées, utiles : `Motif` en clair, `Episodes`, `Pente an.`
 
 **Tableau de résultats, colonnes :**
 
@@ -175,11 +181,15 @@ Le pendant qualité du bloc A. Spécification au doc 08.
 - **Évaluation qualitative** : sources du moat, menaces identifiées avec leur horizon, date de la dernière revue et **date de péremption**
 - **Bandeau si l'évaluation est périmée** : le titre est traité comme non qualifié tant qu'elle n'est pas revue
 
+> **⚙ Dette T16 : les trois petits multiples de tendance sont remplacés par des tableaux de pentes.** C'est la lecture d'érosion décrite ici comme « la plus directe possible » qui disparaît - *trois courbes qui descendent ensemble n'ont pas besoin de commentaire*, un tableau de trois nombres si. Et `moat_sources`, `threats` et `rationale` sont **chargés par la requête puis jetés à l'affichage**.
+
 #### Bloc E - Fondamentaux
 
 Tableau des ratios sur 5 ans, avec la source et la date de publication de chaque valeur. Verdict de cohérence prix / fondamentaux, avec le détail du critère en échec le cas échéant.
 
 Les valeurs issues d'une extraction LLM sont **marquées visuellement** et affichent leur score de confiance, avec un lien vers la page du PDF d'origine. Une valeur extraite d'un PDF n'a pas le statut d'une valeur XBRL, et ça doit rester lisible jusque dans l'écran final.
+
+> **⚙ Dette T17 : instantané mono-période au lieu d'une série 5 ans**, sans source ni date par valeur. Le marquage des extractions LLM est sans objet tant que L9 n'existe pas.
 
 ### Écran 3 - Matrice qualité × prix
 
@@ -210,6 +220,19 @@ Les valeurs issues d'une extraction LLM sont **marquées visuellement** et affic
 **Sous le nuage, quatre listes**, une par quadrant, avec le motif de classement pour chaque titre. Jumeau tabulaire complet, conformément au principe I3.
 
 **Filtre supplémentaire dans la rangée du haut :** `quadrant`, multi-sélection, avec `unqualified` décoché par défaut.
+
+> **⚙ Trois dettes sur cet écran, dont une qui inverse la lecture.**
+>
+> **T1 - l'axe est inversé dans le mauvais sens.** `scale=alt.Scale(domain=[4, -4])` place +4 à gauche et −4 à droite : **les titres décotés apparaissent à droite**, alors que le titre de l'axe affiche « ← décote … surcoté → ». Le libellé et l'encodage se contredisent : un lecteur qui fait confiance à la flèche lit le nuage exactement à l'envers. Correction : une ligne.
+>
+> **T6 - le curseur de seuil ne reclasse rien.** `quadrant()` accepte `seuil_decote` mais est appelé sans lui : déplacer le curseur déplace le trait dessiné sans reclasser les titres.
+>
+> **T20 - le jumeau tabulaire n'est pas filtré comme le nuage.** Les quatre listes sont construites sur l'ensemble, pas sur la sélection : dès qu'on filtre, le tableau cesse d'être un jumeau.
+>
+> **Manquants :** libellés de quadrant en toutes lettres dans les coins (les chaînes existent, aucune `mark_text` sur le nuage), et point atténué pour les qualités non évaluées. **Conformes :** taille constante, couleur divergente sur le z-score et jamais sur le quadrant, forme portant le régime, value trap affiché et déplié par défaut. *Cinq formes au lieu de trois - `no_moat` et `unknown` ajoutés - ce qui est cohérent.*
+>
+> **Cet écran n'est pas l'écran d'accueil**, contrairement à ce que demande la spec : le point d'entrée est le screener. C'est précisément l'inversion que §À challenger identifie comme « celle qui mène au quadrant value trap ».
+
 
 ### Écran 4 - Vue sectorielle
 
@@ -270,12 +293,12 @@ Le livrable principal. HTML autonome, envoyé le dimanche, archivé.
 | Sujet | Décision |
 |---|---|
 | Bibliothèque de graphes | Altair, pour le contrôle fin des marques et l'axe log |
-| Cache | `st.cache_data` sur les requêtes, TTL 1 h |
+| Cache | `st.cache_data` sur les requêtes, TTL 1 h. *⚙ Réel : 900 s* |
 | Calcul | Aucun calcul lourd dans l'interface - lecture seule sur `regression_fits` |
-| Thème | `.streamlit/config.toml`, deux jeux de valeurs, sombre sélectionné et non inversé |
-| Auth | Basique en v1, suffisante pour un usage personnel |
+| Thème | `.streamlit/config.toml`, deux jeux de valeurs, sombre sélectionné et non inversé. *⚙ **Un seul jeu.** Le toggle ne pilote que les graphes : le chrome Streamlit reste clair, et l'état n'est pas partagé entre écrans (dette T22)* |
+| Auth | Basique en v1, suffisante pour un usage personnel. *⚙ Non implémentée - le dashboard tourne en local sur localhost:8501* |
 | Rafraîchissement | Au chargement, jamais automatique - cf. principe I1 |
-| État de chargement | Maintenir le rendu précédent en opacité réduite, pas de squelette clignotant |
+| État de chargement | Maintenir le rendu précédent en opacité réduite, pas de squelette clignotant. *⚙ Non implémenté, spinner par défaut* |
 
 ---
 

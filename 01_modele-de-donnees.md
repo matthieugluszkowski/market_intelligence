@@ -3,6 +3,8 @@
 **Cible :** PostgreSQL 15+ standard. Aucune extension propriétaire. Compatible Supabase et Postgres nu.
 **Convention :** snake_case, clés primaires `id` en `bigint generated always as identity`, horodatages en `timestamptz` UTC.
 
+> **État : implémenté.** 27 tables créées via 11 migrations suivies par empreinte SHA-256 (`db/migrations/`, `scripts/migrate.py`). Toutes les tables de ce document existent, avec les mêmes noms et types. Les écarts sont signalés en ligne par des blocs `⚙ Réel`. Registre complet : doc 09.
+
 ---
 
 ## 1. Vue logique
@@ -217,7 +219,9 @@ create index on bars_1d (ts);
 create index on bars_1w (ts);
 ```
 
-**`close` est le cours brut. C'est le principe P4 et il mérite d'être répété.** L'`adj_close` de Yahoo est recalculé rétroactivement à chaque détachement de dividende : la même requête donne un résultat différent à six mois d'intervalle. Un backtest bâti dessus n'est pas reproductible, et on ne s'en aperçoit jamais. On stocke le brut, on ajuste au calcul via `corporate_actions`.
+**`close` est la série la plus stable que la source expose - principe P4, amendé.** L'`adj_close` de Yahoo est recalculé rétroactivement à **chaque** détachement de dividende : la même requête donne un résultat différent à six mois d'intervalle. On stocke donc `Close`, jamais `Adj Close`.
+
+> **⚙ Réel.** Le cours nominal n'existe chez aucune source gratuite : `Close` est déjà rétro-ajusté des splits par Yahoo (2 réécritures en 12 ans sur Dassault, contre plusieurs par an pour `Adj Close`). Le collecteur force `auto_adjust=False` pour ne pas y ajouter les dividendes. **Conséquence : `factor_price = 1.0` partout** - réappliquer les ratios de splits diviserait la série une seconde fois. Voir doc 00 P4 et doc 09 D-A.
 
 **Types en `double precision` et non `real`.** Coût : 16 octets de plus par ligne, soit environ 9 Mo sur l'univers v1. Bénéfice : pas de perte de précision sur les rendements composés à 30 ans. Le compromis est évident dans ce sens.
 
@@ -246,6 +250,14 @@ create table corporate_actions (
 create index on corporate_actions (instrument_id, ex_date);
 ```
 
+> **⚙ Réel - cette contrainte ne s'exécute pas.** `COALESCE` est interdit dans une clause `UNIQUE` de table, autorisé dans un index unique. Le code corrige :
+> ```sql
+> create unique index ca_unique on corporate_actions
+>   (instrument_id, action_type, ex_date, coalesce(ratio,0), coalesce(amount,0));
+> ```
+> *La même erreur figure dans la clé primaire de `peer_group_members` ci-dessous, où elle est plus grave. Corrigée de la même façon, avec en prime un `check (instrument_id is not null or external_name is not null)` - la spec permettait une ligne entièrement vide.*
+
+
 ### 4.3 Nombre d'actions - la table qui détecte les dilutions
 
 ```sql
@@ -261,7 +273,9 @@ create table shares_outstanding (
 
 **Cette table traite un problème identifié dans l'avis critique et qui n'a pas de solution ailleurs.** Atos, Casino, emeis, Solocal sont toujours cotés : ils ne sortent pas par le filtre "radiation". Mais après une dilution d'un facteur 100, leur cours ajusté rend la droite de régression historique absurde - le titre apparaîtra massivement "décoté" alors que la valeur par action a été détruite.
 
-**Règle dérivée :** toute variation du nombre d'actions supérieure à un seuil (proposé : +50% sur 12 mois glissants) déclenche une invalidation de la régression sur la fenêtre antérieure. C'est un filtre que ni Hiboo ni les screeners grand public n'appliquent, et c'est probablement le plus rentable de tout le système.
+**Règle dérivée :** toute variation du nombre d'actions supérieure à un seuil (proposé : +50% sur 12 mois glissants) déclenche une invalidation de la régression sur la fenêtre antérieure.
+
+> **⚙ Réel - implémenté plus finement que la règle ci-dessus (doc 09 D-I).** La comparaison se fait contre le **minimum glissant sur 365 jours** - ce qui attrape une dilution suivie d'un rachat partiel - sur un nombre d'actions **préalablement neutralisé des splits**. Sans cette neutralisation, quatre faux positifs : Dassault ×5.09, Michelin ×4.0, Aena ×10.7, Prosus ×2.43. C'est un filtre que ni Hiboo ni les screeners grand public n'appliquent, et c'est probablement le plus rentable de tout le système.
 
 ### 4.4 Taux de change
 
@@ -337,6 +351,7 @@ create table financial_facts (
   value          double precision not null,
   currency       char(3) references currencies(code),
   published_at   date,                       -- bitemporalité (P2)
+  published_at_estimated boolean not null default false,  -- ⚙ ajouté (migration 011)
   report_id      bigint references financial_reports(id),
   source_id      smallint not null references data_sources(id),
   confidence     double precision,           -- utile pour l'extraction LLM
@@ -350,6 +365,12 @@ create index on financial_facts (instrument_id, concept_code, period_end desc);
 **Pourquoi EAV plutôt qu'une table large.** Trois sources hétérogènes doivent cohabiter : yfinance avec ses libellés propres, le XBRL/ESEF avec la taxonomie IFRS (plusieurs milliers de concepts), et l'extraction LLM de PDF avec ce qu'on lui demande. Une table à colonnes fixes exigerait une migration à chaque nouveau concept. Le volume ne justifie pas l'optimisation inverse : 250 titres × 5 ans × 4 périodes × 50 concepts ≈ 250 k lignes, soit ~25 Mo.
 
 **`confidence` prépare la phase 2.** Une valeur extraite d'un PDF par LLM n'a pas le même statut qu'une valeur XBRL. Le champ existe dès maintenant pour que la distinction soit lisible partout et ne se perde pas dans l'agrégation.
+
+> **⚙ Réel - `published_at_estimated`, le sauvetage de P2.** yfinance ne sert **aucune** date de publication. Deux réponses ont été écartées : stocker `period_end` comme `published_at` ferait croire que les comptes 2024 étaient connus au 31 décembre 2024 - du look-ahead pur et invisible ; laisser `null` rendrait tout filtre point-in-time inopérant.
+>
+> Retenu : `period_end + 122 jours`, borne supérieure de la directive Transparence (quatre mois pour les émetteurs européens), avec un drapeau. **Le raisonnement qui décide est asymétrique : errer tard ne produit qu'un excès de prudence, errer tôt fabrique du look-ahead.** On erre délibérément du côté tardif.
+>
+> *C'est aussi le seul vrai argument pour construire un jour le parseur ESEF : non pas la couverture - yfinance atteint 100% du critère avec 7 044 faits sur 33 concepts - mais le fait qu'**ESEF porte les vraies dates de dépôt**.*
 
 ---
 
@@ -442,6 +463,7 @@ create table regression_fits (
   fit_quality     text not null,             -- 'good','weak','rejected'
   quality_reasons text[],                    -- ['non_stationary','dilution_detected','short_history']
 
+  regime_stats    jsonb,                     -- ⚙ ajouté : statistiques de régime (§6.4)
   method_version  smallint not null default 1,
   computed_at     timestamptz not null default now(),
   constraint fit_unique unique (instrument_id, policy_code, as_of_date, method_version)
@@ -460,6 +482,13 @@ Conséquence : au bout de 12 mois, 52 observations réellement hors échantillon
 Coût aujourd'hui : environ 13 000 lignes par an, soit quelques mégaoctets. Coût si on l'ajoute dans deux ans : l'information n'existera pas, elle n'est pas reconstituable.
 
 `ar1_ci_low`/`ar1_ci_high` plutôt qu'un booléen "stationnaire". Les tests ADF et KPSS n'ont quasi aucune puissance sur 20 ans - c'est l'argument Shiller-Perron. Un verdict binaire donnerait une fausse certitude ; un intervalle de confiance sur la racine autorégressive dit la vérité, à savoir qu'on ne sait souvent pas trancher.
+
+> **⚙ Réel - trois points.**
+> **(a)** Colonne `regime_stats jsonb` ajoutée (migration 008) : les statistiques de régime du doc 03 §4 vivent **dans** cette table, donc versionnées avec le fit et son `as_of_date`. Commentaire SQL porté : *« Descriptif du passé du titre, aucune valeur prédictive. »*
+> **(b)** L'intervalle AR est calculé par **bootstrap par blocs** (400 tirages, blocs de 26, graine dérivée de l'instrument et de la date, donc reproductible), et non par inversion de Stock. Il est **anti-conservateur près de la racine unitaire** : sur Seb il ressort à [0.943 ; 0.968], qui exclut 1, alors que le DF-GLS ne rejette pas. **C'est le test qui a raison** - l'intervalle est affiché, le DF-GLS arbitre seul `fit_quality`.
+> **(c) `dfgls_pvalue` n'est pas persistée** alors que c'est elle, et non la statistique, qui alimente BHY et détermine `good`. Le verdict n'est donc pas reconstructible depuis la table - dette T10 du doc 09, qui entame P5 là où il compte.
+
+> **⚙ Résultat mesuré sur 57 titres : 38 `weak`, 19 `rejected`, 0 `good`.** Quatre titres rejettent la racine unitaire au seuil brut de 5% ; sur 54 tests, un taux de 7.4% est indiscernable du taux de faux positifs. BHY divise le seuil par 4.56 et n'en laisse passer aucun. **Aucun titre européen de l'univers ne présente de retour à la tendance statistiquement établi sur 20 ans** - le système dit qu'il ne sait pas, ce qui est le comportement voulu.
 
 ### 6.4 Couche qualité - groupes de pairs, scores et évaluations
 
@@ -491,6 +520,10 @@ create table peer_group_members (
 ```
 
 **`external_name` et `is_in_universe` traitent la limite la plus dangereuse du système** (doc 08 §7, L1) : les menaces concurrentielles réelles viennent presque toujours de l'extérieur de l'univers. Shark Ninja est américaine, BYD est chinoise, Revolut n'est pas cotée. Un groupe de pairs purement européen est structurellement aveugle, et `is_complete` le signale.
+
+> **⚙ Réel.** 6 groupes manuels seedés, **14 concurrents hors univers**, chacun avec au moins un extra-européen : SharkNinja et Midea face à Seb, BYD et Tesla face à BMW, Dow et LyondellBasell face à Arkema, TSMC et Applied Materials face à ASML et Infineon. Les 10 groupes sectoriels automatiques sont marqués incomplets par construction. **46 titres sur 57 n'ont aucun groupe manuel.**
+>
+> **Dette T9 :** tous les concurrents hors univers portent `"ca_musd": null`. Le refus de saisir des chiffres non sourcés est juste - *fabriquer la précision qu'on cherche à établir* - mais `relative_share` et `rank_by_revenue` **ne peuvent donc pas être calculés contre SharkNinja ou BYD**. `is_complete = true` autorise le passage en `solid` sur la base d'un classement resté purement européen : **le garde-fou anti-L1 est levé avant que le calcul qu'il protège ne soit possible.**
 
 ```sql
 -- Score de qualité, historisé au même titre que regression_fits
@@ -539,6 +572,16 @@ create index on quality_scores (as_of_date desc, quality_tier);
 **`as_of_date` ici aussi.** Le principe P5 s'applique à la qualité exactement comme au prix : dans trois ans, on voudra savoir si les titres classés `solid` en 2026 l'étaient encore en 2029. Cette information ne se reconstitue pas.
 
 **`regime` sépare le cyclique du reste, et c'est indispensable.** Arkema, BMW, Benetteau échouent à tous les tests de moat classiques et sont pourtant des cibles légitimes - Marie les recommande explicitement. Un cyclique se juge sur son ROIC **moyen de cycle**, jamais sur le dernier exercice.
+
+> **⚙ Réel - le régime est déclaré à la main, la déclaration prime sur la détection.** Deux bugs successifs ont montré que la détection automatique ne peut pas fonctionner sur 4 exercices. D'abord Arkema classé `eroding` donc value trap, alors que le doc 08 dit *bas de cycle, pas érosion*. Puis, après correction par la volatilité, l'inverse : un ROIC qui s'effondre de 18% à 2% a une volatilité très élevée et sortait `cyclical`, donc protégé du verdict d'érosion - **c'était exactement le cas Atos.**
+>
+> Un discriminant a été ajouté (`R2_TENDANCE_MONOTONE = 0.70` : un cycle redescend **et** remonte, un effondrement est monotone). Il est juste et nécessaire. **Mais il ne suffit pas** : avec quatre exercices, la fenêtre ne couvre souvent que la *descente* d'un cycle, et une descente de cycle est **statistiquement indiscernable d'une érosion**. C'est la limite L2 du doc 08 et **aucune amélioration du code ne la lève.** D'où `db/seeds/004_cycliques.sql` : 12 titres déclarés à la main via `instruments.attributes.regime_declare`, à revoir à huit exercices.
+>
+> *Réserve : cette déclaration n'est ni datée, ni sourcée, ni périmable - contrairement à `moat_assessments`. Un `regime_declare` posé en 2026 restera vrai indéfiniment sans que rien ne le rappelle.*
+
+> **⚙ Résultat mesuré : 49 `watch`, 7 `unqualified`, 1 `eroding`, 0 `solid`.** Régimes : 25 `rent`, 15 `cyclical`, 12 `no_moat`, 1 `eroding`, 4 `unknown`. **L'absence de `solid` est mécanique, pas empirique** : les deux garde-fous ci-dessous sont implémentés comme conditions bloquantes et la seconde n'est remplie par aucun titre.
+>
+> **Dette T2, la plus coûteuse du système :** `compute_quality.py` ne passe jamais `serie_part_relative` à l'évaluateur. `share_slope_5y` est toujours `null`, **l'érosion ne compte que 2 pentes sur 3**, et le niveau `erosion_flags = 3` - *érosion confirmée* - n'existe pas dans les données. Le quadrant value trap, décrit comme le plus important du système, n'a qu'un seul titre. Correction : une ligne d'appel.
 
 ```sql
 -- Le volet qualitatif : ce qui ne se calcule pas
@@ -598,13 +641,25 @@ create table data_quality_issues (
   ts_to          date,
   details        jsonb,
   resolved_at    timestamptz,
-  resolution     text
+  resolution     text,
+  -- ⚙ ajoutés (migrations 009 et 010) : cycle de vie
+  fingerprint    text,            -- empreinte stable : identité de l'anomalie à travers les recalculs
+  last_seen_at   timestamptz,
+  run_count      integer not null default 1,
+  resolved_kind  text             -- 'auto' | 'manual'
 );
+
+create unique index data_quality_issues_ouverte_unique
+  on data_quality_issues (fingerprint) where resolved_at is null;
 ```
+
+> **⚙ Réel - le cycle de vie des anomalies est né de deux défauts d'exploitation.** Une première version purgeait les anomalies non résolues avant chaque recalcul : une anomalie vue en août et toujours présente en octobre **perdait sa date de première détection**, et toute note de diagnostic disparaissait. Et une anomalie résolue à la main **réapparaissait au recalcul suivant**, la condition sous-jacente restant vraie - la liste ne diminuait jamais, la revue manuelle ne servait à rien. D'où `fingerprint` (identité stable), `run_count`, et `resolved_kind` qui distingue clôture automatique et acquittement humain. CLI de revue : `scripts/anomalies.py`, qui **refuse une clôture sans note**.
+>
+> **Dette T4 :** `record_rejections` écrit `issue_type='gap'` sans empreinte, or le job clôt automatiquement toute anomalie sans empreinte dont le type est recalculé - `gap` en fait partie. **Les barres écartées deviennent invisibles dès le contrôle suivant.**
 
 *`consecutive_weeks` répond à un point de l'avis critique : la décote n'est pas un événement mais un régime qui dure. Savoir qu'un titre est sous -2σ depuis 14 semaines est une information différente de sa première semaine, et c'est la brique de la distribution des temps de premier passage.*
 
-### 6.5 Journal d'ingestion
+### 6.6 Journal d'ingestion
 
 ```sql
 create table ingestion_runs (
@@ -648,6 +703,8 @@ create table positions (
 
 ## 8. Volumétrie récapitulative - univers v1
 
+> **⚙ Mesuré à 57 titres : 122 000 barres, 7 044 faits financiers, 33 concepts.** Backfill complet ~6 min, dominé par le débit ménagé vers yfinance et non par le calcul. Les estimations ci-dessous surévaluaient nettement le coût par ligne.
+
 | Table | Lignes estimées | Volume |
 |---|---:|---:|
 | `bars_1w` (30 ans) | 390 000 | ~45 Mo |
@@ -660,9 +717,9 @@ create table positions (
 | `moat_assessments` | 300 | < 1 Mo |
 | `fx_rates` | 60 000 | ~5 Mo |
 | Référentiel et divers | — | ~5 Mo |
-| **Total** | | **~110 Mo** |
+| **Total** | | **~110 Mo estimés · ⚙ ~15 Mo mesurés à 57 titres** |
 
-*La couche qualité ne pèse quasiment rien : elle est trimestrielle et porte sur 250 lignes. C'est le prix le plus bas du système pour la moitié de sa valeur.*
+*La couche qualité ne pèse quasiment rien : elle est trimestrielle et porte sur 57 lignes. C'est le prix le plus bas du système pour la moitié de sa valeur.*
 
 Sur 500 Mo disponibles en Supabase free. Marge confortable, y compris pour trois ans d'historisation des fits.
 
@@ -671,7 +728,7 @@ Sur 500 Mo disponibles en Supabase free. Marge confortable, y compris pour trois
 ## À challenger en priorité
 
 1. **Le modèle EAV pour les fondamentaux.** Il est flexible mais les requêtes sont plus lourdes à écrire qu'avec une table large. Alternative : table large avec 40 colonnes fixes + JSONB pour le reste. Plus simple à requêter, moins souple. Je penche pour l'EAV parce que trois sources hétérogènes doivent cohabiter, mais l'argument inverse est recevable.
-2. **Cours brut plutôt qu'ajusté.** C'est plus de travail au calcul. Je considère ce point comme non négociable, mais autant que ce soit explicite.
+2. **~~Cours brut plutôt qu'ajusté.~~ Amendé - voir doc 09 D-A.** Le cours nominal n'existe chez aucune source gratuite : on stocke `Close`, rétro-ajusté des splits, jamais `Adj Close`. Le principe protège la reproductibilité, pas le caractère nominal. Reste non négociable sous cette forme.
 3. **`regression_fits` historisée dès le jour 1.** C'est ma recommandation la plus forte de tout le document. Si tu ne devais retenir qu'une chose du modèle, ce serait ce champ `as_of_date`.
 4. **Le seuil de détection de dilution à +50% sur 12 mois** est arbitraire. À calibrer sur des cas réels - Atos, Casino, Solocal fournissent des exemples propres.
 5. **Régression en devise locale.** Défendable, mais ça complique la comparaison entre titres de zones différentes.

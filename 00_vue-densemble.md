@@ -23,7 +23,7 @@ Le livrable est un système qui répond à quatre questions - **deux sur le prix
 
 | Dimension | Décision v1 | Cible |
 |---|---|---|
-| Univers | ~250 titres Europe éligibles PEA | 60 000 valeurs, architecture prête |
+| Univers | **57 titres** Europe éligibles PEA (démarrage à 50, cible 250) | 60 000 valeurs, architecture prête |
 | Classes d'actifs | Actions uniquement | Actions, ETF, indices, matières premières, FX. *Crypto hors modèle - doc 07 §4* |
 | Analyse qualité | Volet quantitatif (ROIC, rente, érosion) | + volet qualitatif assisté LLM |
 | Base | Supabase free tier, si le volume tient | Postgres + TimescaleDB sur VPS |
@@ -52,11 +52,24 @@ Les tickers changent, sont réutilisés, diffèrent selon le provider. La clé m
 
 *Conséquence :* on ne perd pas l'historique quand une société change de nom, et on ne fusionne pas deux sociétés par accident.
 
-### P4 - Le prix brut est la vérité, l'ajusté est un calcul
+### P4 - On stocke la série la plus stable dans le temps, jamais une colonne recalculée à chaque événement
 
-On stocke le cours **non ajusté** plus les facteurs de corporate actions. On ne stocke jamais l'`adj_close` d'un provider comme donnée de référence.
+*Principe amendé après implémentation - voir doc 09 §3, D-A. La formulation initiale était : « on stocke le cours non ajusté ». Elle supposait que le cours nominal était disponible. Il ne l'est pas.*
 
-*Justification :* l'`adj_close` de Yahoo change rétroactivement à chaque dividende. Un backtest lancé en janvier et relancé en juin ne donne pas le même résultat. C'est un tueur silencieux de reproductibilité.
+Aucune source gratuite ne sert le cours nominal d'époque. La colonne `Close` de Yahoo est **rétro-ajustée des splits** : Dassault Systèmes cotait ~133€ en juin 2019, l'API renvoie 26.70€, soit divisé par le 5:1 de juillet 2021.
+
+**Ce que ce principe protège n'est pas le caractère nominal, c'est la reproductibilité.** Sur ce critère les deux colonnes de Yahoo se comportent en sens opposés :
+
+| Colonne | Réécrite à chaque | Fréquence réelle |
+|---|---|---|
+| `Adj Close` | dividende | plusieurs fois par an |
+| `Close` | split | 2 fois en 12 ans sur Dassault |
+
+On stocke donc **`Close`, jamais `Adj Close`**, et l'on ne dépend jamais d'une valeur recalculée rétroactivement à chaque événement. Un backtest lancé en janvier et relancé en juin doit donner le même résultat.
+
+**Conséquence : `factor_price = 1.0`.** Les splits étant déjà incorporés dans `Close`, appliquer en plus les ratios de `corporate_actions` diviserait la série une seconde fois. Air Liquide, qui distribue une action gratuite pour dix tous les deux ans, verrait son historique divisé par 1.1 à chaque opération. **C'est le type d'erreur qui ne se voit pas : la courbe reste lisse, seule la pente est fausse.**
+
+**Coût résiduel assumé :** la comparaison à un graphe affichant le cours nominal sera décalée d'un facteur multiplicatif constant - L'Oréal ÷20, EssilorLuxottica ÷20.44. Pour le test de superposition avec Hiboo, la règle de lecture est : *un écart constant valide la forme, un écart qui dérive dans le temps signale un vrai problème*.
 
 ### P5 - Le système génère son propre out-of-sample
 
@@ -65,6 +78,8 @@ Chaque semaine, on calcule et on **historise** les paramètres de régression de
 *Conséquence, et c'est le point le plus important de cette spec :* dans 12 mois tu disposes de 52 observations réellement hors échantillon, produites en temps réel, sans look-ahead possible. Dans 36 mois, d'un vrai track record. Coût aujourd'hui : une table et un champ `as_of_date`. Coût si on l'ajoute plus tard : impossible, l'information n'existe pas rétroactivement.
 
 C'est la validation de la méthode obtenue gratuitement, sans faire de backtest.
+
+**⚠ Ce principe est le seul du document qui ne s'auto-répare pas.** Il ne produit sa valeur que par régularité hebdomadaire, et l'orchestrateur n'est pas construit (lot L7). Un pipeline lancé à la main quand on y pense ne bâtit pas un jeu hors échantillon : **chaque semaine sans cron est une observation définitivement perdue.** C'est le seul élément de dette du projet qui ne se rattrape jamais - voir doc 09 §7.
 
 ### P6 - La méthode dépend de la classe d'actif, explicitement
 
@@ -77,11 +92,11 @@ Une droite log-linéaire sur 20 ans a un sens pour L'Oréal, pas pour le bitcoin
 ```
   SOURCES              INGESTION          STOCKAGE                CALCUL                RESTITUTION
 ┌──────────┐         ┌────────────┐    ┌────────────┐    ┌──────────────────┐    ┌────────────┐
-│ Stooq    │         │            │    │  RAW       │    │ PRIX (hebdo)     │    │ Streamlit  │
-│ yfinance │ ──────▶ │ collectors │──▶ │  bars      │──▶ │  régression      │─┐  │ matrice    │
-│ ESEF     │         │ normalise  │    │  fund.     │    │  z-score         │ │  │ qualité    │
-│ AMF      │         │ valide     │    │  actions   │    │  stationnarité   │ ├─▶│  × prix    │
-│ ECB (fx) │         │            │    │  shares    │    ├──────────────────┤ │  │            │
+│ yfinance │         │            │    │  RAW       │    │ PRIX (hebdo)     │    │ Streamlit  │
+│  ✅ seul │ ──────▶ │ collectors │──▶ │  bars      │──▶ │  régression      │─┐  │ matrice    │
+│ Stooq ✕  │         │ normalise  │    │  fund.     │    │  z-score         │ │  │ qualité    │
+│ ESEF  ⬜ │         │ valide     │    │  actions   │    │  stationnarité   │ ├─▶│  × prix    │
+│ AMF   ⬜ │         │            │    │  shares    │    ├──────────────────┤ │  │            │
 └──────────┘         └────────────┘    │  fx        │    │ QUALITÉ (trim.)  │ │  │ rapport    │
                             │          └────────────┘    │  leadership      │─┘  │ hebdo      │
                             ▼                 │          │  rente (ROIC)    │    └────────────┘
@@ -96,16 +111,18 @@ Une droite log-linéaire sur 20 ans a un sens pour L'Oréal, pas pour le bitcoin
                                                         └──────────┘ └──────────┘
 ```
 
+*État réel : ✅ construit · ✕ inaccessible (preuve de travail JavaScript, voir doc 09 D-B) · ⬜ non construit. `fx` et les déflateurs restent vides - l'univers est mono-devise.*
+
 **Deux fréquences de calcul distinctes, et c'est délibéré.** Le prix se recalcule chaque semaine ; la qualité se recalcule au rythme des publications de comptes, donc trimestriellement au plus. Recalculer la qualité chaque semaine créerait une illusion de mouvement là où il n'y en a pas.
 
 ## 5. Stratégie de stockage à deux températures
 
 C'est l'arbitrage qui permet de tenir dans 500 Mo tout en restant scalable.
 
-| Couche | Contenu | Support | Volume 250 titres |
+| Couche | Contenu | Support | Volume mesuré, 57 titres |
 |---|---|---|---|
-| **Chaud** | Hebdomadaire 30 ans + quotidien 3 ans | Postgres/Supabase | ~60 Mo |
-| **Froid** | Quotidien complet 30 ans, brut | Parquet sur VPS ou S3 | ~150 Mo |
+| **Chaud** | Hebdomadaire 30 ans + quotidien 3 ans | Postgres/Supabase | **~15 Mo** |
+| **Froid** | ~~Quotidien complet 30 ans~~ · *⚙ miroir du chaud (T8)* | Parquet sur VPS | ~15 Mo |
 
 **Pourquoi l'hebdomadaire suffit pour la régression.** Shiller & Perron (1985) ont montré que la puissance des tests sur séries temporelles dépend de **l'étendue temporelle, pas de la fréquence d'observation**. Passer du quotidien à l'hebdomadaire sur 30 ans fait perdre presque zéro information sur la tendance longue, et divise le volume par cinq. 1 560 points hebdomadaires sur 30 ans, c'est amplement suffisant pour estimer deux paramètres.
 
@@ -113,26 +130,31 @@ Le quotidien reste nécessaire sur la fenêtre récente, pour les signaux et l'e
 
 **Le froid n'est pas une sauvegarde, c'est la source de vérité.** Si on veut un jour du quotidien sur 30 ans, on recharge depuis Parquet sans retoucher au provider.
 
+> **⚙ Réel - dette T8 : il n'y a qu'une température.** `export_cold.py` relit `bars`, or aucun job ne télécharge de quotidien au-delà de 3 ans. L'archive Parquet est donc un **miroir exact** de la couche chaude, pas une couche plus profonde. La phrase ci-dessus décrit une capacité qui n'existe pas : recharger 30 ans de quotidien depuis Parquet est aujourd'hui impossible.
+
 ### Le calcul qui décide de Supabase
 
 Ligne de barre en Postgres, index compris : **~100 octets**.
 
 | Scénario | Lignes | Volume estimé |
 |---|---|---|
+| **57 titres, réel mesuré** | **122 000** | **~15 Mo** |
 | 250 titres, quotidien 30 ans | 1.9 M | ~200 Mo |
 | 250 titres, **stratégie deux températures** | 580 k | **~60 Mo** |
 | 1 500 titres, deux températures | 3.5 M | ~350 Mo |
 | 5 000 titres, deux températures | 11.6 M | ~1.2 Go |
 | 60 000 titres, deux températures | 140 M | ~14 Go |
 
-**Verdict : Supabase free tier tient confortablement pour la v1** (60 Mo sur 500 Mo disponibles), et reste viable jusqu'à environ 1 500 titres. Au-delà, bascule sur le VPS.
+**Verdict : Supabase free tier tient confortablement pour la v1**, et reste viable jusqu'à environ 1 000 titres. Au-delà, bascule sur le VPS.
+
+*Mesuré à 57 titres : 122 000 barres, 7 044 faits financiers, backfill des cours en ~6 min (cycle complet ~23 min). La marge est bien plus large que prévu - l'estimation initiale surévaluait le coût par ligne.*
 
 **Deux réserves sur Supabase free, à connaître avant de s'engager :**
 
 1. **Pause automatique après 7 jours sans requête.** Un cron hebdomadaire suffit à l'éviter, mais si le cron échoue deux fois, le projet se met en pause et demande une réactivation manuelle. *Mitigation : un ping quotidien trivial, indépendant du pipeline principal.*
 2. **500 Mo de RAM partagée et snapshots sur 7 jours seulement.** Les calculs lourds ne doivent pas tourner dans la base. *Mitigation : le moteur analytique tourne en Python côté VPS, la base ne fait que stocker.*
 
-**Décision d'architecture qui en découle : rester en Postgres strictement standard.** Aucune fonctionnalité propriétaire Supabase dans le schéma. La migration vers le VPS doit être un `pg_dump | psql`, pas un chantier.
+**Décision d'architecture qui en découle : rester en Postgres strictement standard.** *⚙ Tenue : aucune fonctionnalité propriétaire Supabase dans le schéma livré.* La migration vers le VPS doit être un `pg_dump | psql`, pas un chantier.
 
 ## 6. Ce que la v1 ne fait délibérément pas
 
@@ -157,6 +179,9 @@ Ligne de barre en Postgres, index compris : **~100 octets**.
 | 7 | `04_screener-dashboard.md` | Écrans, filtres, rapport hebdomadaire |
 | 8 | `05_roadmap-et-lot.md` | Découpage en lots livrables, estimation d'effort |
 | 9 | `06_décisions-et-points-ouverts.md` | Arbitrages assumés et questions non tranchées |
+| 10 | `09_etat-implementation-et-ecarts.md` | **État réel du code, écarts, registre de dette** |
+
+*Le doc 09 est le seul à décrire le système tel qu'il est plutôt que tel qu'il devrait être. À lire avant toute reprise de développement.*
 
 ---
 

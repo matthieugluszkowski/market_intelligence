@@ -1,6 +1,8 @@
 # 07 - Expression de besoin, périmètre et couverture
 
-**Ce document est le point d'entrée du jeu de specs.** Il énonce ce qui est demandé, avant que les documents 00 à 06 et 08 n'énoncent comment le faire. La numérotation reflète l'ordre de production, pas l'ordre de lecture - voir §8.
+**Ce document est le point d'entrée du jeu de specs.** Il énonce ce qui est demandé, avant que les documents 00 à 06, 08 et 09 n'énoncent comment le faire. La numérotation reflète l'ordre de production, pas l'ordre de lecture - voir §8.
+
+> **⚙ État au 19 août 2026 : le système est construit jusqu'au lot L6b.** 57 titres, 122 000 barres, 7 044 faits financiers, 169 tests, 3 écrans. L7 à L9 non entamés - donc **ni orchestration, ni rapport hebdomadaire**. Les critères de succès du §7 ne sont pas encore cochés : voir doc 09 pour l'état réel et le registre de dette.
 
 ---
 
@@ -139,13 +141,13 @@ Traitement explicite des cinq pools, parce qu'écarter sans dire pourquoi serait
 
 | Besoin | Couvert par | Phase |
 |---|---|---|
-| B1 - Stock picking PEA | Docs 01 à 05, univers Europe PEA | v1 |
+| B1 - Stock picking PEA | Docs 01 à 05, univers Europe PEA. *⚙ 57 titres* | v1 |
 | B2 - Aide à la décision | Doc 04, matrice qualité × prix du doc 08 | v1 |
 | B3 - Rapport hebdomadaire | Doc 04 §4, job `weekly_full` du doc 02 | v1 |
 | B4 - Méthode de décote | Doc 03 §1 à §5 | v1 |
-| B5 - Ne pas payer | Doc 02, sources gratuites. *Réserve : 4€ un mois pour valider contre la référence, doc 06 PO8* | v1 |
-| B6 - VPS et gratuit | Doc 00 §5, Supabase free ~107 Mo sur 500 | v1 |
-| B7 - Pas à pas | Doc 05, 9 lots, chacun observable | v1 |
+| B5 - Ne pas payer | Doc 02, sources gratuites. *⚙ Tenu à 100%. Réserve : 4€ un mois pour valider contre la référence - **toujours pas fait**, doc 06 PO8* | v1 |
+| B6 - VPS et gratuit | Doc 00 §5, Supabase free. *⚙ ~15 Mo mesurés sur 500* | v1 |
+| B7 - Pas à pas | Doc 05, 11 lots, chacun observable. *⚙ 8 faits* | v1 |
 | **B8 - Analyse concurrentielle** | **Doc 08 en entier** | v1 partiel, phase 2 pour le qualitatif |
 | B9 - Multi-actifs | §4 ci-dessus, `asset_classes` et `regression_policies` du doc 01 | v1 structurel, phase 3 effectif |
 | B10 - Quand acheter un ETF | §4 ci-dessus, régression sur l'indice répliqué | Phase 3 |
@@ -160,10 +162,12 @@ Traitement explicite des cinq pools, parce qu'écarter sans dire pourquoi serait
 Ce à quoi on jugera le projet, sur trois horizons. **À fixer maintenant, parce qu'après on s'arrange toujours avec ses critères.**
 
 ### À 3 mois - le système existe
-- [ ] Le cycle hebdomadaire tourne sans intervention manuelle
-- [ ] Un rapport arrive chaque dimanche
-- [ ] Le graphe d'un titre est superposable à celui de Hiboo, aux conventions d'ajustement près
-- [ ] Au moins une décision d'investissement a été éclairée par l'outil
+- [ ] Le cycle hebdomadaire tourne sans intervention manuelle · **⚙ non : lot L7 non fait, un seul cron installé (keepalive)**
+- [ ] Un rapport arrive chaque dimanche · **⚙ non : L7**
+- [ ] Le graphe d'un titre est superposable à celui de Hiboo · **⚙ non constaté** - l'export de comparaison existe, l'abonnement à 4€ n'a pas été pris
+- [ ] Au moins une décision d'investissement a été éclairée par l'outil · *à toi de le dire*
+
+> **⚙ Ce qui est acquis en revanche et n'était pas au tableau :** le système dit qu'il ne sait pas. 0 `good` sur 57 titres, 0 `solid`. C'est le comportement voulu, et c'est ce qu'un screener ordinaire n'aurait jamais dit.
 
 ### À 12 mois - le système accumule
 - [ ] 52 clichés hebdomadaires historisés dans `regression_fits`
@@ -197,6 +201,7 @@ La numérotation reflète l'ordre de production. L'ordre de lecture est celui-ci
 | 7 | **04 - Screener et dashboard** | La restitution |
 | 8 | **05 - Roadmap et lots** | Comment on le construit |
 | 9 | **06 - Décisions et points ouverts** | Ce qui reste à trancher |
+| 10 | **09 - État d'implémentation et écarts** | **Le système tel qu'il est.** À lire avant toute reprise de développement |
 
 ---
 

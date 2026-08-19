@@ -1,5 +1,7 @@
 # 08 - Position concurrentielle, leadership et qualité
 
+> **État : implémenté (lot L6b).** 57 scores, 6 groupes de pairs manuels avec 14 concurrents hors univers. Résultats : 49 `watch`, 7 `unqualified`, 1 `eroding`, **0 `solid`**. Écarts signalés en ligne par des blocs `⚙ Réel` ; registre complet doc 09.
+
 > *« Il faut acheter une action de qualité, et globalement la qualité c'est la position concurrentielle. »*
 > *« Choisis un leader et regarde si sa position concurrentielle est durable. »*
 > — Marie de Raismes
@@ -97,7 +99,7 @@ persistance = nombre d'exercices où ROIC > seuil, sur les N disponibles
 
 Un ROIC à 25% une année sur cinq est un accident cyclique. Un ROIC à 14% cinq années sur cinq est une barrière.
 
-*Contrainte à assumer : avec 5 ans de fondamentaux gratuits, on mesure la persistance sur 5 points. C'est court. C'est le meilleur argument en faveur du régime B - l'extraction PDF sur 15 ans pour les titres réellement suivis - ou d'un abonnement données.*
+*Contrainte à assumer : avec 5 ans de fondamentaux gratuits, on mesure la persistance sur 5 points - **⚙ 4 exercices en pratique**. C'est court. C'est le meilleur argument en faveur du régime B - l'extraction PDF sur 15 ans pour les titres réellement suivis - ou d'un abonnement données.*
 
 ### 4.3 Pricing power par la stabilité de la marge brute
 
@@ -128,6 +130,14 @@ Un ROIC très volatil ne signifie pas absence de qualité - il signifie **cyclic
 
 **Règle dérivée :** un titre marqué `cyclical` est évalué sur le ROIC **moyen sur cycle complet**, jamais sur le dernier exercice, et son érosion se mesure de pic à pic.
 
+> **⚙ Réel : le régime est déclaré à la main, et c'est le bon choix.** La détection automatique a produit deux erreurs symétriques. D'abord Arkema classé `eroding` donc value trap, alors que ce document dit *bas de cycle, pas érosion*. Puis, après correction par la volatilité, l'inverse : un ROIC qui s'effondre de 18% à 2% a une volatilité très élevée et sortait `cyclical`, donc protégé du verdict d'érosion - **c'était exactement le cas Atos.**
+>
+> Un discriminant a été ajouté et il est juste : **un cycle redescend et remonte, un effondrement est monotone** (`R2_TENDANCE_MONOTONE = 0.70`). **Mais il ne suffit pas.** Avec quatre exercices, la fenêtre ne couvre souvent que la *descente* d'un cycle, et une descente de cycle est **statistiquement indiscernable d'une érosion** : même pente, même monotonie. C'est la limite Lim2 de ce document, et aucune amélioration du code ne la lève.
+>
+> D'où 12 cycliques déclarés à la main - *ce document les identifie lui-même par leur métier, pas par un test*. À revoir à huit exercices.
+>
+> **Ni le ROIC moyen de cycle ni l'érosion pic-à-pic ne sont implémentés** : un cyclique renvoie `watch` sans condition, avec le motif `erosion_non_mesuree_sur_cyclique_historique_trop_court`.
+
 ### 4.5 Proxies d'actifs incorporels
 
 | Source du moat | Proxy |
@@ -155,6 +165,8 @@ L'érosion est la **tendance**, pas le niveau. Trois pentes, calculées par rég
 | Pente de la marge brute | Le pricing power se dégrade-t-il ? |
 | Pente de la part de marché relative | Le leader perd-il du terrain ? |
 
+> **⚙ Dette T2, la plus coûteuse du système : l'érosion ne compte que deux pentes sur trois.** `compute_quality.py` ne passe jamais la série de part de marché relative à l'évaluateur. `share_slope_5y` est toujours `null`, **`erosion_flags` est borné à 2, et le niveau 3 - « érosion confirmée » - n'existe pas dans les données.** Aggravant : la deuxième pente exige la marge brute, que la limite Lim4 signale comme irrégulièrement publiée en Europe. **Le quadrant value trap n'a qu'un seul titre.** Correction : une ligne d'appel.
+
 ```
 erosion_flags = nombre de pentes significativement négatives (0 à 3)
 
@@ -164,7 +176,7 @@ erosion_flags = nombre de pentes significativement négatives (0 à 3)
 3    → érosion confirmée : la décote n'est pas une opportunité
 ```
 
-*« Significativement négative » : pente négative dont l'intervalle de confiance à 90% exclut zéro. Sur 5 points, ce test est peu puissant - il ne détectera que les érosions franches. C'est assumé : mieux vaut manquer une érosion douteuse que crier au loup sur du bruit.*
+*« Significativement négative » : pente négative dont l'intervalle de confiance à 90% exclut zéro. Sur 4 à 5 points, ce test est peu puissant - il ne détectera que les érosions franches. C'est assumé : mieux vaut manquer une érosion douteuse que crier au loup sur du bruit.*
 
 ### 5.2 Pourquoi c'est le croisement qui décide
 
@@ -206,6 +218,8 @@ L'écran qui manquait au dashboard.
             └───────────────────────┴───────────────────────┘
 ```
 
+> **⚙ Le seul value trap détecté est LVMH** - ROIC 22.3% → 15.2% et marge brute 68.4% → 66.2% entre 2022 et 2025, les deux pentes significatives à 90%. **À lire avec trois réserves** : le ROIC reste à 15.2%, soit près du double du seuil de 8% ; la fenêtre ne compte que 4 points et démarre en 2022, année de base post-Covid atypique ; la borne haute de l'intervalle sur la marge brute est à −0.0000, soit une significativité tout juste atteinte.
+
 **Le quadrant en bas à gauche est le plus important du système.** Il ne se contente pas d'être exclu : il est **affiché**, avec le motif. C'est la liste des titres qui ont l'air d'opportunités et n'en sont pas, et la voir chaque semaine vaut mieux que ne pas la voir.
 
 Deux quadrants supplémentaires implicites, à traiter à part : les **cycliques en bas de cycle** (Arkema) et les **cycliques en haut de cycle**, où la lecture s'inverse - un ROIC au plus haut sur un cyclique est un signal de vente, pas de qualité.
@@ -214,9 +228,9 @@ Deux quadrants supplémentaires implicites, à traiter à part : les **cycliques
 
 ## 7. Les limites, dites franchement
 
-### L1 - L'univers n'est pas le marché *(la limite la plus sérieuse)*
+### Lim1 - L'univers n'est pas le marché *(la limite la plus sérieuse)*
 
-Le groupe de pairs est construit à partir des 250 titres européens de la base. **Or les menaces concurrentielles les plus dangereuses viennent presque toujours de l'extérieur de cet univers.**
+Le groupe de pairs est construit à partir des **57 titres européens** de la base. **Or les menaces concurrentielles les plus dangereuses viennent presque toujours de l'extérieur de cet univers.**
 
 Les cas du podcast le démontrent tous :
 - **Shark Ninja**, l'agresseur de Seb, est une société américaine
@@ -226,23 +240,23 @@ Les cas du podcast le démontrent tous :
 **Un screener sectoriel automatique va donc systématiquement sous-estimer la menace concurrentielle**, et il le fera de façon d'autant plus rassurante que le titre reste leader dans un univers qui ne contient pas son concurrent.
 
 **Mitigation, en trois niveaux :**
-1. `peer_groups` définis **manuellement** pour les 20 à 30 titres réellement suivis, incluant des concurrents hors univers, y compris non cotés
+1. `peer_groups` définis **manuellement** pour les titres réellement suivis *(⚙ réel : 6 groupes, 13 titres sur 57 ; **46 n'ont aucun groupe manuel**)*, incluant des concurrents hors univers, y compris non cotés
 2. les pairs hors univers portent leurs données en saisie manuelle ou par extraction, sans série de prix
 3. **au moins un concurrent hors Europe est obligatoire** dans tout groupe de pairs qualifié - un groupe purement européen est marqué comme incomplet
 
-### L2 - Cinq ans de fondamentaux, c'est court pour une notion de durabilité
+### Lim2 - Cinq ans de fondamentaux, c'est court pour une notion de durabilité
 
-La persistance mesurée sur 5 points est faible. La contradiction est réelle : on prétend juger de la durabilité avec une fenêtre courte.
+La persistance mesurée sur 4 à 5 points est faible. La contradiction est réelle : on prétend juger de la durabilité avec une fenêtre courte.
 
 *C'est le meilleur argument pour le régime B, et c'est aussi le seul endroit du projet où j'estime qu'une dépense de données serait justifiée. Pas pour les cours - ils sont gratuits - mais pour 15 à 20 ans de ROIC.*
 
-### L3 - Le moat quantitatif mesure le passé
+### Lim3 - Le moat quantitatif mesure le passé
 
 Un ROIC élevé et persistant est la trace d'une barrière **qui a existé**. Il ne dit rien de sa résistance à une rupture technologique. C'est précisément le biais rétrospectif que le projet combat sur le prix, et il faut reconnaître qu'on l'accepte partiellement ici.
 
 *C'est ce qui rend la jambe qualitative non optionnelle : elle est le seul endroit où l'on peut écrire « cette barrière est menacée par X », et X n'est jamais dans les comptes.*
 
-### L4 - Les données sectorielles européennes sont irrégulières
+### Lim4 - Les données sectorielles européennes sont irrégulières
 
 La marge brute n'est pas toujours publiée sous une forme comparable. Les segments opérationnels varient. La classification ICB range parfois mal - Seb en biens de consommation durables, avec des pairs peu comparables.
 
@@ -265,6 +279,10 @@ Ce qui ne se calcule pas mais se structure.
 | Groupe de pairs de référence | Y compris hors univers |
 | Auteur, date, confiance | |
 | **Date d'expiration** | Évaluation périmée au-delà de 18 mois |
+
+> **⚙ Aucune évaluation qualitative n'est saisie, et c'est ce qui vide le quadrant cible.** Les deux garde-fous - concurrent hors Europe dans le groupe de pairs, et évaluation revue par un humain - sont implémentés comme conditions **bloquantes** du niveau `solid`. La seconde n'est remplie par aucun titre. **L'absence de `solid` est donc mécanique, pas empirique.**
+>
+> **Dette T9 :** les 6 groupes manuels sont marqués `is_complete = true` alors que tous les concurrents hors univers portent `"ca_musd": null`. Le refus de saisir des chiffres non sourcés est juste, mais `relative_share` et `rank_by_revenue` **ne peuvent donc pas être calculés contre SharkNinja ou BYD** : le garde-fou anti-Lim1 est levé avant que le calcul qu'il protège ne soit possible.
 
 ### 8.2 Pourquoi la date d'expiration compte
 
@@ -316,6 +334,6 @@ Le prix vient bien en second dans la sélection, même si le signal de prix est 
 1. **Seuil de coût du capital fixe à 8% plutôt que WACC par titre.** Je défends fermement ce choix : un WACC estimé titre par titre est un chiffre bruité déguisé en précision. Mais c'est discutable, et le seuil relatif au secteur est probablement le meilleur des deux.
 2. **L'érosion à trois pentes sur 5 ans est peu puissante.** Elle ne détectera que les cas francs. Alternative : abaisser le seuil de significativité, au prix de faux positifs.
 3. **Le régime cyclique distinct** est indispensable mais introduit une classification supplémentaire - qui décide qu'un titre est cyclique ? Proposition : volatilité du ROIC au-delà d'un seuil, avec surcharge manuelle.
-4. **L'obligation d'un concurrent hors Europe dans tout groupe de pairs.** Contraignant, mais c'est le seul remède à la limite L1, qui est la plus dangereuse du document.
+4. **L'obligation d'un concurrent hors Europe dans tout groupe de pairs.** Contraignant, mais c'est le seul remède à la limite Lim1, qui est la plus dangereuse du document.
 5. **La fréquence trimestrielle de la qualité.** Tu voudras peut-être la voir bouger plus souvent. Ma position : elle ne bouge pas plus souvent, et prétendre le contraire serait du bruit.
 6. **Les 5 ans de fondamentaux gratuits sont le vrai plafond de ce document.** Si un poste de dépense doit être accepté dans tout le projet, c'est celui-là - 15 à 20 ans de ROIC - et non les cours, qui sont gratuits.
