@@ -26,14 +26,79 @@ Spécification complète dans les documents à la racine. **Ordre de lecture :**
 
 Détail et critères d'acceptation : `05_roadmap-et-lot.md`.
 
-## Démarrage
+## Lancer le dashboard
+
+La base est peuplée : il n'y a rien à recalculer pour consulter le système.
+
+```bash
+.venv/Scripts/python.exe -m streamlit run dashboard/Screener.py
+```
+
+→ **http://localhost:8501**, trois écrans dans la barre latérale : screener,
+fiche instrument, matrice qualité × prix.
+
+**Par où commencer pour juger si le système dit vrai :**
+
+| Écran | Ce qu'il faut y regarder |
+|---|---|
+| Fiche → **Seb** | z = −2,16, sous −2σ depuis 46 semaines — le plus long épisode observé sur ce titre |
+| Fiche → **LVMH**, bloc D | le seul value trap, avec ses trois pentes affichées séparément |
+| Fiche → **BMW** | titre sans split : c'est le graphe à superposer à Hiboo |
+| Matrice | quadrant CIBLE vide, et le bandeau qui dit pourquoi |
+
+## Installation depuis zéro
 
 ```bash
 python -m venv .venv
-.venv/Scripts/python.exe -m pip install -e ".[dev]"   # Windows
-cp .env.example .env                                   # puis renseigner
+.venv/Scripts/python.exe -m pip install -e ".[dashboard,dev]"   # Windows
+cp .env.example .env                                            # puis renseigner
 .venv/Scripts/python.exe scripts/migrate.py
 .venv/Scripts/python.exe -m pytest tests/ -q
+```
+
+## Reconstruire la base, dans l'ordre
+
+Les dépendances entre jobs sont réelles : les facteurs d'ajustement ont besoin
+des dividendes, les régressions ont besoin des barres et des anomalies, la
+qualité a besoin des fondamentaux. Cet ordre est le seul qui fonctionne.
+
+```bash
+python scripts/migrate.py                    # schéma + seeds       instantané
+python scripts/verify_universe.py            # vérifie les 57       ~3 min
+python scripts/load_universe.py              # charge le vérifié    instantané
+python scripts/backfill_prices.py            # 122 000 barres       ~6 min
+python scripts/ingest_corporate_actions.py   # + facteurs           ~7 min
+python scripts/ingest_fundamentals.py        # 7 000 faits          ~7 min
+python scripts/quality_checks.py             # 9 contrôles          ~10 s
+python scripts/compute_fits.py               # 57 régressions       ~2 min
+python scripts/compute_quality.py            # 57 scores qualité    ~30 s
+python scripts/export_cold.py                # archive Parquet      ~20 s
+```
+
+Tous sont **idempotents** : les relancer ne produit ni doublon ni écrasement.
+Le temps est dominé par le débit ménagé vers yfinance, pas par le calcul.
+
+## Cycle courant
+
+```bash
+python scripts/backfill_prices.py --freq 1w  # nouvelles barres de la semaine
+python scripts/compute_fits.py               # nouvelle ligne dans regression_fits
+python scripts/quality_checks.py             # anomalies
+python scripts/anomalies.py                  # les traiter
+```
+
+`compute_quality.py` se relance au rythme des publications de comptes, pas chaque
+semaine. `compute_fits.py` **insère** une ligne par exécution et n'en réécrit
+jamais aucune : c'est le principe P5, et c'est ce qui produira 52 observations
+hors échantillon dans un an.
+
+## Vérifications
+
+```bash
+python scripts/verify_ratios.py                    # recoupe les ratios
+python scripts/export_comparaison.py EQ:DE:BMW     # série exacte pour Hiboo
+python scripts/migrate.py --status                 # volumétrie de toutes les tables
+python -m pytest tests/ -q                         # 169 tests
 ```
 
 ## Structure
