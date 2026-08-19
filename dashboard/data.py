@@ -134,6 +134,68 @@ def historique_des_fits(internal_code: str) -> pd.DataFrame:
 
 
 @st.cache_data(ttl=TTL)
+def fondamentaux(internal_code: str, as_of: date) -> dict:
+    """Ratios point-in-time et verdict de coherence (doc 04, bloc E).
+
+    Le point-in-time est applique ici comme ailleurs : seuls les faits dont
+    `published_at <= as_of` entrent dans le calcul. Un ecran qui afficherait les
+    comptes 2025 sur une fiche datee de janvier 2025 mentirait sur ce que le
+    systeme savait a cette date.
+    """
+    from market_intelligence.analytics import ratios as R
+
+    with connect() as conn, conn.cursor() as cur:
+        cur.execute("select id, sector_code from instruments where internal_code = %s",
+                    (internal_code,))
+        ligne = cur.fetchone()
+        if ligne is None:
+            return {}
+        instrument_id, sector_code = ligne
+
+        cur.execute(
+            """
+            select (select b.close from bars b
+                     where b.instrument_id = %(id)s and b.freq = '1w'
+                       and b.ts <= %(as_of)s
+                     order by b.ts desc limit 1) as cours,
+                   (select o.shares from shares_outstanding o
+                     where o.instrument_id = %(id)s and o.as_of <= %(as_of)s
+                     order by o.as_of desc limit 1) as actions
+            """,
+            {"id": instrument_id, "as_of": as_of},
+        )
+        cours, actions = cur.fetchone()
+        capitalisation = (float(cours) * float(actions)
+                          if cours is not None and actions is not None else None)
+
+        f = R.charge(cur, instrument_id, as_of)
+        if not f.exercices:
+            return {}
+        r = R.ratios(f, capitalisation=capitalisation,
+                     cours=float(cours) if cours else None, sector_code=sector_code)
+        coherence = R.coherence_prix_fondamentaux(f, r)
+
+        cur.execute(
+            """
+            select ff.concept_code, ff.period_end, ff.value, ff.published_at,
+                   ff.published_at_estimated, ff.confidence, ds.code as source
+              from financial_facts ff
+              join data_sources ds on ds.id = ff.source_id
+             where ff.instrument_id = %(id)s and ff.published_at <= %(as_of)s
+               and ff.concept_code in ('revenue', 'ebit', 'ebitda', 'net_income',
+                                       'total_equity', 'net_debt', 'fcf', 'shares_basic')
+             order by ff.period_end desc, ff.concept_code
+            """,
+            {"id": instrument_id, "as_of": as_of},
+        )
+        colonnes = [d.name for d in cur.description]
+        faits = pd.DataFrame(cur.fetchall(), columns=colonnes)
+
+    return {"ratios": r, "coherence": coherence, "faits": faits,
+            "capitalisation": capitalisation, "exercices": f.exercices}
+
+
+@st.cache_data(ttl=TTL)
 def anomalies(internal_code: str) -> pd.DataFrame:
     return _frame(
         """

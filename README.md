@@ -20,7 +20,8 @@ Spécification complète dans les documents à la racine. **Ordre de lecture :**
 | **L3** | Corporate actions, facteurs, 9 contrôles qualité | **fait** |
 | **L4** | Moteur analytique, diagnostics, `regression_fits` | **fait** |
 | **L5** | Screener et fiche instrument (Streamlit) | **fait** |
-| L6 / L6b | Fondamentaux régime A / couche qualité | à faire |
+| **L6** | Fondamentaux régime A, ratios, bloc E | **fait** (hors parseur ESEF) |
+| L6b | Couche qualité et position concurrentielle | à faire |
 | L7 | Orchestration et rapport hebdomadaire | à faire |
 
 Détail et critères d'acceptation : `05_roadmap-et-lot.md`.
@@ -473,6 +474,104 @@ que les bandes soient des gris neutres et non une teinte de série, qu'aucun fil
 ne soit pointillé, que chaque statut porte icône et libellé — la couleur ne
 portant jamais seule l'information — et que tout motif produit par le moteur ait
 une traduction en clair.
+
+## Fondamentaux régime A (L6)
+
+```bash
+python scripts/ingest_fundamentals.py   # ~30 concepts sur 5 exercices, tout l'univers
+python scripts/verify_ratios.py         # recoupement des ratios
+```
+
+7 044 faits financiers, 33 concepts, **100 % des titres avec ≥ 3 exercices** de
+chiffre d'affaires et de résultat net (seuil du doc : 80 %).
+
+### Le principe P2 mis en danger, et comment il est sauvé
+
+**yfinance ne sert aucune date de publication.** Ses tableaux sont indexés par
+fin d'exercice, point. C'est un problème direct pour P2 : sans date de
+publication, « le look-ahead bias est structurel et irrattrapable ».
+
+Deux réactions possibles, une seule est acceptable :
+
+1. Stocker `period_end` comme `published_at`. **Interdit** — cela ferait croire
+   que les comptes 2024 étaient connus au 31 décembre 2024, alors qu'ils ne le
+   sont qu'en mars 2025. Du look-ahead pur, et invisible.
+2. Estimer une **borne supérieure**. La directive Transparence impose quatre mois
+   aux émetteurs européens ; `period_end + 122 jours` est une date à laquelle
+   l'information était certainement disponible.
+
+**L'asymétrie est ce qui rend l'option 2 sûre.** Errer tard ne produit qu'un
+excès de prudence — on s'interdit un fait qu'on connaissait déjà. Errer tôt
+fabrique du look-ahead. On erre donc délibérément du côté tardif, et
+`published_at_estimated` garde la trace pour le jour où une source servira les
+vraies dates.
+
+### Le recoupement, décomposé plutôt que constaté
+
+Le critère demande de recouper « une source indépendante ». La référence est
+Yahoo (`trailingPE`, `priceToBook`, `profitMargins`, `marketCap`) : même
+fournisseur, mais **chemin de calcul différent** — il agrège ses trimestriels
+glissants, nous partons des états annuels. Une divergence révèle donc une erreur
+de mapping, de signe ou de convention.
+
+| | Résultat |
+|---|---|
+| Capitalisation | **écart 0,0 %** sur les 10 titres |
+| Price/Book | 1,8 % à 3,7 % |
+| Marge nette (12 mois recalculés) | **0,0 %** sur AB InBev, adidas, BMW, Infineon |
+| Concordance globale | 85,7 % sur 35 comparaisons |
+
+Le script ne se contente pas de constater les écarts, il les **décompose** : il
+recalcule le douze-mois-glissant depuis les comptes trimestriels et vérifie que
+c'est bien lui que Yahoo affiche. Vérifié sur AB InBev — 14,90 % des deux côtés,
+identiques. La divergence est une différence de base, pas une erreur
+d'arithmétique. Sans cette décomposition, un vrai bug de mapping serait
+indiscernable d'un écart de période.
+
+Nous restons sur le **dernier exercice clos**, seule base compatible avec le
+point-in-time : les trimestriels n'ont pas de date de publication exploitable.
+
+### Ce que le recoupement a révélé : les financières
+
+Allianz sortait à 25 % d'écart sur la marge nette, là où les industriels tombaient
+à 0,0 %. Ce n'est pas un bug : **la notion de chiffre d'affaires n'a pas de
+définition stable pour un assureur** — primes brutes, primes acquises, produit net
+bancaire, chaque agrégateur choisit autrement.
+
+Marge brute, opérationnelle et nette, EV/CA, EV/EBIT, dette nette sur EBITDA,
+gearing et couverture des intérêts sont donc mis à `None` pour le secteur ICB 30,
+et le critère de levier y est neutralisé — une banque a structurellement un levier
+de 15 à 20, elle sortirait en `suspect` à chaque passage pour une raison qui n'en
+est pas une. PER, P/B, ROE, croissance et distribution gardent leur sens et
+restent calculés.
+
+### Verdicts de cohérence, et une réserve sur leur lecture
+
+| Verdict | Titres |
+|---|---|
+| `confirmé` | 35 |
+| `suspect` | 17 |
+| `indéterminable` | 5 |
+
+**Un critère qu'on ne peut pas évaluer n'est jamais compté comme réussi** : il
+sort en `indéterminable`, pas en `confirmé`. Traiter l'absence de donnée comme un
+succès est la façon la plus courante de fabriquer un faux signal.
+
+**La réserve.** Presque tous les `suspect` le sont pour `ca_non_decroissant`, et
+la fenêtre de 3 ans démarre en 2022 — l'année du pic d'inflation et des prix de
+l'énergie. BASF, Engie, Iberdrola, Arkema, Telefónica affichent mécaniquement une
+croissance négative parce que leur base de départ est exceptionnelle, pas parce
+qu'elles se délitent. **Ce critère est à relire quand cinq exercices pleins
+seront disponibles hors année de base atypique**, ou à calibrer sur une médiane
+sectorielle plutôt que sur zéro.
+
+### Ce qui n'est pas fait dans L6
+
+**Le parseur XBRL/ESEF.** Le doc 05 l'inclut dans le lot ; il ne l'est pas ici.
+yfinance couvre le critère d'acceptation à 100 %, et ESEF n'ajouterait de la
+profondeur que depuis 2021. Le vrai argument pour le faire un jour n'est pas la
+couverture : **ESEF porte les vraies dates de dépôt**, ce qui supprimerait
+l'estimation décrite plus haut pour tous les exercices postérieurs à 2021.
 
 ## Principes non négociables
 

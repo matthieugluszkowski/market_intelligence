@@ -213,6 +213,107 @@ st.markdown(
 )
 
 # --------------------------------------------------------------------------- #
+# Bloc E - Fondamentaux (regime A)
+# --------------------------------------------------------------------------- #
+st.subheader("E · Fondamentaux")
+
+fonda = data.fondamentaux(choix, as_of)
+if not fonda:
+    st.info("Aucun fondamental connu a cette date. "
+            "Lancer `python scripts/ingest_fundamentals.py`.")
+else:
+    r, coherence = fonda["ratios"], fonda["coherence"]
+
+    couleurs = {"confirme": "#0ca30c", "suspect": "#d03b3b", "indeterminable": "#fab219"}
+    icones = {"confirme": "●", "suspect": "■", "indeterminable": "▲"}
+    libelles = {
+        "confirme": "Signal coherent avec les fondamentaux",
+        "suspect": "Signal suspect : value trap potentiel",
+        "indeterminable": "Coherence non evaluable : donnees incompletes",
+    }
+    verdict = coherence.verdict
+    st.markdown(
+        f"<span class='pastille' style='color:{couleurs[verdict]};"
+        f"border-color:{couleurs[verdict]}'>{icones[verdict]} {libelles[verdict]}"
+        f"</span>", unsafe_allow_html=True,
+    )
+
+    detail = [{"Critere": nom, "Resultat": "tenu" if ok else "EN ECHEC"}
+              for nom, ok in coherence.criteres.items()]
+    detail += [{"Critere": nom, "Resultat": "non evaluable"}
+               for nom in coherence.manquants]
+    st.dataframe(pd.DataFrame(detail), use_container_width=True, hide_index=True)
+
+    if verdict == "suspect":
+        st.markdown(
+            "<div class='avertissement'>Ce titre a l'air decote et un critere "
+            "fondamental est en echec. <b>Sortir les signaux suspects est aussi "
+            "utile que sortir les bons</b> : c'est la liste des titres qui ont "
+            "l'air d'opportunites et n'en sont pas, et c'est la qu'on perd de "
+            "l'argent.</div>", unsafe_allow_html=True)
+    elif verdict == "indeterminable":
+        st.markdown(
+            "<div class='avertissement'>Un critere qu'on ne peut pas evaluer n'est "
+            "pas un critere reussi. Traiter l'absence de donnee comme un succes est "
+            "la facon la plus courante de fabriquer un faux signal.</div>",
+            unsafe_allow_html=True)
+
+    familles = {
+        "Valorisation": [("PER", "per", "x"), ("EV/EBIT", "ev_ebit", "x"),
+                         ("EV/CA", "ev_revenue", "x"), ("P/B", "price_to_book", "x"),
+                         ("Rendement du FCF", "fcf_yield", "%"),
+                         ("Rendement du dividende", "dividend_yield", "%")],
+        "Rentabilite": [("Marge brute", "marge_brute", "%"),
+                        ("Marge operationnelle", "marge_operationnelle", "%"),
+                        ("Marge nette", "marge_nette", "%"),
+                        ("ROE", "roe", "%"), ("ROCE", "roce", "%"),
+                        ("ROIC", "roic", "%")],
+        "Solidite": [("Dette nette / EBITDA", "dette_nette_sur_ebitda", "x"),
+                     ("Couverture des interets", "couverture_interets", "x"),
+                     ("Gearing", "gearing", "%")],
+        "Dynamique": [("Croissance CA 3 ans", "croissance_ca_3a", "%"),
+                      ("Croissance CA 5 ans", "croissance_ca_5a", "%"),
+                      ("Croissance RN 3 ans", "croissance_rn_3a", "%")],
+        "Distribution": [("Taux de distribution", "taux_de_distribution", "%"),
+                         ("Dilution nette 3 ans", "dilution_nette", "%")],
+    }
+    for colonne, (famille, lignes) in zip(st.columns(len(familles)), familles.items()):
+        with colonne:
+            st.caption(famille)
+            st.dataframe(
+                pd.DataFrame([
+                    {"Ratio": libelle,
+                     "Valeur": ("—" if r.get(cle) is None
+                                else f"{r[cle]:.1%}" if unite == "%"
+                                else f"{r[cle]:.2f}x")}
+                    for libelle, cle, unite in lignes
+                ]),
+                use_container_width=True, hide_index=True,
+            )
+
+    st.markdown(
+        "<div class='avertissement'><b>Ce bloc est un filtre de solvabilite, pas un "
+        "jugement de qualite.</b> Une entreprise peut cocher toutes ces cases et "
+        "perdre sa position concurrentielle — c'est l'objet du lot L6b, et c'est la "
+        "moitie de la methode qui manque encore.</div>",
+        unsafe_allow_html=True)
+
+    with st.expander(f"Faits sources ({len(fonda['exercices'])} exercices)"):
+        if not fonda["faits"].empty:
+            st.dataframe(fonda["faits"], use_container_width=True, hide_index=True)
+        if bool(r.get("dates_estimees")):
+            st.markdown(
+                "<div class='avertissement'><b>Dates de publication estimees.</b> "
+                "yfinance n'en sert aucune : on applique le delai reglementaire de "
+                "la directive Transparence, soit quatre mois apres la cloture. C'est "
+                "une borne <i>superieure</i> — l'erreur va deliberement dans le sens "
+                "tardif, parce qu'une estimation trop precoce fabriquerait du "
+                "look-ahead invisible, tandis qu'une estimation trop tardive ne "
+                "produit qu'un exces de prudence.</div>",
+                unsafe_allow_html=True)
+
+
+# --------------------------------------------------------------------------- #
 # Anomalies et historique des calculs
 # --------------------------------------------------------------------------- #
 anomalies = data.anomalies(choix)
