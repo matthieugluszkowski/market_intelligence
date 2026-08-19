@@ -86,7 +86,19 @@ with f4:
 with f5:
     persistance = st.number_input("Sem. sous seuil ≥", min_value=0, value=0, step=1)
 
+suivis = data.codes_suivis()
+favoris_seuls = st.checkbox(
+    f"Watchlist seulement ({len(suivis)})", value=False,
+    help="La watchlist est une selection humaine, pas un filtre calcule : elle "
+         "survit au fait qu'un titre sorte des criteres du jour.",
+)
+
 filtre = frame[frame["z_score"] <= seuil_z]
+if favoris_seuls:
+    # Le filtre de watchlist s'applique AVANT le seuil de z-score dans l'esprit,
+    # mais apres dans le code : on veut voir un titre suivi meme s'il est repasse
+    # au-dessus du seuil, d'ou le contournement ci-dessous.
+    filtre = frame[frame["internal_code"].isin(suivis)]
 if qualites:
     filtre = filtre[filtre["fit_quality"].isin(qualites)]
 if secteurs:
@@ -140,6 +152,7 @@ filtre["_ordre"] = filtre["fit_quality"].map(ordre_qualite).fillna(3)
 filtre = filtre.sort_values(["_ordre", "z_score"])
 
 table = pd.DataFrame({
+    "★": filtre["internal_code"].map(lambda c: "★" if c in suivis else ""),
     "Nom": filtre["name"],
     "Code": filtre["internal_code"],
     "Quadrant": "unqualified",
@@ -197,3 +210,4 @@ with st.expander("Repartition des verdicts sur l'univers"):
     )
 
 st.page_link("pages/1_Fiche_instrument.py", label="Ouvrir une fiche instrument →")
+st.page_link("pages/4_Watchlist.py", label="Voir la watchlist →")

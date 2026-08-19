@@ -24,7 +24,9 @@ from dashboard.rechargement import recharge_si_modifie  # noqa: E402
 recharge_si_modifie()
 
 from dashboard import charts, data  # noqa: E402
+from market_intelligence import watchlist  # noqa: E402
 from market_intelligence.analytics.quality import quadrant  # noqa: E402
+from market_intelligence.db import connect_direct  # noqa: E402
 from dashboard.theme import (  # noqa: E402
     css, motif_en_clair, palette, pastille_statut, vignette,
 )
@@ -54,9 +56,53 @@ if f is None:
 barres = data.barres(choix, "1w")
 serie = charts.serie_de_regression(barres, f)
 
-st.title(f["name"])
-st.caption(f"{f['isin']} · {choix} · politique {f['policy_code']} · "
-           f"calcul du {as_of} · methode v{f['method_version']}")
+entete, action = st.columns([4, 1])
+with entete:
+    st.title(f["name"])
+    st.caption(f"{f['isin']} · {choix} · politique {f['policy_code']} · "
+               f"calcul du {as_of} · methode v{f['method_version']}")
+
+with action:
+    with connect_direct() as conn, conn.cursor() as cur:
+        suivi = watchlist.est_suivi(cur, int(f["instrument_id"]))
+
+    if suivi:
+        st.markdown(f"★ **Suivi depuis le {suivi.depuis}**")
+        if suivi.z_at_add is not None:
+            derive = float(f["z_score"]) - suivi.z_at_add
+            st.caption(f"z à l'ajout {suivi.z_at_add:+.2f} → {f['z_score']:+.2f} "
+                       f"({derive:+.2f})")
+        if st.button("Retirer de la watchlist", use_container_width=True):
+            with connect_direct() as conn, conn.cursor() as cur:
+                watchlist.retire(cur, int(f["instrument_id"]))
+                conn.commit()
+            st.rerun()
+    elif st.button("★ Suivre ce titre", use_container_width=True, type="primary"):
+        st.session_state["_ajout_watchlist"] = True
+
+if not suivi and st.session_state.get("_ajout_watchlist"):
+    with st.form("ajout_watchlist"):
+        st.caption(
+            "**Pourquoi suivre ce titre ?** À écrire maintenant, pas plus tard : "
+            "relire dans un an ce qu'on avait en tête est le seul antidote fiable "
+            "au biais rétrospectif — on reconstruit spontanément une justification "
+            "de ce qu'on a fait."
+        )
+        note = st.text_area("Note", height=80,
+                            placeholder="Ce que j'attends, ce que je surveille…")
+        gauche, droite = st.columns(2)
+        if gauche.form_submit_button("Ajouter", type="primary",
+                                     use_container_width=True):
+            with connect_direct() as conn, conn.cursor() as cur:
+                watchlist.ajoute(cur, int(f["instrument_id"]), note)
+                conn.commit()
+            st.session_state.pop("_ajout_watchlist", None)
+            st.rerun()
+        if droite.form_submit_button("Annuler", use_container_width=True):
+            st.session_state.pop("_ajout_watchlist", None)
+            st.rerun()
+elif suivi and suivi.note:
+    st.caption(f"**Note de suivi** — {suivi.note}")
 
 # --------------------------------------------------------------------------- #
 # Bloc A - Le graphe de regression

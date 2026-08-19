@@ -134,6 +134,33 @@ def historique_des_fits(internal_code: str) -> pd.DataFrame:
 
 
 @st.cache_data(ttl=TTL)
+def watchlist() -> pd.DataFrame:
+    """Les titres suivis, avec ce qui a change depuis l'ajout."""
+    from market_intelligence.watchlist import LISTE
+
+    return _frame(LISTE)
+
+
+@st.cache_data(ttl=TTL)
+def watchlist_historique() -> pd.DataFrame:
+    """Les titres retires. Conserves : savoir qu'on a suivi un titre puis qu'on
+    l'a retire est une information."""
+    from market_intelligence.watchlist import HISTORIQUE
+
+    return _frame(HISTORIQUE)
+
+
+def codes_suivis() -> set[str]:
+    """Sans cache : la watchlist change par action de l'utilisateur, et un
+    resultat servi depuis le cache rendrait l'etoile incoherente avec le clic
+    qui vient de la basculer."""
+    from market_intelligence.watchlist import codes_suivis as _codes
+
+    with connect() as conn, conn.cursor() as cur:
+        return _codes(cur)
+
+
+@st.cache_data(ttl=TTL)
 def qualite(internal_code: str) -> dict:
     """Dernier score de qualite et son groupe de pairs (doc 04, bloc D)."""
     score = _frame(

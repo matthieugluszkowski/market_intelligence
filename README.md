@@ -22,7 +22,9 @@ Spécification complète dans les documents à la racine. **Ordre de lecture :**
 | **L5** | Screener et fiche instrument (Streamlit) | **fait** |
 | **L6** | Fondamentaux régime A, ratios, bloc E | **fait** (hors parseur ESEF) |
 | **L6b** | Couche qualité, matrice qualité × prix | **fait** |
+| **Watchlist** | Suivre des titres — doc 10 | **fait** |
 | L7 | Orchestration et rapport hebdomadaire | à faire |
+| L8 | Portefeuille et paper trading — doc 11 | spécifié |
 
 Détail et critères d'acceptation : `05_roadmap-et-lot.md`.
 
@@ -34,8 +36,8 @@ La base est peuplée : il n'y a rien à recalculer pour consulter le système.
 .venv/Scripts/python.exe -m streamlit run dashboard/Screener.py
 ```
 
-→ **http://localhost:8501**, quatre écrans dans la barre latérale : screener,
-fiche instrument, matrice qualité × prix, dossier concurrentiel.
+→ **http://localhost:8501**, cinq écrans dans la barre latérale : screener,
+fiche instrument, matrice qualité × prix, dossier concurrentiel, watchlist.
 
 ### Le rechargement du code, et le piège qu'il supprime
 
