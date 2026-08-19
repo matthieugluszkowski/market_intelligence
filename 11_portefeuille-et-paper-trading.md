@@ -1,8 +1,8 @@
 # 11 - Portefeuille et paper trading
 
-> **État : spécification, non implémenté.** À situer en L8 de la roadmap
-> (doc 05), après L7. Le doc 01 §7 pose déjà la table `positions` ; ce document
-> la complète et la reprend.
+> **État : implémenté.** Migration 014 (`accounts`, `transactions`, extension de
+> `positions`), module `portfolio.py`, écran Portefeuille en trois onglets.
+> 26 tests. Les quatre points ouverts du §8 sont tranchés en bas de document.
 
 **Version :** v1, août 2026. **À challenger avant développement.**
 
@@ -297,18 +297,23 @@ gagnante. Forcer un verdict binaire fabrique de l'apprentissage sur du bruit.
 
 ## 8. Ce que ce document ne tranche pas
 
-1. **L'indice de référence.** CAC 40, Stoxx 600, MSCI Europe ? Le choix change
-   l'écart mesuré, et aucun n'est neutre. À trancher avant L8.
-2. **Le traitement des versements.** Le plafond PEA porte sur les versements, pas
-   sur la valorisation. Le suivre exige de saisir les mouvements d'espèces, ce qui
-   double la saisie. Alternative : ne suivre que l'indicatif, et l'afficher comme
-   tel.
-3. **Les frais.** Les inclure au PRU ou les porter à part ? À part est plus
-   lisible et rend leur poids visible, ce qui est en soi une information.
-4. **Le paper trading a-t-il sa place en v1 ?** L'argument contre : il rassure
-   sans engager, et le temps qu'on y passe ne produit pas de décision.
-   L'argument pour, plus fort : il produit des positions datées avec leur
-   `fit_id`, et c'est ce qui alimente la mesure à trois ans.
+1. **L'indice de référence — non tranché, et donc non implémenté.** CAC 40,
+   Stoxx 600, MSCI Europe ? Le choix change l'écart mesuré et aucun n'est neutre.
+   L'écran n'affiche donc pas d'écart au marché : afficher un chiffre dont la
+   référence est arbitraire vaut moins que ne rien afficher. À trancher, puis à
+   ajouter comme instrument de classe `index` dans l'univers.
+2. **Le traitement des versements — tranché : indicatif, et dit comme tel.** Le
+   cumul affiché est celui des achats, pas des versements d'espèces. Un arbitrage
+   interne ne consomme pas de plafond légal alors qu'il compte ici, et l'écran
+   l'écrit noir sur blanc sous la barre de progression.
+3. **Les frais — tranché : à part.** Ils sont cumulés dans `positions.fees` et
+   ajoutés au montant investi, jamais noyés dans le PRU. *Défaut trouvé en
+   testant : les frais d'ouverture étaient hors PRU mais ceux du renfort y
+   entraient, ce qui rendait le prix de revient dépendant de l'ordre des
+   opérations.*
+4. **Le paper trading en v1 — tranché : oui.** Il produit des positions datées
+   avec leur `fit_id`, et c'est ce qui alimentera la mesure à trois ans. Support
+   `PAPER` dédié, positions étiquetées, exclues de tous les totaux.
 
 ---
 

@@ -56,53 +56,59 @@ if f is None:
 barres = data.barres(choix, "1w")
 serie = charts.serie_de_regression(barres, f)
 
-entete, action = st.columns([4, 1])
-with entete:
-    st.title(f["name"])
-    st.caption(f"{f['isin']} · {choix} · politique {f['policy_code']} · "
-               f"calcul du {as_of} · methode v{f['method_version']}")
+# --------------------------------------------------------------------------- #
+# Watchlist — dans la barre laterale, sous le selecteur d'instrument
+#
+# Une premiere version placait le bouton dans une colonne etroite a droite du
+# titre. Il y etait, mais personne ne le voyait : sur un ecran large, un bouton
+# au cinquieme droit de la page n'est pas dans le champ de lecture. Ici, il est
+# a cote du selecteur - c'est-a-dire la ou l'on agit deja sur le titre courant.
+# --------------------------------------------------------------------------- #
+with connect_direct() as conn, conn.cursor() as cur:
+    suivi = watchlist.est_suivi(cur, int(f["instrument_id"]))
 
-with action:
-    with connect_direct() as conn, conn.cursor() as cur:
-        suivi = watchlist.est_suivi(cur, int(f["instrument_id"]))
-
-    if suivi:
-        st.markdown(f"★ **Suivi depuis le {suivi.depuis}**")
-        if suivi.z_at_add is not None:
-            derive = float(f["z_score"]) - suivi.z_at_add
-            st.caption(f"z à l'ajout {suivi.z_at_add:+.2f} → {f['z_score']:+.2f} "
-                       f"({derive:+.2f})")
-        if st.button("Retirer de la watchlist", use_container_width=True):
-            with connect_direct() as conn, conn.cursor() as cur:
-                watchlist.retire(cur, int(f["instrument_id"]))
-                conn.commit()
-            st.rerun()
-    elif st.button("★ Suivre ce titre", use_container_width=True, type="primary"):
+st.sidebar.divider()
+if suivi:
+    st.sidebar.markdown(f"★ **Suivi depuis le {suivi.depuis}**")
+    if suivi.z_at_add is not None:
+        derive = float(f["z_score"]) - suivi.z_at_add
+        st.sidebar.caption(f"z à l'ajout {suivi.z_at_add:+.2f} → "
+                           f"{f['z_score']:+.2f} ({derive:+.2f})")
+    if suivi.note:
+        st.sidebar.caption(f"« {suivi.note} »")
+    if st.sidebar.button("Retirer de la watchlist", use_container_width=True):
+        with connect_direct() as conn, conn.cursor() as cur:
+            watchlist.retire(cur, int(f["instrument_id"]))
+            conn.commit()
+        st.rerun()
+else:
+    if st.sidebar.button("★ Ajouter à la watchlist", use_container_width=True,
+                         type="primary"):
         st.session_state["_ajout_watchlist"] = True
 
-if not suivi and st.session_state.get("_ajout_watchlist"):
-    with st.form("ajout_watchlist"):
-        st.caption(
-            "**Pourquoi suivre ce titre ?** À écrire maintenant, pas plus tard : "
-            "relire dans un an ce qu'on avait en tête est le seul antidote fiable "
-            "au biais rétrospectif — on reconstruit spontanément une justification "
-            "de ce qu'on a fait."
-        )
-        note = st.text_area("Note", height=80,
-                            placeholder="Ce que j'attends, ce que je surveille…")
-        gauche, droite = st.columns(2)
-        if gauche.form_submit_button("Ajouter", type="primary",
+    if st.session_state.get("_ajout_watchlist"):
+        with st.sidebar.form("ajout_watchlist"):
+            st.caption(
+                "**Pourquoi suivre ce titre ?** À écrire maintenant, pas plus "
+                "tard : relire dans un an ce qu'on avait en tête est le seul "
+                "antidote fiable au biais rétrospectif."
+            )
+            note = st.text_area("Note", height=90,
+                                placeholder="Ce que j'attends, ce que je surveille…")
+            if st.form_submit_button("Ajouter", type="primary",
                                      use_container_width=True):
-            with connect_direct() as conn, conn.cursor() as cur:
-                watchlist.ajoute(cur, int(f["instrument_id"]), note)
-                conn.commit()
-            st.session_state.pop("_ajout_watchlist", None)
-            st.rerun()
-        if droite.form_submit_button("Annuler", use_container_width=True):
-            st.session_state.pop("_ajout_watchlist", None)
-            st.rerun()
-elif suivi and suivi.note:
-    st.caption(f"**Note de suivi** — {suivi.note}")
+                with connect_direct() as conn, conn.cursor() as cur:
+                    watchlist.ajoute(cur, int(f["instrument_id"]), note)
+                    conn.commit()
+                st.session_state.pop("_ajout_watchlist", None)
+                st.rerun()
+            if st.form_submit_button("Annuler", use_container_width=True):
+                st.session_state.pop("_ajout_watchlist", None)
+                st.rerun()
+
+st.title(("★ " if suivi else "") + f["name"])
+st.caption(f"{f['isin']} · {choix} · politique {f['policy_code']} · "
+           f"calcul du {as_of} · methode v{f['method_version']}")
 
 # --------------------------------------------------------------------------- #
 # Bloc A - Le graphe de regression

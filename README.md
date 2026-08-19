@@ -24,7 +24,7 @@ Spécification complète dans les documents à la racine. **Ordre de lecture :**
 | **L6b** | Couche qualité, matrice qualité × prix | **fait** |
 | **Watchlist** | Suivre des titres — doc 10 | **fait** |
 | L7 | Orchestration et rapport hebdomadaire | à faire |
-| L8 | Portefeuille et paper trading — doc 11 | spécifié |
+| **L8** | Portefeuille et paper trading — doc 11 | **fait** |
 
 Détail et critères d'acceptation : `05_roadmap-et-lot.md`.
 
@@ -36,8 +36,9 @@ La base est peuplée : il n'y a rien à recalculer pour consulter le système.
 .venv/Scripts/python.exe -m streamlit run dashboard/Screener.py
 ```
 
-→ **http://localhost:8501**, cinq écrans dans la barre latérale : screener,
-fiche instrument, matrice qualité × prix, dossier concurrentiel, watchlist.
+→ **http://localhost:8501**, six écrans dans la barre latérale : screener,
+fiche instrument, matrice qualité × prix, dossier concurrentiel, watchlist,
+portefeuille.
 
 ### Le rechargement du code, et le piège qu'il supprime
 
