@@ -237,6 +237,121 @@ def test_les_quatre_fragments_sont_declares():
     assert set(schema.FRAGMENTS) == {"cadrage", "concurrent", "leaders", "controle"}
 
 
+# --------------------------------------------------------------------------- #
+# Détection du type de fragment
+# --------------------------------------------------------------------------- #
+def test_la_sortie_du_prompt_1_est_reconnue():
+    """Défaut constaté à l'usage : la liste déroulante restait sur « contrôle
+    qualité », et la sortie du prompt 1 était traitée comme un dossier normalisé
+    complet — sans que rien ne le signale."""
+    cle, _ = schema.detecte_fragment({
+        "market_definition": {"sector": "Articles de sport"},
+        "proposed_competitors": [{"company_name": "Nike"}],
+        "functional_matrix": [], "manual_verifications": [],
+    })
+    assert cle == "cadrage"
+
+
+def test_la_sortie_du_prompt_3_est_reconnue():
+    cle, _ = schema.detecte_fragment({
+        "market_leadership_method": {"criteria": []},
+        "market_leaders": [{"company_name": "Nike"}],
+        "contrarian_conclusion": {"x": "y"}, "disruption_points": [],
+    })
+    assert cle == "leaders"
+
+
+def test_la_sortie_du_prompt_2_est_reconnue():
+    cle, _ = schema.detecte_fragment({
+        "company_identity": {"company_name": "Nike"},
+        "competitive_relevance": {}, "trajectory_signals": [],
+    })
+    assert cle == "concurrent"
+
+
+def test_le_dossier_normalise_exige_deux_cles():
+    """`controle` est le seul type qui projette : une détection permissive y
+    ferait tomber des fragments partiels, et un fragment partiel pris pour un
+    dossier complet qualifierait un titre avant la fin de l'analyse."""
+    cle, _ = schema.detecte_fragment({"quality_control": {"validated": False}})
+    assert cle != "controle"
+    cle, _ = schema.detecte_fragment({
+        "analysis_metadata": {"company_analyzed": "adidas"},
+        "quality_control": {"validated": False},
+    })
+    assert cle == "controle"
+
+
+def test_un_json_non_reconnu_le_dit():
+    """On ne devine pas au hasard."""
+    cle, raison = schema.detecte_fragment({"un_champ": 1})
+    assert cle is None
+    assert "aucune cle" in raison
+
+
+def test_la_detection_donne_sa_raison():
+    _, raison = schema.detecte_fragment({"market_leaders": [{"n": 1}]})
+    assert "market_leaders" in raison
+
+
+# --------------------------------------------------------------------------- #
+# Le cadrage remonte dans le formulaire
+# --------------------------------------------------------------------------- #
+def test_un_cadrage_pose_dans_market_definition_est_accepte():
+    """Le prompt demande un bloc `scoping`, mais les LLM posent spontanément ces
+    champs dans `market_definition`. Refuser cette forme serait absurde."""
+    d = schema.fusionne({}, {
+        "market_definition": {"sector": "Articles de sport",
+                              "subsector": "Chaussures", "product_analyzed": "Footwear",
+                              "geography": "Monde"},
+        "proposed_competitors": [{"company_name": "Nike", "country": "US"}],
+    }, "cadrage")
+    variables = schema.variables_depuis_dossier(d)
+    assert variables["SECTEUR_ACTIVITE"] == "Articles de sport"
+    assert variables["SOUS_SECTEUR"] == "Chaussures"
+    assert variables["PRODUIT_OU_SERVICE"] == "Footwear"
+
+
+def test_le_cadrage_etabli_par_le_llm_prime_sur_la_saisie():
+    """C'est tout l'objet du prompt 1 : établir le périmètre. Une valeur saisie à
+    la main ne doit pas l'emporter sur ce qu'il a déterminé."""
+    d = schema.fusionne({"analysis_metadata": {"sector": "saisi a la main"}},
+                        {"scoping": {"sector": "etabli par le LLM"}}, "cadrage")
+    assert d["analysis_metadata"]["sector"] == "etabli par le LLM"
+
+
+def test_les_concurrents_alimentent_la_liste_deroulante():
+    d = {"competitors": [{"company_name": "Nike"}, {"company_name": "PUMA"},
+                         {"company_name": ""}]}
+    assert schema.noms_concurrents(d) == ["Nike", "PUMA"]
+
+
+# --------------------------------------------------------------------------- #
+# L'avancement rend visible ce qui a été importé
+# --------------------------------------------------------------------------- #
+def test_lavancement_montre_ce_qui_manque():
+    """Sans cet état, l'analyste colle un JSON, lit un succès, et n'a aucun moyen
+    de vérifier que la donnée est arrivée."""
+    etapes = schema.avancement({})
+    assert len(etapes) == 4
+    assert not any(e["fait"] for e in etapes)
+    assert all(e["manque"] or not e["fait"] for e in etapes)
+
+
+def test_lavancement_signale_les_concurrents_sans_fiche():
+    d = {"competitors": [{"company_name": "Nike"}, {"company_name": "PUMA"}],
+         "company_profiles": [{"company_name": "Nike"}]}
+    fiches = next(e for e in schema.avancement(d) if e["etape"].startswith("2"))
+    assert not fiches["fait"]
+    assert "PUMA" in fiches["manque"]
+
+
+def test_lavancement_marque_le_cadrage_fait_des_quil_y_a_des_concurrents():
+    d = {"competitors": [{"company_name": "Nike"}]}
+    cadrage = next(e for e in schema.avancement(d) if e["etape"].startswith("1"))
+    assert cadrage["fait"]
+
+
 def test_le_cadrage_alimente_concurrents_fonctions_et_secteur():
     base = schema.gabarit("EQ:DE:ADIDAS", "adidas", date(2026, 8, 19))
     f = schema.fusionne(base, {

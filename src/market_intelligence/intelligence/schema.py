@@ -270,6 +270,50 @@ FRAGMENTS = {
 }
 
 
+# Cles distinctives de chaque sortie de prompt. La detection evite l'erreur la
+# plus couteuse de cet ecran : coller la sortie du prompt 3 alors que la liste
+# deroulante est restee sur son defaut, et voir le fragment traite comme un
+# dossier normalise complet.
+SIGNATURES = {
+    "controle": ("quality_control", "analysis_metadata"),
+    "cadrage": ("proposed_competitors", "functional_matrix", "actor_mapping",
+                "manual_verifications", "customer_needs", "market_definition"),
+    "concurrent": ("company_identity", "competitive_relevance", "trajectory_signals",
+                   "products_and_features", "strategic_assessment"),
+    "leaders": ("market_leadership_method", "market_leaders", "contrarian_conclusion",
+                "disruption_points", "market_scenarios", "defensible_advantages"),
+}
+
+
+def detecte_fragment(fragment: dict) -> tuple[str | None, str]:
+    """Devine de quel prompt vient ce JSON, d'apres ses cles.
+
+    Rend (cle, explication). `None` quand rien ne tranche - on ne devine pas au
+    hasard, on le dit.
+
+    `controle` exige **deux** cles simultanement, parce que c'est le seul type
+    qui projette : une detection trop permissive y ferait tomber des fragments
+    partiels, et un fragment partiel pris pour un dossier complet qualifierait un
+    titre avant qu'on ait fini de le regarder.
+    """
+    if not isinstance(fragment, dict):
+        return None, "le JSON n'est pas un objet"
+
+    presentes = {c for c in fragment if fragment.get(c)}
+
+    if all(c in presentes for c in SIGNATURES["controle"]):
+        return "controle", "porte `analysis_metadata` et `quality_control`"
+
+    scores = {
+        cle: presentes & set(signature)
+        for cle, signature in SIGNATURES.items() if cle != "controle"
+    }
+    meilleur = max(scores, key=lambda c: len(scores[c]))
+    if not scores[meilleur]:
+        return None, "aucune cle reconnue"
+    return meilleur, "cles reconnues : " + ", ".join(sorted(scores[meilleur]))
+
+
 def fusionne(dossier: dict, fragment: dict, type_fragment: str) -> dict:
     """Integre un fragment dans le dossier en construction.
 
@@ -296,14 +340,33 @@ def fusionne(dossier: dict, fragment: dict, type_fragment: str) -> dict:
         return resultat
 
     if type_fragment == "cadrage":
+        # Le cadrage peut arriver sous deux formes : le bloc `scoping` que le
+        # prompt demande, ou les memes champs poses dans `market_definition` -
+        # ce que les LLM font spontanement, et qu'il serait absurde de refuser.
         cadrage = lire(fragment, "scoping", defaut={})
+        definition = lire(fragment, "market_definition", defaut={})
+        if not cadrage and definition:
+            cadrage = {
+                "sector": lire(definition, "sector"),
+                "subsector": lire(definition, "subsector"),
+                "product_or_service": lire(definition, "product_or_service",
+                                           defaut=lire(definition, "product_analyzed")),
+                "target_market": lire(definition, "target_market"),
+                "target_customers": lire(definition, "target_customers"),
+                "geography": lire(definition, "geography"),
+                "status": lire(definition, "status", defaut="INTERPRETATION"),
+                "sources": lire(definition, "sources", defaut=[]),
+            }
+            cadrage = {k: v for k, v in cadrage.items() if v not in (None, [], "")}
+
         if cadrage:
             meta = resultat.setdefault("analysis_metadata", {})
-            for cle_source, cle_cible in (("sector", "sector"),
-                                          ("subsector", "subsector")):
-                if not meta.get(cle_cible):
-                    meta[cle_cible] = lire(cadrage, cle_source)
-            resultat["scoping"] = cadrage
+            for cle in ("sector", "subsector", "geography"):
+                # Le cadrage etabli par le LLM fait autorite sur une valeur
+                # posee a la main : c'est tout l'objet du prompt 1.
+                if lire(cadrage, cle):
+                    meta[cle] = lire(cadrage, cle)
+            resultat["scoping"] = {**lire(resultat, "scoping", defaut={}), **cadrage}
         _ajoute_dict(resultat, "market_definition",
                      lire(fragment, "market_definition", defaut={}))
         _concatene(resultat, "customer_needs",
@@ -396,6 +459,98 @@ def peremption(reference_date: date) -> date:
     """Une evaluation de 2026 inspire la meme confiance qu'une de 2029, et c'est
     le probleme. La peremption force la revue."""
     return reference_date + timedelta(days=int(PEREMPTION_MOIS * 30.44))
+
+
+def avancement(dossier: dict) -> list[dict]:
+    """Ce que chaque etape a apporte au dossier, et ce qui manque encore.
+
+    Sans cet etat, l'ecran ne montre rien de ce qui a ete importe : l'analyste
+    colle un JSON, voit un message de succes, et n'a aucun moyen de verifier que
+    la donnee est arrivee ni ou elle en est. C'est exactement le doute qui rend
+    un outil inutilisable - on finit par tout reimporter dans le doute.
+    """
+    concurrents = lire(dossier, "competitors", defaut=[])
+    profils = lire(dossier, "company_profiles", defaut=[])
+    noms_profiles = {(lire(p, "company_name") or "").lower() for p in profils}
+    sans_fiche = [lire(c, "company_name") for c in concurrents
+                  if (lire(c, "company_name") or "").lower() not in noms_profiles]
+
+    strategie = lire(dossier, "strategic_assessment", defaut={})
+    return [
+        {
+            "etape": "1 · Cadrage",
+            "apporte": (f"{len(concurrents)} concurrent(s), "
+                        f"{len(lire(dossier, 'functional_analysis', defaut=[]))} fonction(s)"),
+            "fait": bool(concurrents),
+            "manque": "" if concurrents else "lancer le prompt 1",
+        },
+        {
+            "etape": "2 · Fiches concurrents",
+            "apporte": f"{len(profils)} fiche(s) sur {len(concurrents)}",
+            "fait": bool(profils) and not sans_fiche,
+            "manque": ("sans fiche : " + ", ".join(n for n in sans_fiche[:6] if n)
+                       if sans_fiche else ""),
+        },
+        {
+            "etape": "3 · Leaders",
+            "apporte": (f"{len(lire(dossier, 'market_leaders', defaut=[]))} leader(s), "
+                        f"{len(lire(dossier, 'market_trends', defaut=[]))} tendance(s)"),
+            "fait": bool(lire(dossier, "market_leaders", defaut=[])),
+            "manque": "" if lire(dossier, "market_leaders", defaut=[]) else "lancer le prompt 3",
+        },
+        {
+            "etape": "4 · Contrôle qualité",
+            "apporte": ("verdicts posés"
+                        if lire(strategie, "position_verdict") else "aucun verdict"),
+            "fait": bool(lire(strategie, "position_verdict")
+                         and lire(strategie, "durability_verdict")),
+            "manque": ("`strategic_assessment` doit porter `position_verdict` et "
+                       "`durability_verdict`"
+                       if not lire(strategie, "position_verdict") else ""),
+        },
+    ]
+
+
+def noms_concurrents(dossier: dict) -> list[str]:
+    """Concurrents retenus, pour la liste deroulante du prompt 2."""
+    return [n for n in ((lire(c, "company_name") or "").strip()
+                        for c in lire(dossier, "competitors", defaut=[])) if n]
+
+
+def variables_depuis_dossier(dossier: dict) -> dict:
+    """Prefill du formulaire depuis ce qui a deja ete etabli.
+
+    Ce que le LLM a determine au prompt 1 doit revenir dans le formulaire :
+    sinon les prompts suivants repartent de zero et redemandent au modele
+    d'etablir ce qu'il a deja etabli, avec le risque qu'il reponde autrement.
+    """
+    cadrage = lire(dossier, "scoping", defaut={})
+    definition = lire(dossier, "market_definition", defaut={})
+    meta = lire(dossier, "analysis_metadata", defaut={})
+
+    def premier(*valeurs):
+        for v in valeurs:
+            if v:
+                return v if isinstance(v, str) else str(v)
+        return ""
+
+    return {
+        "SECTEUR_ACTIVITE": premier(lire(cadrage, "sector"), lire(definition, "sector"),
+                                    lire(meta, "sector")),
+        "SOUS_SECTEUR": premier(lire(cadrage, "subsector"), lire(definition, "subsector"),
+                                lire(meta, "subsector")),
+        "PRODUIT_OU_SERVICE": premier(lire(cadrage, "product_or_service"),
+                                      lire(definition, "product_analyzed"),
+                                      lire(definition, "product_or_service")),
+        "MARCHE_CIBLE": premier(lire(cadrage, "target_market"),
+                                lire(definition, "target_market")),
+        "CLIENTS_CIBLES": premier(lire(cadrage, "target_customers"),
+                                  lire(definition, "target_customers")),
+        "PAYS_ET_ZONE_GEOGRAPHIQUE": premier(lire(cadrage, "geography"),
+                                             lire(definition, "geography"),
+                                             lire(meta, "geography")),
+        "CONCURRENTS_CONNUS": ", ".join(noms_concurrents(dossier)),
+    }
 
 
 def resume(dossier: dict) -> dict:
