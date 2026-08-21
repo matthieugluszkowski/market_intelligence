@@ -23,7 +23,7 @@ Le livrable est un système qui répond à quatre questions - **deux sur le prix
 
 | Dimension | Décision v1 | Cible |
 |---|---|---|
-| Univers | **57 titres** Europe éligibles PEA (démarrage à 50, cible 250) | 60 000 valeurs, architecture prête |
+| Univers | **586 titres** Europe éligibles PEA — 57 au départ, élargi le 2026-08-21 (cible initiale : 250) | 60 000 valeurs, architecture prête |
 | Classes d'actifs | Actions uniquement | Actions, ETF, indices, matières premières, FX. *Crypto hors modèle - doc 07 §4* |
 | Analyse qualité | Volet quantitatif (ROIC, rente, érosion) | + volet qualitatif assisté LLM |
 | Base | Supabase free tier, si le volume tient | Postgres + TimescaleDB sur VPS |

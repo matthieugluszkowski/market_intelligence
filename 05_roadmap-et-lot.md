@@ -31,6 +31,8 @@ Constitution de la liste des titres cibles (~250 visés, **57 réalisés**) : SB
 > **⚙ Fait, et le piège a été traité par un outil.** `scripts/verify_universe.py` applique trois contrôles indépendants avant tout chargement : clé de Luhn sur l'ISIN, **téléchargement réel d'une cotation** avec mesure de profondeur, et **concordance de la raison sociale** rapportée par le provider. Ce dernier attrape le cas Seb / Skandinaviska Enskilda Banken à 0.19 de similarité. La spec disait que l'étape serait « manuelle et fastidieuse » sans fournir d'outil, alors qu'elle identifiait le risque.
 >
 > **57 titres chargés sur 59 au CSV.** Banco Santander et Amadeus écartés : 3 barres hebdomadaires chez yfinance, contre 26 ans pour Iberdrola, Inditex et Telefónica sur le même marché.
+>
+> **Porté à 586 titres le 2026-08-21** par `scripts/propose_universe.py`, qui alimente les mêmes trois contrôles sans les contourner : 600 lignes proposées, 14 rejetées pour historique tronqué chez le fournisseur, aucune pour défaut d'identité. Le troisième contrôle perd toutefois sa valeur sur ces lignes — le nom attendu vient du fournisseur lui-même, donc la similarité vaut 1.00 par construction. Voir README, section « Élargir l'univers ».
 
 **Piège à éviter :** ne pas partir directement du site d'un indice. Vérifier chaque symbole en tirant une cotation et en comparant le dernier cours à une source indépendante. Un mapping faux ne se voit jamais - il produit simplement une belle courbe pour la mauvaise société.
 

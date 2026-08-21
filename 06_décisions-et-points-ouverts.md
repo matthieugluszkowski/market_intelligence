@@ -132,8 +132,10 @@ Hiboo semble utiliser tout l'historique disponible. La fenêtre glissante s'adap
 EAV : souple, absorbe trois sources hétérogènes, requêtes plus lourdes. Table large : simple à requêter, migration à chaque nouveau concept.
 *Mon avis : EAV, parce que yfinance, XBRL et extraction LLM n'ont pas le même vocabulaire.*
 
-### PO5 - ~~250 titres d'emblée ou 50 puis élargissement ?~~ **Tranché : 57 titres**
+### PO5 - ~~250 titres d'emblée ou 50 puis élargissement ?~~ **Tranché : 57, puis 586 le 2026-08-21**
 *Mon avis : 50, fermement. Le référentiel est le point d'enlisement le plus probable du projet.*
+
+**Et l'élargissement a donné raison à la prudence, pas à la cible de 250.** Le référentiel n'a pas été le point d'enlisement parce qu'il a été outillé (`propose_universe.py`) plutôt que saisi : 541 lignes en vingt minutes de collecte et une heure de vérification. Mais le passage à 586 déplace le goulet, il ne le supprime pas — **la jambe qualité, elle, ne s'automatise pas.** Un dossier concurrentiel par titre, à la main : il en existe **un** pour 586 titres. Le screener classe donc 585 valeurs en `unqualified`, ce qui est leur statut réel. Élargir l'univers augmente le nombre de candidats à examiner, pas la capacité à les examiner.
 
 ### PO6 - Le rapport doit-il expliquer les mouvements ?
 Tu voudras savoir pourquoi un titre a pris −8%. Ma position est que cette information n'existe pas de façon fiable et que la fabriquer coûte plus qu'elle ne rapporte.

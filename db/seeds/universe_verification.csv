@@ -1,60 +1,601 @@
 internal_code,isin,name,exchange_code,currency,sector_code,country_iso2,yfinance_symbol,stooq_symbol,notes,n_obs,first,last,years,last_close,reported_currency,reported_name,name_ratio,error,status,reasons
-EQ:FR:LVMH,FR0000121014,LVMH Moet Hennessy Louis Vuitton,XPAR,EUR,40,FR,MC.PA,mc.fr,,1390,2000-01-03,2026-08-17,26.6,447.75,EUR,"LVMH Moët Hennessy - Louis Vuitton, Société Européenne",1.0,,ok,
-EQ:FR:OREAL,FR0000120321,L Oreal,XPAR,EUR,45,FR,OR.PA,or.fr,,1390,2000-01-03,2026-08-17,26.6,375.4,EUR,L'Oréal S.A.,1.0,,ok,
-EQ:FR:TTE,FR0000120271,TotalEnergies,XPAR,EUR,60,FR,TTE.PA,tte.fr,,1390,2000-01-03,2026-08-17,26.6,76.9,EUR,TotalEnergies SE,1.0,,ok,
-EQ:FR:SANOFI,FR0000120578,Sanofi,XPAR,EUR,20,FR,SAN.PA,san.fr,,1390,2000-01-03,2026-08-17,26.6,77.67,EUR,Sanofi,1.0,,ok,
-EQ:FR:SCHNEIDER,FR0000121972,Schneider Electric,XPAR,EUR,50,FR,SU.PA,su.fr,,1390,2000-01-03,2026-08-17,26.6,295.1,EUR,Schneider Electric S.E.,1.0,,ok,
-EQ:FR:AIRLIQUIDE,FR0000120073,Air Liquide,XPAR,EUR,55,FR,AI.PA,ai.fr,,1390,2000-01-03,2026-08-17,26.6,167.04,EUR,L'Air Liquide S.A.,1.0,,ok,
-EQ:FR:HERMES,FR0000052292,Hermes International,XPAR,EUR,40,FR,RMS.PA,rms.fr,,1390,2000-01-03,2026-08-17,26.6,1560.5,EUR,Hermès International Société en commandite par actions,1.0,,ok,
-EQ:FR:ESSILOR,FR0000121667,EssilorLuxottica,XPAR,EUR,20,FR,EL.PA,el.fr,,1390,2000-01-03,2026-08-17,26.6,163.9,EUR,EssilorLuxottica Société anonyme,1.0,,ok,
-EQ:FR:SAFRAN,FR0000073272,Safran,XPAR,EUR,50,FR,SAF.PA,saf.fr,,1390,2000-01-03,2026-08-17,26.6,353.1,EUR,Safran SA,1.0,,ok,
-EQ:FR:AIRBUS,NL0000235190,Airbus,XPAR,EUR,50,NL,AIR.PA,air.fr,ISIN neerlandais cotation principale Paris,1303,2001-09-03,2026-08-17,25.0,209.8,EUR,Airbus SE,1.0,,ok,
-EQ:FR:BNP,FR0000131104,BNP Paribas,XPAR,EUR,30,FR,BNP.PA,bnp.fr,,1714,1993-10-18,2026-08-17,32.8,109.4,EUR,BNP Paribas SA,1.0,,ok,
-EQ:FR:AXA,FR0000120628,AXA,XPAR,EUR,30,FR,CS.PA,cs.fr,,1879,1990-08-20,2026-08-17,36.0,44.55,EUR,AXA SA,1.0,,ok,
-EQ:FR:VINCI,FR0000125486,Vinci,XPAR,EUR,50,FR,DG.PA,dg.fr,,1390,2000-01-03,2026-08-17,26.6,119.4,EUR,Vinci SA,1.0,,ok,
-EQ:FR:DANONE,FR0000120644,Danone,XPAR,EUR,45,FR,BN.PA,bn.fr,,1962,1989-01-16,2026-08-17,37.6,65.48,EUR,Danone S.A.,1.0,,ok,
-EQ:FR:PERNOD,FR0000120693,Pernod Ricard,XPAR,EUR,45,FR,RI.PA,ri.fr,,1390,2000-01-03,2026-08-17,26.6,68.18,EUR,Pernod Ricard SA,1.0,,ok,
-EQ:FR:SAINTGOBAIN,FR0000125007,Compagnie de Saint-Gobain,XPAR,EUR,50,FR,SGO.PA,sgo.fr,,1390,2000-01-03,2026-08-17,26.6,79.74,EUR,Compagnie de Saint-Gobain S.A.,1.0,,ok,
-EQ:FR:MICHELIN,FR001400AJ45,Michelin,XPAR,EUR,40,FR,ML.PA,ml.fr,ISIN change en 2022 lors du passage SCA vers SE,1390,2000-01-03,2026-08-17,26.6,34.02,EUR,Compagnie Générale des Établissements Michelin Société en commandite par actions,1.0,,ok,
-EQ:FR:CAPGEMINI,FR0000125338,Capgemini,XPAR,EUR,10,FR,CAP.PA,cap.fr,,1390,2000-01-03,2026-08-17,26.6,107.3,EUR,Capgemini SE,1.0,,ok,
-EQ:FR:LEGRAND,FR0010307819,Legrand,XPAR,EUR,50,FR,LR.PA,lr.fr,,1064,2006-04-03,2026-08-17,20.4,135.15,EUR,Legrand SA,1.0,,ok,
-EQ:FR:PUBLICIS,FR0000130577,Publicis Groupe,XPAR,EUR,40,FR,PUB.PA,pub.fr,,1353,2000-09-18,2026-08-17,25.9,102.0,EUR,Publicis Groupe S.A.,1.0,,ok,
-EQ:FR:KERING,FR0000121485,Kering,XPAR,EUR,40,FR,KER.PA,ker.fr,,1390,2000-01-03,2026-08-17,26.6,255.7,EUR,Kering SA,1.0,,ok,
-EQ:FR:DASSAULTSYS,FR0014003TT8,Dassault Systemes,XPAR,EUR,10,FR,DSY.PA,dsy.fr,ISIN change au split 5 pour 1 de 2021,1390,2000-01-03,2026-08-17,26.6,21.9,EUR,Dassault Systèmes SE,1.0,,ok,
-EQ:FR:THALES,FR0000121329,Thales,XPAR,EUR,50,FR,HO.PA,ho.fr,,1390,2000-01-03,2026-08-17,26.6,266.0,EUR,Thales S.A.,1.0,,ok,
-EQ:FR:VEOLIA,FR0000124141,Veolia Environnement,XPAR,EUR,65,FR,VIE.PA,vie.fr,,1362,2000-07-17,2026-08-17,26.1,33.84,EUR,Veolia Environnement SA,1.0,,ok,
-EQ:FR:ENGIE,FR0010208488,Engie,XPAR,EUR,65,FR,ENGI.PA,engi.fr,,1390,2000-01-03,2026-08-17,26.6,25.65,EUR,Engie SA,1.0,,ok,
-EQ:FR:ORANGE,FR0000133308,Orange,XPAR,EUR,15,FR,ORA.PA,ora.fr,,1390,2000-01-03,2026-08-17,26.6,16.18,EUR,Orange S.A.,1.0,,ok,
-EQ:FR:CARREFOUR,FR0000120172,Carrefour,XPAR,EUR,45,FR,CA.PA,ca.fr,,1390,2000-01-03,2026-08-17,26.6,15.895,EUR,Carrefour SA,1.0,,ok,
-EQ:FR:SEB,FR0000121709,SEB,XPAR,EUR,40,FR,SK.PA,sk.fr,Cas du podcast ne pas confondre avec SEB banque suedoise,1390,2000-01-03,2026-08-17,26.6,57.65,EUR,SEB SA,1.0,,ok,
-EQ:FR:ARKEMA,FR0010313833,Arkema,XPAR,EUR,55,FR,AKE.PA,ake.fr,Cas cyclique de reference doc 08,1058,2006-05-15,2026-08-17,20.3,60.0,EUR,Arkema S.A.,1.0,,ok,
-EQ:FR:GETLINK,FR0010533075,Getlink,XPAR,EUR,50,FR,GET.PA,get.fr,,999,2007-07-02,2026-08-17,19.1,18.82,EUR,Getlink SE,1.0,,ok,
-EQ:DE:SAP,DE0007164600,SAP,XETR,EUR,10,DE,SAP.DE,sap.de,,1481,1998-04-06,2026-08-17,28.4,182.5,EUR,SAP SE,1.0,,ok,
-EQ:DE:SIEMENS,DE0007236101,Siemens,XETR,EUR,50,DE,SIE.DE,sie.de,,1555,1996-11-04,2026-08-17,29.8,275.8,EUR,Siemens Aktiengesellschaft,1.0,,ok,
-EQ:DE:ALLIANZ,DE0008404005,Allianz,XETR,EUR,30,DE,ALV.DE,alv.de,,1549,1996-12-16,2026-08-17,29.7,442.0,EUR,Allianz SE,1.0,,ok,
-EQ:DE:BASF,DE000BASF111,BASF,XETR,EUR,55,DE,BAS.DE,bas.de,,1549,1996-12-16,2026-08-17,29.7,50.99,EUR,BASF SE,1.0,,ok,
-EQ:DE:BMW,DE0005190003,Bayerische Motoren Werke,XETR,EUR,40,DE,BMW.DE,bmw.de,Cas erosion de reference doc 08,1555,1996-11-04,2026-08-17,29.8,57.96,EUR,Bayerische Motoren Werke Aktiengesellschaft,1.0,,ok,
-EQ:DE:MERCEDES,DE0007100000,Mercedes-Benz Group,XETR,EUR,40,DE,MBG.DE,mbg.de,,1556,1996-10-28,2026-08-17,29.8,45.065,EUR,Mercedes-Benz Group AG,1.0,,ok,
-EQ:DE:DTELEKOM,DE0005557508,Deutsche Telekom,XETR,EUR,15,DE,DTE.DE,dte.de,,1553,1996-11-18,2026-08-17,29.7,28.86,EUR,Deutsche Telekom AG,1.0,,ok,
-EQ:DE:MUNICHRE,DE0008430026,Muenchener Rueckversicherung,XETR,EUR,30,DE,MUV2.DE,muv2.de,,1470,1998-06-22,2026-08-17,28.2,523.6,EUR,Münchener Rückversicherungs-Gesellschaft Aktiengesellschaft in München,1.0,,ok,
-EQ:DE:ADIDAS,DE000A1EWWW0,adidas,XETR,EUR,40,DE,ADS.DE,ads.de,,1470,1998-06-22,2026-08-17,28.2,154.7,EUR,adidas AG,1.0,,ok,
-EQ:DE:INFINEON,DE0006231004,Infineon Technologies,XETR,EUR,10,DE,IFX.DE,ifx.de,,1380,2000-03-13,2026-08-17,26.4,57.24,EUR,Infineon Technologies AG,1.0,,ok,
-EQ:NL:ASML,NL0010273215,ASML Holding,XAMS,EUR,10,NL,ASML.AS,asml.nl,,1466,1998-07-20,2026-08-17,28.1,1541.8,EUR,ASML Holding N.V.,1.0,,ok,
-EQ:NL:HEINEKEN,NL0000009165,Heineken,XAMS,EUR,45,NL,HEIA.AS,heia.nl,,1639,1995-03-27,2026-08-17,31.4,72.24,EUR,Heineken N.V.,1.0,,ok,
-EQ:NL:WOLTERS,NL0000395903,Wolters Kluwer,XAMS,EUR,50,NL,WKL.AS,wkl.nl,,1639,1995-03-27,2026-08-17,31.4,69.98,EUR,Wolters Kluwer N.V.,1.0,,ok,
-EQ:NL:ING,NL0011821202,ING Groep,XAMS,EUR,30,NL,INGA.AS,inga.nl,,1639,1995-03-27,2026-08-17,31.4,30.615,EUR,ING Groep N.V.,1.0,,ok,
-EQ:NL:AHOLD,NL0011794037,Koninklijke Ahold Delhaize,XAMS,EUR,45,NL,AD.AS,ad.nl,,931,2008-10-20,2026-08-17,17.8,31.84,EUR,Koninklijke Ahold Delhaize N.V.,1.0,,ok,
-EQ:NL:PROSUS,NL0013654783,Prosus,XAMS,EUR,10,NL,PRX.AS,prx.nl,,363,2019-09-09,2026-08-17,6.9,36.96,EUR,Prosus N.V.,1.0,,avertissement,historique_6.9a
-EQ:ES:IBERDROLA,ES0144580Y14,Iberdrola,XMAD,EUR,65,ES,IBE.MC,ibe.es,,1390,2000-01-03,2026-08-17,26.6,20.22,EUR,"Iberdrola, S.A.",1.0,,ok,
-EQ:ES:SANTANDER,ES0113900J37,Banco Santander,XMAD,EUR,30,ES,SAN.MC,san.es,Historique tronque chez yfinance en aout 2026 non chargeable en l etat,3,2026-08-03,2026-08-17,0.0,12.454,EUR,"Banco Santander, S.A.",1.0,,rejete,historique_tronque_provider(3pts)
-EQ:ES:INDITEX,ES0148396007,Industria de Diseno Textil,XMAD,EUR,40,ES,ITX.MC,itx.es,,1318,2001-05-21,2026-08-17,25.2,57.06,EUR,"Industria de Diseño Textil, S.A.",1.0,,ok,
-EQ:ES:AMADEUS,ES0109067019,Amadeus IT Group,XMAD,EUR,10,ES,AMS.MC,ams.es,Historique tronque chez yfinance en aout 2026 non chargeable en l etat,3,2026-08-03,2026-08-17,0.0,56.5,EUR,"Amadeus IT Group, S.A.",1.0,,rejete,historique_tronque_provider(3pts)
-EQ:ES:TELEFONICA,ES0178430E18,Telefonica,XMAD,EUR,15,ES,TEF.MC,tef.es,,1390,2000-01-03,2026-08-17,26.6,3.68,EUR,"Telefónica, S.A.",1.0,,ok,
-EQ:ES:AENA,ES0105046009,Aena,XMAD,EUR,50,ES,AENA.MC,aena.es,Introduite en bourse en 2015 historique court,602,2015-02-09,2026-08-17,11.5,26.2,EUR,"Aena S.M.E., S.A.",1.0,,avertissement,historique_11.5a
-EQ:IT:ENEL,IT0003128367,Enel,XMIL,EUR,65,IT,ENEL.MI,enel.it,,1399,1999-11-01,2026-08-17,26.8,9.482,EUR,Enel SpA,1.0,,ok,
-EQ:IT:FERRARI,NL0011585146,Ferrari,XMIL,EUR,40,NL,RACE.MI,race.it,ISIN neerlandais,555,2016-01-04,2026-08-17,10.6,357.4,EUR,Ferrari N.V.,1.0,,avertissement,historique_10.6a
-EQ:IT:INTESA,IT0000072618,Intesa Sanpaolo,XMIL,EUR,30,IT,ISP.MI,isp.it,,1640,1995-03-20,2026-08-17,31.4,6.881,EUR,Intesa Sanpaolo S.p.A.,1.0,,ok,
-EQ:IT:ENI,IT0003132476,Eni,XMIL,EUR,60,IT,ENI.MI,eni.it,,1604,1995-11-27,2026-08-17,30.7,24.0,EUR,Eni S.p.A.,1.0,,ok,
-EQ:BE:ABINBEV,BE0974293251,Anheuser-Busch InBev,XBRU,EUR,45,BE,ABI.BR,abi.be,,1343,2000-11-27,2026-08-17,25.7,67.06,EUR,Anheuser-Busch InBev SA/NV,1.0,,ok,
-EQ:BE:KBC,BE0003565737,KBC Groep,XBRU,EUR,30,BE,KBC.BR,kbc.be,,1390,2000-01-03,2026-08-17,26.6,130.0,EUR,KBC Group NV,1.0,,ok,
-EQ:BE:UCB,BE0003739530,UCB,XBRU,EUR,20,BE,UCB.BR,ucb.be,,1390,2000-01-03,2026-08-17,26.6,217.3,EUR,UCB SA,1.0,,ok,
+EQ:FR:LVMH,FR0000121014,LVMH Moet Hennessy Louis Vuitton,XPAR,EUR,40,FR,MC.PA,mc.fr,,1390,2000-01-03,2026-08-17,26.6,448.45,EUR,"LVMH Moët Hennessy - Louis Vuitton, Société Européenne",1.0,,ok,
+EQ:FR:OREAL,FR0000120321,L Oreal,XPAR,EUR,45,FR,OR.PA,or.fr,,1390,2000-01-03,2026-08-17,26.6,380.0,EUR,L'Oréal S.A.,1.0,,ok,
+EQ:FR:TTE,FR0000120271,TotalEnergies,XPAR,EUR,60,FR,TTE.PA,tte.fr,,1390,2000-01-03,2026-08-17,26.6,77.87,EUR,TotalEnergies SE,1.0,,ok,
+EQ:FR:SANOFI,FR0000120578,Sanofi,XPAR,EUR,20,FR,SAN.PA,san.fr,,1390,2000-01-03,2026-08-17,26.6,77.56,EUR,Sanofi,1.0,,ok,
+EQ:FR:SCHNEIDER,FR0000121972,Schneider Electric,XPAR,EUR,50,FR,SU.PA,su.fr,,1390,2000-01-03,2026-08-17,26.6,298.35,EUR,Schneider Electric S.E.,1.0,,ok,
+EQ:FR:AIRLIQUIDE,FR0000120073,Air Liquide,XPAR,EUR,55,FR,AI.PA,ai.fr,,1390,2000-01-03,2026-08-17,26.6,166.16,EUR,L'Air Liquide S.A.,1.0,,ok,
+EQ:FR:HERMES,FR0000052292,Hermes International,XPAR,EUR,40,FR,RMS.PA,rms.fr,,1390,2000-01-03,2026-08-17,26.6,1566.0,EUR,Hermès International Société en commandite par actions,1.0,,ok,
+EQ:FR:ESSILOR,FR0000121667,EssilorLuxottica,XPAR,EUR,20,FR,EL.PA,el.fr,,1390,2000-01-03,2026-08-17,26.6,161.05,EUR,EssilorLuxottica Société anonyme,1.0,,ok,
+EQ:FR:SAFRAN,FR0000073272,Safran,XPAR,EUR,50,FR,SAF.PA,saf.fr,,1390,2000-01-03,2026-08-17,26.6,343.7,EUR,Safran SA,1.0,,ok,
+EQ:FR:AIRBUS,NL0000235190,Airbus,XPAR,EUR,50,NL,AIR.PA,air.fr,ISIN neerlandais cotation principale Paris,1303,2001-09-03,2026-08-17,25.0,204.25,EUR,Airbus SE,1.0,,ok,
+EQ:FR:BNP,FR0000131104,BNP Paribas,XPAR,EUR,30,FR,BNP.PA,bnp.fr,,1714,1993-10-18,2026-08-17,32.8,106.92,EUR,BNP Paribas SA,1.0,,ok,
+EQ:FR:AXA,FR0000120628,AXA,XPAR,EUR,30,FR,CS.PA,cs.fr,,1879,1990-08-20,2026-08-17,36.0,43.58,EUR,AXA SA,1.0,,ok,
+EQ:FR:VINCI,FR0000125486,Vinci,XPAR,EUR,50,FR,DG.PA,dg.fr,,1390,2000-01-03,2026-08-17,26.6,120.3,EUR,Vinci SA,1.0,,ok,
+EQ:FR:DANONE,FR0000120644,Danone,XPAR,EUR,45,FR,BN.PA,bn.fr,,1962,1989-01-16,2026-08-17,37.6,65.9,EUR,Danone S.A.,1.0,,ok,
+EQ:FR:PERNOD,FR0000120693,Pernod Ricard,XPAR,EUR,45,FR,RI.PA,ri.fr,,1390,2000-01-03,2026-08-17,26.6,68.52,EUR,Pernod Ricard SA,1.0,,ok,
+EQ:FR:SAINTGOBAIN,FR0000125007,Compagnie de Saint-Gobain,XPAR,EUR,50,FR,SGO.PA,sgo.fr,,1390,2000-01-03,2026-08-17,26.6,81.3,EUR,Compagnie de Saint-Gobain S.A.,1.0,,ok,
+EQ:FR:MICHELIN,FR001400AJ45,Michelin,XPAR,EUR,40,FR,ML.PA,ml.fr,ISIN change en 2022 lors du passage SCA vers SE,1390,2000-01-03,2026-08-17,26.6,34.75,EUR,Compagnie Générale des Établissements Michelin Société en commandite par actions,1.0,,ok,
+EQ:FR:CAPGEMINI,FR0000125338,Capgemini,XPAR,EUR,10,FR,CAP.PA,cap.fr,,1390,2000-01-03,2026-08-17,26.6,108.85,EUR,Capgemini SE,1.0,,ok,
+EQ:FR:LEGRAND,FR0010307819,Legrand,XPAR,EUR,50,FR,LR.PA,lr.fr,,1064,2006-04-03,2026-08-17,20.4,136.45,EUR,Legrand SA,1.0,,ok,
+EQ:FR:PUBLICIS,FR0000130577,Publicis Groupe,XPAR,EUR,40,FR,PUB.PA,pub.fr,,1353,2000-09-18,2026-08-17,25.9,100.85,EUR,Publicis Groupe S.A.,1.0,,ok,
+EQ:FR:KERING,FR0000121485,Kering,XPAR,EUR,40,FR,KER.PA,ker.fr,,1390,2000-01-03,2026-08-17,26.6,251.2,EUR,Kering SA,1.0,,ok,
+EQ:FR:DASSAULTSYS,FR0014003TT8,Dassault Systemes,XPAR,EUR,10,FR,DSY.PA,dsy.fr,ISIN change au split 5 pour 1 de 2021,1390,2000-01-03,2026-08-17,26.6,22.14,EUR,Dassault Systèmes SE,1.0,,ok,
+EQ:FR:THALES,FR0000121329,Thales,XPAR,EUR,50,FR,HO.PA,ho.fr,,1390,2000-01-03,2026-08-17,26.6,253.6,EUR,Thales S.A.,1.0,,ok,
+EQ:FR:VEOLIA,FR0000124141,Veolia Environnement,XPAR,EUR,65,FR,VIE.PA,vie.fr,,1362,2000-07-17,2026-08-17,26.1,34.35,EUR,Veolia Environnement SA,1.0,,ok,
+EQ:FR:ENGIE,FR0010208488,Engie,XPAR,EUR,65,FR,ENGI.PA,engi.fr,,1390,2000-01-03,2026-08-17,26.6,25.57,EUR,Engie SA,1.0,,ok,
+EQ:FR:ORANGE,FR0000133308,Orange,XPAR,EUR,15,FR,ORA.PA,ora.fr,,1390,2000-01-03,2026-08-17,26.6,16.025,EUR,Orange S.A.,1.0,,ok,
+EQ:FR:CARREFOUR,FR0000120172,Carrefour,XPAR,EUR,45,FR,CA.PA,ca.fr,,1390,2000-01-03,2026-08-17,26.6,15.89,EUR,Carrefour SA,1.0,,ok,
+EQ:FR:SEB,FR0000121709,SEB,XPAR,EUR,40,FR,SK.PA,sk.fr,Cas du podcast ne pas confondre avec SEB banque suedoise,1390,2000-01-03,2026-08-17,26.6,58.55,EUR,SEB SA,1.0,,ok,
+EQ:FR:ARKEMA,FR0010313833,Arkema,XPAR,EUR,55,FR,AKE.PA,ake.fr,Cas cyclique de reference doc 08,1058,2006-05-15,2026-08-17,20.3,59.85,EUR,Arkema S.A.,1.0,,ok,
+EQ:FR:GETLINK,FR0010533075,Getlink,XPAR,EUR,50,FR,GET.PA,get.fr,,999,2007-07-02,2026-08-17,19.1,19.34,EUR,Getlink SE,1.0,,ok,
+EQ:DE:SAP,DE0007164600,SAP,XETR,EUR,10,DE,SAP.DE,sap.de,,1481,1998-04-06,2026-08-17,28.4,184.38,EUR,SAP SE,1.0,,ok,
+EQ:DE:SIEMENS,DE0007236101,Siemens,XETR,EUR,50,DE,SIE.DE,sie.de,,1555,1996-11-04,2026-08-17,29.8,279.15,EUR,Siemens Aktiengesellschaft,1.0,,ok,
+EQ:DE:ALLIANZ,DE0008404005,Allianz,XETR,EUR,30,DE,ALV.DE,alv.de,,1549,1996-12-16,2026-08-17,29.7,439.4,EUR,Allianz SE,1.0,,ok,
+EQ:DE:BASF,DE000BASF111,BASF,XETR,EUR,55,DE,BAS.DE,bas.de,,1549,1996-12-16,2026-08-17,29.7,51.79,EUR,BASF SE,1.0,,ok,
+EQ:DE:BMW,DE0005190003,Bayerische Motoren Werke,XETR,EUR,40,DE,BMW.DE,bmw.de,Cas erosion de reference doc 08,1555,1996-11-04,2026-08-17,29.8,58.94,EUR,Bayerische Motoren Werke Aktiengesellschaft,1.0,,ok,
+EQ:DE:MERCEDES,DE0007100000,Mercedes-Benz Group,XETR,EUR,40,DE,MBG.DE,mbg.de,,1556,1996-10-28,2026-08-17,29.8,45.07,EUR,Mercedes-Benz Group AG,1.0,,ok,
+EQ:DE:DTELEKOM,DE0005557508,Deutsche Telekom,XETR,EUR,15,DE,DTE.DE,dte.de,,1553,1996-11-18,2026-08-17,29.7,28.85,EUR,Deutsche Telekom AG,1.0,,ok,
+EQ:DE:MUNICHRE,DE0008430026,Muenchener Rueckversicherung,XETR,EUR,30,DE,MUV2.DE,muv2.de,,1470,1998-06-22,2026-08-17,28.2,516.6,EUR,Münchener Rückversicherungs-Gesellschaft Aktiengesellschaft in München,1.0,,ok,
+EQ:DE:ADIDAS,DE000A1EWWW0,adidas,XETR,EUR,40,DE,ADS.DE,ads.de,,1470,1998-06-22,2026-08-17,28.2,153.4,EUR,adidas AG,1.0,,ok,
+EQ:DE:INFINEON,DE0006231004,Infineon Technologies,XETR,EUR,10,DE,IFX.DE,ifx.de,,1380,2000-03-13,2026-08-17,26.4,55.86,EUR,Infineon Technologies AG,1.0,,ok,
+EQ:NL:ASML,NL0010273215,ASML Holding,XAMS,EUR,10,NL,ASML.AS,asml.nl,,1466,1998-07-20,2026-08-17,28.1,1514.4,EUR,ASML Holding N.V.,1.0,,ok,
+EQ:NL:HEINEKEN,NL0000009165,Heineken,XAMS,EUR,45,NL,HEIA.AS,heia.nl,,1639,1995-03-27,2026-08-17,31.4,71.98,EUR,Heineken N.V.,1.0,,ok,
+EQ:NL:WOLTERS,NL0000395903,Wolters Kluwer,XAMS,EUR,50,NL,WKL.AS,wkl.nl,,1639,1995-03-27,2026-08-17,31.4,70.62,EUR,Wolters Kluwer N.V.,1.0,,ok,
+EQ:NL:ING,NL0011821202,ING Groep,XAMS,EUR,30,NL,INGA.AS,inga.nl,,1639,1995-03-27,2026-08-17,31.4,29.77,EUR,ING Groep N.V.,1.0,,ok,
+EQ:NL:AHOLD,NL0011794037,Koninklijke Ahold Delhaize,XAMS,EUR,45,NL,AD.AS,ad.nl,,931,2008-10-20,2026-08-17,17.8,31.1,EUR,Koninklijke Ahold Delhaize N.V.,1.0,,ok,
+EQ:NL:PROSUS,NL0013654783,Prosus,XAMS,EUR,10,NL,PRX.AS,prx.nl,,363,2019-09-09,2026-08-17,6.9,37.96,EUR,Prosus N.V.,1.0,,avertissement,historique_6.9a
+EQ:ES:IBERDROLA,ES0144580Y14,Iberdrola,XMAD,EUR,65,ES,IBE.MC,ibe.es,,1390,2000-01-03,2026-08-17,26.6,20.12,EUR,"Iberdrola, S.A.",1.0,,ok,
+EQ:ES:SANTANDER,ES0113900J37,Banco Santander,XMAD,EUR,30,ES,SAN.MC,san.es,Historique tronque chez yfinance en aout 2026 non chargeable en l etat,1390,2000-01-03,2026-08-17,26.6,12.49,EUR,"Banco Santander, S.A.",1.0,,ok,
+EQ:ES:INDITEX,ES0148396007,Industria de Diseno Textil,XMAD,EUR,40,ES,ITX.MC,itx.es,,1318,2001-05-21,2026-08-17,25.2,57.94,EUR,"Industria de Diseño Textil, S.A.",1.0,,ok,
+EQ:ES:AMADEUS,ES0109067019,Amadeus IT Group,XMAD,EUR,10,ES,AMS.MC,ams.es,Historique tronque chez yfinance en aout 2026 non chargeable en l etat,852,2010-04-26,2026-08-17,16.3,56.42,EUR,"Amadeus IT Group, S.A.",1.0,,ok,
+EQ:ES:TELEFONICA,ES0178430E18,Telefonica,XMAD,EUR,15,ES,TEF.MC,tef.es,,1390,2000-01-03,2026-08-17,26.6,3.639,EUR,"Telefónica, S.A.",1.0,,ok,
+EQ:ES:AENA,ES0105046009,Aena,XMAD,EUR,50,ES,AENA.MC,aena.es,Introduite en bourse en 2015 historique court,602,2015-02-09,2026-08-17,11.5,26.96,EUR,"Aena S.M.E., S.A.",1.0,,avertissement,historique_11.5a
+EQ:IT:ENEL,IT0003128367,Enel,XMIL,EUR,65,IT,ENEL.MI,enel.it,,1399,1999-11-01,2026-08-17,26.8,9.521,EUR,Enel SpA,1.0,,ok,
+EQ:IT:FERRARI,NL0011585146,Ferrari,XMIL,EUR,40,NL,RACE.MI,race.it,ISIN neerlandais,555,2016-01-04,2026-08-17,10.6,370.15,EUR,Ferrari N.V.,1.0,,avertissement,historique_10.6a
+EQ:IT:INTESA,IT0000072618,Intesa Sanpaolo,XMIL,EUR,30,IT,ISP.MI,isp.it,,1640,1995-03-20,2026-08-17,31.4,6.777,EUR,Intesa Sanpaolo S.p.A.,1.0,,ok,
+EQ:IT:ENI,IT0003132476,Eni,XMIL,EUR,60,IT,ENI.MI,eni.it,,1604,1995-11-27,2026-08-17,30.7,24.31,EUR,Eni S.p.A.,1.0,,ok,
+EQ:BE:ABINBEV,BE0974293251,Anheuser-Busch InBev,XBRU,EUR,45,BE,ABI.BR,abi.be,,1343,2000-11-27,2026-08-17,25.7,66.74,EUR,Anheuser-Busch InBev SA/NV,1.0,,ok,
+EQ:BE:KBC,BE0003565737,KBC Groep,XBRU,EUR,30,BE,KBC.BR,kbc.be,,1390,2000-01-03,2026-08-17,26.6,130.8,EUR,KBC Group NV,1.0,,ok,
+EQ:BE:UCB,BE0003739530,UCB,XBRU,EUR,20,BE,UCB.BR,ucb.be,,1390,2000-01-03,2026-08-17,26.6,216.8,EUR,UCB SA,1.0,,ok,
+EQ:ES:BANCOBILBAOVIZCA,,"Banco Bilbao Vizcaya Argentaria, S.A.",XMAD,EUR,30,ES,BBVA.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,24.74,EUR,"Banco Bilbao Vizcaya Argentaria, S.A.",1.0,,avertissement,isin_absent
+EQ:DE:SIEMENSENERGY,,Siemens Energy AG,XETR,EUR,50,DE,ENR.DE,,candidat screener yahoo 2026-08-21,308,2020-09-28,2026-08-17,5.9,154.88,EUR,Siemens Energy AG,1.0,,avertissement,isin_absent|historique_5.9a
+EQ:SE:SPOTIFYTECHNOLOG,,Spotify Technology S.A.,XETR,EUR,15,SE,639.DE,,candidat screener yahoo 2026-08-21,128,2024-03-11,2026-08-17,2.4,459.0,EUR,Spotify Technology S.A.,1.0,,avertissement,isin_absent|historique_2.4a
+EQ:ES:CAIXABANK,,"CaixaBank, S.A.",XMAD,EUR,30,ES,CABK.MC,,candidat screener yahoo 2026-08-21,985,2007-10-08,2026-08-17,18.9,12.95,EUR,"CaixaBank, S.A.",1.0,,avertissement,isin_absent
+EQ:IT:ASSICURAZIONIGEN,,Assicurazioni Generali S.p.A.,XMIL,EUR,30,IT,G.MI,,candidat screener yahoo 2026-08-21,2092,1986-07-21,2026-08-17,40.1,42.82,EUR,Assicurazioni Generali S.p.A.,1.0,,avertissement,isin_absent
+EQ:DE:DEUTSCHEPOST,,Deutsche Post AG,XETR,EUR,50,DE,DHL.DE,,candidat screener yahoo 2026-08-21,1344,2000-11-20,2026-08-17,25.7,56.1,EUR,Deutsche Post AG,1.0,,avertissement,isin_absent
+EQ:DE:DEUTSCHEBANK,,Deutsche Bank Aktiengesellschaft,XETR,EUR,30,DE,DBK.DE,,candidat screener yahoo 2026-08-21,1553,1996-11-18,2026-08-17,29.7,32.045,EUR,Deutsche Bank Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:DE:MERCK,,Merck KGaA,XETR,EUR,20,DE,MRK.DE,,candidat screener yahoo 2026-08-21,1470,1998-06-22,2026-08-17,28.2,137.3,EUR,Merck KGaA,1.0,,avertissement,isin_absent
+EQ:FI:NORDEABANK,,NORDEA BANK,XHEL,EUR,30,FI,NDA-FI.HE,,candidat screener yahoo 2026-08-21,1387,2000-01-24,2026-08-17,26.6,17.24,EUR,Nordea Bank Abp,1.0,,avertissement,isin_absent
+EQ:FR:CREDITAGRICOLE,,Crédit Agricole S.A.,XPAR,EUR,30,FR,ACA.PA,,candidat screener yahoo 2026-08-21,1289,2001-12-10,2026-08-17,24.7,19.07,EUR,Crédit Agricole S.A.,1.0,,avertissement,isin_absent
+EQ:FR:SOCIETEGENERALES,,Société Générale Société anonyme,XPAR,EUR,30,FR,GLE.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,75.94,EUR,Société Générale Société anonyme,1.0,,avertissement,isin_absent
+EQ:DE:RHEINMETALL,,Rheinmetall AG,XETR,EUR,50,DE,RHM.DE,,candidat screener yahoo 2026-08-21,1464,1998-08-03,2026-08-17,28.0,1151.8,EUR,Rheinmetall AG,1.0,,avertissement,isin_absent
+EQ:DE:DEUTSCHEBORSE,,Deutsche Börse AG,XETR,EUR,30,DE,DB1.DE,,candidat screener yahoo 2026-08-21,1333,2001-02-05,2026-08-17,25.5,280.5,EUR,Deutsche Börse AG,1.0,,avertissement,isin_absent
+EQ:FI:NOKIA,,Nokia Oyj,XHEL,EUR,10,FI,NOKIA.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,8.864,EUR,Nokia Oyj,1.0,,avertissement,isin_absent
+EQ:AT:ERSTEGROUPBANK,,Erste Group Bank AG,XWBO,EUR,30,AT,EBS.VI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,121.0,EUR,Erste Group Bank AG,1.0,,avertissement,isin_absent
+EQ:DE:BAYER,,Bayer Aktiengesellschaft,XETR,EUR,20,DE,BAYN.DE,,candidat screener yahoo 2026-08-21,1549,1996-12-16,2026-08-17,29.7,47.51,EUR,Bayer Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:DE:EON,,E.ON SE,XETR,EUR,65,DE,EOAN.DE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,17.63,EUR,E.ON SE,1.0,,avertissement,isin_absent
+EQ:DE:RWE,,RWE Aktiengesellschaft,XETR,EUR,65,DE,RWE.DE,,candidat screener yahoo 2026-08-21,1549,1996-12-16,2026-08-17,29.7,58.0,EUR,RWE Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:DE:SIEMENSHEALTHINE,,SIEMENS HEALTHINEERS,XETR,EUR,20,DE,SHL.DE,,candidat screener yahoo 2026-08-21,437,2018-04-09,2026-08-17,8.4,39.63,EUR,Siemens Healthineers AG,1.0,,avertissement,isin_absent|historique_8.4a
+EQ:ES:ENDESA,,"Endesa, S.A.",XMAD,EUR,65,ES,ELE.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,41.69,EUR,"Endesa, S.A.",1.0,,avertissement,isin_absent
+EQ:DE:COMMERZBANK,,Commerzbank AG,XETR,EUR,30,DE,CBK.DE,,candidat screener yahoo 2026-08-21,1549,1996-12-16,2026-08-17,29.7,38.89,EUR,Commerzbank AG,1.0,,avertissement,isin_absent
+EQ:DE:INGPORSCHE,,Dr. Ing. h.c. F. Porsche AG,XETR,EUR,40,DE,P911.DE,,candidat screener yahoo 2026-08-21,204,2022-09-26,2026-08-17,3.9,44.8,EUR,Dr. Ing. h.c. F. Porsche AG,1.0,,avertissement,isin_absent|historique_3.9a
+EQ:NL:ASMINTERNATIONAL,,ASM International NV,XAMS,EUR,10,NL,ASM.AS,,candidat screener yahoo 2026-08-21,1442,1999-01-04,2026-08-17,27.6,833.8,EUR,ASM International NV,1.0,,avertissement,isin_absent
+EQ:NL:FERROVIAL,,Ferrovial N.V.,XAMS,EUR,50,NL,FER.AS,,candidat screener yahoo 2026-08-21,167,2023-06-12,2026-08-17,3.2,54.9,EUR,Ferrovial N.V.,1.0,,avertissement,isin_absent|historique_3.2a
+EQ:DE:VOLKSWAGEN,,Volkswagen AG,XETR,EUR,40,DE,VOW.DE,,candidat screener yahoo 2026-08-21,1640,1995-03-20,2026-08-17,31.4,76.3,EUR,Volkswagen AG,1.0,,avertissement,isin_absent
+EQ:IT:PRYSMIAN,,Prysmian S.p.A.,XMIL,EUR,50,IT,PRY.MI,,candidat screener yahoo 2026-08-21,1008,2007-04-30,2026-08-17,19.3,125.9,EUR,Prysmian S.p.A.,1.0,,avertissement,isin_absent
+EQ:IT:BANCAMONTEDEI,,Banca Monte dei Paschi di Siena S.p.A.,XMIL,EUR,30,IT,BMPS.MI,,candidat screener yahoo 2026-08-21,1418,1999-06-21,2026-08-17,27.2,11.638,EUR,Banca Monte dei Paschi di Siena S.p.A.,1.0,,avertissement,isin_absent
+EQ:IT:POSTEITALIANE,,Poste Italiane S.p.A.,XMIL,EUR,50,IT,PST.MI,,candidat screener yahoo 2026-08-21,565,2015-10-26,2026-08-17,10.8,27.23,EUR,Poste Italiane S.p.A.,1.0,,avertissement,isin_absent|historique_10.8a
+EQ:DE:DAIMLERTRUCKHOLD,,Daimler Truck Holding AG,XETR,EUR,50,DE,DTG.DE,,candidat screener yahoo 2026-08-21,246,2021-12-06,2026-08-17,4.7,45.56,EUR,Daimler Truck Holding AG,1.0,,avertissement,isin_absent|historique_4.7a
+EQ:NL:ADYEN,,Adyen N.V.,XAMS,EUR,10,NL,ADYEN.AS,,candidat screener yahoo 2026-08-21,428,2018-06-11,2026-08-17,8.2,1067.0,EUR,Adyen N.V.,1.0,,avertissement,isin_absent|historique_8.2a
+EQ:NL:ABNAMROBANK,,ABN AMRO Bank N.V.,XAMS,EUR,30,NL,ABN.AS,,candidat screener yahoo 2026-08-21,562,2015-11-16,2026-08-17,10.7,40.41,EUR,ABN AMRO Bank N.V.,1.0,,avertissement,isin_absent|historique_10.7a
+EQ:IT:LEONARDO,,Leonardo S.p.a.,XMIL,EUR,50,IT,LDO.MI,,candidat screener yahoo 2026-08-21,1101,2005-07-18,2026-08-17,21.1,56.73,EUR,Leonardo S.p.a.,1.0,,avertissement,isin_absent
+EQ:DE:HOCHTIEF,,HOCHTIEF Aktiengesellschaft,XETR,EUR,50,DE,HOT.DE,,candidat screener yahoo 2026-08-21,1466,1998-07-20,2026-08-17,28.1,434.2,EUR,HOCHTIEF Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:DE:TALANX,,Talanx AG,XETR,EUR,30,DE,TLX.DE,,candidat screener yahoo 2026-08-21,725,2012-10-01,2026-08-17,13.9,120.4,EUR,Talanx AG,1.0,,avertissement,isin_absent|historique_13.9a
+EQ:ES:REPSOL,,"Repsol, S.A.",XMAD,EUR,60,ES,REP.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,28.23,EUR,"Repsol, S.A.",1.0,,avertissement,isin_absent
+EQ:DE:HENKEL,,Henkel AG & Co. KGaA,XETR,EUR,45,DE,HEN3.DE,,candidat screener yahoo 2026-08-21,1470,1998-06-22,2026-08-17,28.2,75.24,EUR,Henkel AG & Co. KGaA,1.0,,avertissement,isin_absent
+EQ:DE:HANNOVERRUCK,,Hannover Rück SE,XETR,EUR,30,DE,HNR1.DE,,candidat screener yahoo 2026-08-21,1348,2000-10-23,2026-08-17,25.8,251.0,EUR,Hannover Rück SE,1.0,,avertissement,isin_absent
+EQ:IT:BPERBANCA,,BPER Banca SpA,XMIL,EUR,30,IT,BPE.MI,,candidat screener yahoo 2026-08-21,1640,1995-03-20,2026-08-17,31.4,14.016,EUR,BPER Banca SpA,1.0,,avertissement,isin_absent
+EQ:ES:ACSACTIVIDADESCO,,"ACS, Actividades de Construcción y Servicios, S.A.",XMAD,EUR,50,ES,ACS.MC,,candidat screener yahoo 2026-08-21,1286,2002-01-01,2026-08-18,24.6,106.9,EUR,"ACS, Actividades de Construcción y Servicios, S.A.",1.0,,avertissement,isin_absent
+EQ:DE:HEIDELBERGMATERI,,Heidelberg Materials AG,XETR,EUR,55,DE,HEI.DE,,candidat screener yahoo 2026-08-21,1465,1998-07-27,2026-08-17,28.1,160.2,EUR,Heidelberg Materials AG,1.0,,avertissement,isin_absent
+EQ:DK:NOVOZYMES,,Novozymes A/S,XETR,EUR,55,DK,NZM2.DE,,candidat screener yahoo 2026-08-21,1173,2000-11-27,2026-08-17,25.7,60.1,EUR,Novozymes A/S,1.0,,avertissement,isin_absent
+EQ:DK:VESTASWINDSYSTEM,,Vestas Wind Systems A/S,XETR,EUR,50,DK,VWSB.DE,,candidat screener yahoo 2026-08-21,1358,2000-08-14,2026-08-17,26.0,28.24,EUR,Vestas Wind Systems A/S,1.0,,avertissement,isin_absent
+EQ:ES:NATURGYENERGYGRO,,"Naturgy Energy Group, S.A.",XMAD,EUR,65,ES,NTGY.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,29.54,EUR,"Naturgy Energy Group, S.A.",1.0,,avertissement,isin_absent
+EQ:NL:UNIVERSALMUSICGR,,Universal Music Group N.V.,XAMS,EUR,15,NL,UMG.AS,,candidat screener yahoo 2026-08-21,257,2021-09-20,2026-08-17,4.9,14.805,EUR,Universal Music Group N.V.,1.0,,avertissement,isin_absent|historique_4.9a
+EQ:FI:KONE,,KONE Oyj,XHEL,EUR,50,FI,KNEBV.HE,,candidat screener yahoo 2026-08-21,1108,2005-05-30,2026-08-17,21.2,51.78,EUR,KONE Oyj,1.0,,avertissement,isin_absent
+EQ:FI:SAMPO,,Sampo Oyj,XHEL,EUR,30,FI,SAMPO.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,9.664,EUR,Sampo Oyj,1.0,,avertissement,isin_absent
+EQ:FI:NESTE,,Neste Oyj,XHEL,EUR,60,FI,NESTE.HE,,candidat screener yahoo 2026-08-21,1114,2005-04-18,2026-08-17,21.3,32.85,EUR,Neste Oyj,1.0,,avertissement,isin_absent
+EQ:IT:BANCOBPM,,Banco BPM S.p.A.,XMIL,EUR,30,IT,BAMI.MI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,16.67,EUR,Banco BPM S.p.A.,1.0,,avertissement,isin_absent
+EQ:SE:HEXAGONPUBL,,Hexagon AB (publ),XMIL,EUR,10,SE,1HEXA.MI,,candidat screener yahoo 2026-08-21,76,2025-03-10,2026-08-17,1.4,9.25,EUR,Hexagon AB (publ),1.0,,avertissement,isin_absent|historique_1.4a
+EQ:IE:RYANAIRHOLDINGS,,Ryanair Holdings plc,XDUB,EUR,50,IE,RYA.IR,,candidat screener yahoo 2026-08-21,1290,2001-12-03,2026-08-17,24.7,22.95,EUR,Ryanair Holdings plc,1.0,,avertissement,isin_absent
+EQ:DE:HAPAGLLOYD,,Hapag-Lloyd Aktiengesellschaft,XETR,EUR,50,DE,HLAG.DE,,candidat screener yahoo 2026-08-21,564,2015-11-02,2026-08-17,10.8,136.6,EUR,Hapag-Lloyd Aktiengesellschaft,1.0,,avertissement,isin_absent|historique_10.8a
+EQ:DE:BIONTECH,,BioNTech SE,XETR,EUR,20,DE,22UA.DE,,candidat screener yahoo 2026-08-21,303,2020-11-02,2026-08-17,5.8,94.5,EUR,BioNTech SE,1.0,,avertissement,isin_absent|historique_5.8a
+EQ:NL:EXOR,,Exor N.V.,XAMS,EUR,50,NL,EXO.AS,,candidat screener yahoo 2026-08-21,211,2022-08-08,2026-08-17,4.0,70.6,EUR,Exor N.V.,1.0,,avertissement,isin_absent|historique_4.0a
+EQ:FR:DASSAULTAVIATION,,Dassault Aviation société anonyme,XPAR,EUR,50,FR,AM.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,301.2,EUR,Dassault Aviation société anonyme,1.0,,avertissement,isin_absent
+EQ:NL:KONINKLIJKEPHILI,,Koninklijke Philips N.V.,XAMS,EUR,20,NL,PHIA.AS,,candidat screener yahoo 2026-08-21,1639,1995-03-27,2026-08-17,31.4,23.37,EUR,Koninklijke Philips N.V.,1.0,,avertissement,isin_absent
+EQ:IE:AIBGROUP,,AIB Group plc,XDUB,EUR,30,IE,A5G.IR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,10.935,EUR,AIB Group plc,1.0,,avertissement,isin_absent
+EQ:IT:MEDIOBANCABANCAC,,Mediobanca Banca di Credito Finanziario S.p.A.,XMIL,EUR,30,IT,MB.MI,,candidat screener yahoo 2026-08-21,2051,1987-05-04,2026-08-17,39.3,28.01,EUR,Mediobanca Banca di Credito Finanziario S.p.A.,1.0,,avertissement,isin_absent
+EQ:DE:ENBWENERGIEBADEN,,EnBW Energie Baden-Württemberg AG,XETR,EUR,65,DE,EBK.DE,,candidat screener yahoo 2026-08-21,1428,1999-04-12,2026-08-17,27.3,69.6,EUR,EnBW Energie Baden-Württemberg AG,1.0,,avertissement,isin_absent
+EQ:AT:OMV,,OMV Aktiengesellschaft,XWBO,EUR,60,AT,OMV.VI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,68.8,EUR,OMV Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:IT:UNIPOLASSICURAZI,,Unipol Assicurazioni S.p.A.,XMIL,EUR,30,IT,UNI.MI,,candidat screener yahoo 2026-08-21,1859,1991-01-07,2026-08-17,35.6,27.81,EUR,Unipol Assicurazioni S.p.A.,1.0,,avertissement,isin_absent
+EQ:IT:TERNA,,Terna S.p.A.,XMIL,EUR,65,IT,TRN.MI,,candidat screener yahoo 2026-08-21,1157,2004-06-21,2026-08-17,22.2,9.858,EUR,Terna S.p.A.,1.0,,avertissement,isin_absent
+EQ:NL:GROUP,,NN Group N.V.,XAMS,EUR,30,NL,NN.AS,,candidat screener yahoo 2026-08-21,634,2014-06-30,2026-08-17,12.1,75.78,EUR,NN Group N.V.,1.0,,avertissement,isin_absent|historique_12.1a
+EQ:IT:SNAM,,Snam S.p.A.,XMIL,EUR,65,IT,SRG.MI,,candidat screener yahoo 2026-08-21,1290,2001-12-03,2026-08-17,24.7,5.812,EUR,Snam S.p.A.,1.0,,avertissement,isin_absent
+EQ:DE:MTUAEROENGINES,,MTU AERO ENGINES,XETR,EUR,50,DE,MTX.DE,,candidat screener yahoo 2026-08-21,1107,2005-06-06,2026-08-17,21.2,355.0,EUR,MTU Aero Engines AG,1.0,,avertissement,isin_absent
+EQ:DE:UNIPER,,Uniper SE,XETR,EUR,65,DE,UN0.DE,,candidat screener yahoo 2026-08-21,519,2016-09-12,2026-08-17,9.9,43.8,EUR,Uniper SE,1.0,,avertissement,isin_absent|historique_9.9a
+EQ:PT:EDP,,"EDP, S.A.",XLIS,EUR,65,PT,EDP.LS,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,4.654,EUR,"EDP, S.A.",1.0,,avertissement,isin_absent
+EQ:FR:AMUNDI,,Amundi S.A.,XPAR,EUR,30,FR,AMUN.PA,,candidat screener yahoo 2026-08-21,563,2015-11-09,2026-08-17,10.8,93.95,EUR,Amundi S.A.,1.0,,avertissement,isin_absent|historique_10.8a
+EQ:FR:SARTORIUSSTEDIMB,,Sartorius Stedim Biotech S.A.,XPAR,EUR,20,FR,DIM.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,192.6,EUR,Sartorius Stedim Biotech S.A.,1.0,,avertissement,isin_absent
+EQ:CZ:CSG,,CSG N.V.,XWBO,EUR,50,CZ,CSG.VI,,candidat screener yahoo 2026-08-21,30,2026-01-26,2026-08-17,0.6,18.472,EUR,CSG N.V.,1.0,,rejete,historique_tronque_provider(30pts)|isin_absent
+EQ:DE:TRATON,,Traton SE,XETR,EUR,50,DE,8TRA.DE,,candidat screener yahoo 2026-08-21,373,2019-07-01,2026-08-17,7.1,36.82,EUR,Traton SE,1.0,,avertissement,isin_absent|historique_7.1a
+EQ:FI:WARTSILA,,Wartsila OYJ Abp,XHEL,EUR,50,FI,WRT1V.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,29.5,EUR,Wärtsilä Oyj Abp,1.0,,avertissement,isin_absent
+EQ:FI:FORTUM,,Fortum Oyj,XHEL,EUR,65,FI,FORTUM.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,20.13,EUR,Fortum Oyj,1.0,,avertissement,isin_absent
+EQ:FR:BOUYGUES,,Bouygues SA,XPAR,EUR,50,FR,EN.PA,,candidat screener yahoo 2026-08-21,1859,1991-01-07,2026-08-17,35.6,46.71,EUR,Bouygues SA,1.0,,avertissement,isin_absent
+EQ:IE:BANKIRELANDGROUP,,Bank of Ireland Group plc,XDUB,EUR,30,IE,BIRG.IR,,candidat screener yahoo 2026-08-21,1311,2001-07-09,2026-08-17,25.1,19.07,EUR,Bank of Ireland Group plc,1.0,,avertissement,isin_absent
+EQ:IT:TECHNOPROBE,,Technoprobe S.p.A.,XMIL,EUR,10,IT,TPRO.MI,,candidat screener yahoo 2026-08-21,236,2022-02-14,2026-08-17,4.5,27.98,EUR,Technoprobe S.p.A.,1.0,,avertissement,isin_absent|historique_4.5a
+EQ:IT:BANCAMEDIOLANUM,,Banca Mediolanum S.p.A.,XMIL,EUR,30,IT,BMED.MI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,23.78,EUR,Banca Mediolanum S.p.A.,1.0,,avertissement,isin_absent
+EQ:ES:CELLNEXTELECOM,,"Cellnex Telecom, S.A.",XMAD,EUR,35,ES,CLNX.MC,,candidat screener yahoo 2026-08-21,590,2015-05-04,2026-08-17,11.3,26.41,EUR,"Cellnex Telecom, S.A.",1.0,,avertissement,isin_absent|historique_11.3a
+EQ:ES:BANCOSABADELL,,"Banco de Sabadell, S.A.",XMAD,EUR,30,ES,SAB.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,3.672,EUR,"Banco de Sabadell, S.A.",1.0,,avertissement,isin_absent
+EQ:DE:SARTORIUS,,Sartorius Aktiengesellschaft,XETR,EUR,20,DE,SRT3.DE,,candidat screener yahoo 2026-08-21,1426,1999-04-26,2026-08-17,27.3,245.0,EUR,Sartorius Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:DE:BEIERSDORF,,Beiersdorf Aktiengesellschaft,XETR,EUR,45,DE,BEI.DE,,candidat screener yahoo 2026-08-21,1466,1998-07-20,2026-08-17,28.1,78.62,EUR,Beiersdorf Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:DE:VONOVIA,,Vonovia SE,XETR,EUR,35,DE,VNA.DE,,candidat screener yahoo 2026-08-21,685,2013-07-08,2026-08-17,13.1,19.965,EUR,Vonovia SE,1.0,,avertissement,isin_absent|historique_13.1a
+EQ:PT:GALPENERGIASGPS,,"Galp Energia, SGPS, S.A.",XLIS,EUR,60,PT,GALP.LS,,candidat screener yahoo 2026-08-21,1035,2006-10-23,2026-08-17,19.8,21.83,EUR,"Galp Energia, SGPS, S.A.",1.0,,avertissement,isin_absent
+EQ:NL:SEMICONDUCTORIND,,BE Semiconductor Industries N.V.,XAMS,EUR,10,NL,BESI.AS,,candidat screener yahoo 2026-08-21,1466,1998-07-20,2026-08-17,28.1,213.5,EUR,BE Semiconductor Industries N.V.,1.0,,avertissement,isin_absent
+EQ:DE:KNORRBREMSE,,Knorr-Bremse AG,XETR,EUR,40,DE,KBX.DE,,candidat screener yahoo 2026-08-21,411,2018-10-08,2026-08-17,7.9,102.3,EUR,Knorr-Bremse AG,1.0,,avertissement,isin_absent|historique_7.9a
+EQ:IT:TELECOMITALIA,,Telecom Italia S.p.A.,XMIL,EUR,15,IT,TIT.MI,,candidat screener yahoo 2026-08-21,2063,1987-02-09,2026-08-17,39.5,7.682,EUR,Telecom Italia S.p.A.,1.0,,avertissement,isin_absent
+EQ:PT:BANCOCOMERCIALPO,,"Banco Comercial Português, S.A.",XLIS,EUR,30,PT,BCP.LS,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,1.099,EUR,"Banco Comercial Português, S.A.",1.0,,avertissement,isin_absent
+EQ:NL:KONINKLIJKEKPN,,Koninklijke KPN N.V.,XAMS,EUR,15,NL,KPN.AS,,candidat screener yahoo 2026-08-21,1639,1995-03-27,2026-08-17,31.4,4.058,EUR,Koninklijke KPN N.V.,1.0,,avertissement,isin_absent
+EQ:ES:BANKINTER,,"Bankinter, S.A.",XMAD,EUR,30,ES,BKT.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,16.665,EUR,"Bankinter, S.A.",1.0,,avertissement,isin_absent
+EQ:FR:UNIBAILRODAMCOWE,,Unibail-Rodamco-Westfield SE,XPAR,EUR,35,FR,URW.PA,,candidat screener yahoo 2026-08-21,176,2023-04-10,2026-08-17,3.4,103.15,EUR,Unibail-Rodamco-Westfield SE,1.0,,avertissement,isin_absent|historique_3.4a
+EQ:DE:DWSGROUP,,DWS Group GmbH & Co. KGaA,XETR,EUR,30,DE,DWS.DE,,candidat screener yahoo 2026-08-21,439,2018-03-26,2026-08-17,8.4,73.75,EUR,DWS Group GmbH & Co. KGaA,1.0,,avertissement,isin_absent|historique_8.4a
+EQ:IT:FINECOBANKBANCAF,,FinecoBank Banca Fineco S.p.A.,XMIL,EUR,30,IT,FBK.MI,,candidat screener yahoo 2026-08-21,634,2014-06-30,2026-08-17,12.1,23.51,EUR,FinecoBank Banca Fineco S.p.A.,1.0,,avertissement,isin_absent|historique_12.1a
+EQ:FI:METSO,,Metso Oyj,XHEL,EUR,50,FI,METSO.HE,,candidat screener yahoo 2026-08-21,1037,2006-10-09,2026-08-17,19.9,17.29,EUR,Metso Oyj,1.0,,avertissement,isin_absent
+EQ:NL:HALTRUST,,HAL Trust,XAMS,EUR,30,NL,HAL.AS,,candidat screener yahoo 2026-08-21,1466,1998-07-20,2026-08-17,28.1,158.4,EUR,HAL Trust,1.0,,avertissement,isin_absent
+EQ:NL:ASRNEDERLAND,,ASR Nederland N.V.,XAMS,EUR,30,NL,ASRNL.AS,,candidat screener yahoo 2026-08-21,533,2016-06-06,2026-08-17,10.2,69.0,EUR,ASR Nederland N.V.,1.0,,avertissement,isin_absent|historique_10.2a
+EQ:BE:ELIAGROUPSANV,,Elia Group SA/NV,XBRU,EUR,65,BE,ELI.BR,,candidat screener yahoo 2026-08-21,1105,2005-06-20,2026-08-17,21.2,128.0,EUR,Elia Group SA/NV,1.0,,avertissement,isin_absent
+EQ:ES:MAPFRE,,"Mapfre, S.A.",XMAD,EUR,30,ES,MAP.MC,,candidat screener yahoo 2026-08-21,1301,2001-09-17,2026-08-17,24.9,4.352,EUR,"Mapfre, S.A.",1.0,,avertissement,isin_absent
+EQ:AT:BAWAGGROUP,,BAWAG Group AG,XWBO,EUR,30,AT,BG.VI,,candidat screener yahoo 2026-08-21,461,2017-10-23,2026-08-17,8.8,174.5,EUR,BAWAG Group AG,1.0,,avertissement,isin_absent|historique_8.8a
+EQ:SE:EVOLUTION,,Evolution AB,XMIL,EUR,40,SE,1EVO.MI,,candidat screener yahoo 2026-08-21,74,2025-03-24,2026-08-17,1.4,71.96,EUR,Evolution AB,1.0,,avertissement,isin_absent|historique_1.4a
+EQ:IE:KERRYGROUP,,Kerry Group plc,XDUB,EUR,45,IE,KRZ.IR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,83.85,EUR,Kerry Group plc,1.0,,avertissement,isin_absent
+EQ:FR:IPSEN,,Ipsen S.A.,XPAR,EUR,20,FR,IPN.PA,,candidat screener yahoo 2026-08-21,1081,2005-12-05,2026-08-17,20.7,161.4,EUR,Ipsen S.A.,1.0,,avertissement,isin_absent
+EQ:FI:UPMKYMMENE,,UPM-Kymmene Oyj,XHEL,EUR,55,FI,UPM.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,23.69,EUR,UPM-Kymmene Oyj,1.0,,avertissement,isin_absent
+EQ:IT:MONCLER,,Moncler S.p.A.,XMIL,EUR,40,IT,MONC.MI,,candidat screener yahoo 2026-08-21,662,2013-12-16,2026-08-17,12.7,47.1,EUR,Moncler S.p.A.,1.0,,avertissement,isin_absent|historique_12.7a
+EQ:LU:EUROFINSSCIENTIF,,Eurofins Scientific SE,XWBO,EUR,20,LU,ESF.VI,,candidat screener yahoo 2026-08-21,309,2020-09-21,2026-08-17,5.9,72.32,EUR,Eurofins Scientific SE,1.0,,avertissement,isin_absent|historique_5.9a
+EQ:DE:SYMRISE,,Symrise AG,XETR,EUR,55,DE,SY1.DE,,candidat screener yahoo 2026-08-21,1028,2006-12-11,2026-08-17,19.7,89.46,EUR,Symrise AG,1.0,,avertissement,isin_absent
+EQ:FR:EIFFAGE,,Eiffage SA,XPAR,EUR,50,FR,FGR.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,118.6,EUR,Eiffage SA,1.0,,avertissement,isin_absent
+EQ:ES:ACCIONA,,"Acciona, S.A.",XMAD,EUR,50,ES,ANA.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,213.2,EUR,"Acciona, S.A.",1.0,,avertissement,isin_absent
+EQ:DE:DELIVERYHERO,,Delivery Hero SE,XETR,EUR,40,DE,DHER.DE,,candidat screener yahoo 2026-08-21,478,2017-06-26,2026-08-17,9.1,36.76,EUR,Delivery Hero SE,1.0,,avertissement,isin_absent|historique_9.1a
+EQ:ES:INDRASISTEMAS,,"Indra Sistemas, S.A.",XMAD,EUR,10,ES,IDR.MC,,candidat screener yahoo 2026-08-21,1351,2000-10-02,2026-08-17,25.9,60.58,EUR,"Indra Sistemas, S.A.",1.0,,avertissement,isin_absent
+EQ:FR:KLEPIERRE,,Klépierre SA,XPAR,EUR,35,FR,LI.PA,,candidat screener yahoo 2026-08-21,1781,1992-07-06,2026-08-17,34.1,38.94,EUR,Klépierre SA,1.0,,avertissement,isin_absent
+EQ:FI:ORION,,Orion Oyj,XHEL,EUR,20,FI,ORNBV.HE,,candidat screener yahoo 2026-08-21,1142,2004-10-04,2026-08-17,21.9,78.65,EUR,Orion Oyj,1.0,,avertissement,isin_absent
+EQ:FR:AEROPORTSPARIS,,Aeroports de Paris SA,XPAR,EUR,50,FR,ADP.PA,,candidat screener yahoo 2026-08-21,1053,2006-06-19,2026-08-17,20.2,111.0,EUR,Aeroports de Paris SA,1.0,,avertissement,isin_absent
+EQ:PT:JERONIMOMARTINSS,,"Jerónimo Martins, SGPS, S.A.",XLIS,EUR,45,PT,JMT.LS,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,17.29,EUR,"Jerónimo Martins, SGPS, S.A.",1.0,,avertissement,isin_absent
+EQ:DE:FRESENIUSMEDICAL,,Fresenius Medical Care AG,XETR,EUR,20,DE,FME.DE,,candidat screener yahoo 2026-08-21,1466,1998-07-20,2026-08-17,28.1,40.3,EUR,Fresenius Medical Care AG,1.0,,avertissement,isin_absent
+EQ:IT:RECORDATIINDUSTR,,Recordati Industria Chimica e Farmaceutica S.p.A.,XMIL,EUR,20,IT,REC.MI,,candidat screener yahoo 2026-08-21,1640,1995-03-20,2026-08-17,31.4,52.75,EUR,Recordati Industria Chimica e Farmaceutica S.p.A.,1.0,,avertissement,isin_absent
+EQ:FR:BOLLORE,,Bolloré SE,XPAR,EUR,15,FR,BOL.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,3.806,EUR,Bolloré SE,1.0,,avertissement,isin_absent
+EQ:FR:REXEL,,Rexel S.A.,XPAR,EUR,10,FR,RXL.PA,,candidat screener yahoo 2026-08-21,1012,2007-04-02,2026-08-17,19.4,35.96,EUR,Rexel S.A.,1.0,,avertissement,isin_absent
+EQ:FR:ACCOR,,Accor SA,XPAR,EUR,40,FR,AC.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,45.83,EUR,Accor SA,1.0,,avertissement,isin_absent
+EQ:NL:THEMAGNUMICE,,THE MAGNUM ICE CREAM COMPANY N.,XAMS,EUR,45,NL,MICC.AS,,candidat screener yahoo 2026-08-21,37,2025-12-08,2026-08-17,0.7,16.874,EUR,THE MAGNUM ICE CREAM COMPANY N.,1.0,,rejete,historique_tronque_provider(37pts)|isin_absent
+EQ:BE:LOTUSBAKERIES,,Lotus Bakeries NV,XBRU,EUR,45,BE,LOTB.BR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,12740.0,EUR,Lotus Bakeries NV,1.0,,avertissement,isin_absent
+EQ:NL:AKZONOBEL,,Akzo Nobel N.V.,XAMS,EUR,55,NL,AKZA.AS,,candidat screener yahoo 2026-08-21,1639,1995-03-27,2026-08-17,31.4,60.2,EUR,Akzo Nobel N.V.,1.0,,avertissement,isin_absent
+EQ:DE:HENSOLDT,,Hensoldt AG,XETR,EUR,50,DE,HAG.DE,,candidat screener yahoo 2026-08-21,309,2020-09-21,2026-08-17,5.9,88.34,EUR,Hensoldt AG,1.0,,avertissement,isin_absent|historique_5.9a
+EQ:AT:STRABAG,,Strabag SE,XWBO,EUR,50,AT,STR.VI,,candidat screener yahoo 2026-08-21,984,2007-10-15,2026-08-17,18.8,85.5,EUR,Strabag SE,1.0,,avertissement,isin_absent
+EQ:ES:PUIGBRANDS,,Puig Brands SA,XMAD,EUR,45,ES,PUIG.MC,,candidat screener yahoo 2026-08-21,121,2024-04-29,2026-08-17,2.3,17.12,EUR,Puig Brands SA,1.0,,avertissement,isin_absent|historique_2.3a
+EQ:DE:NORDEX,,Nordex SE,XETR,EUR,50,DE,NDX1.DE,,candidat screener yahoo 2026-08-21,1325,2001-04-02,2026-08-17,25.4,39.5,EUR,Nordex SE,1.0,,avertissement,isin_absent
+EQ:BE:DIETERENGROUP,,D'Ieteren Group SA,XBRU,EUR,40,BE,DIE.BR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,177.0,EUR,D'Ieteren Group SA,1.0,,avertissement,isin_absent
+EQ:DE:ECKERTZIEGLER,,Eckert & Ziegler SE,XETR,EUR,20,DE,EUZ.DE,,candidat screener yahoo 2026-08-21,1422,1999-05-24,2026-08-17,27.2,13.57,EUR,Eckert & Ziegler SE,1.0,,avertissement,isin_absent
+EQ:DE:DEUTSCHELUFTHANS,,Deutsche Lufthansa AG,XETR,EUR,50,DE,LHA.DE,,candidat screener yahoo 2026-08-21,1549,1996-12-16,2026-08-17,29.7,7.61,EUR,Deutsche Lufthansa AG,1.0,,avertissement,isin_absent
+EQ:ES:MERLINPROPERTIES,,"MERLIN Properties SOCIMI, S.A.",XMAD,EUR,35,ES,MRL.MC,,candidat screener yahoo 2026-08-21,634,2014-06-30,2026-08-17,12.1,14.14,EUR,"MERLIN Properties SOCIMI, S.A.",1.0,,avertissement,isin_absent|historique_12.1a
+EQ:ES:UNICAJABANCO,,"Unicaja Banco, S.A.",XMAD,EUR,30,ES,UNI.MC,,candidat screener yahoo 2026-08-21,478,2017-06-26,2026-08-17,9.1,3.554,EUR,"Unicaja Banco, S.A.",1.0,,avertissement,isin_absent|historique_9.1a
+EQ:IT:EDISON,,Edison S.p.A.,XMIL,EUR,60,IT,EDNR.MI,,candidat screener yahoo 2026-08-21,1238,2002-12-02,2026-08-17,23.7,1.912,EUR,Edison S.p.A.,1.0,,avertissement,isin_absent
+EQ:IT:ITALGAS,,Italgas S.p.A.,XMIL,EUR,65,IT,IG.MI,,candidat screener yahoo 2026-08-21,511,2016-11-07,2026-08-17,9.8,8.842,EUR,Italgas S.p.A.,1.0,,avertissement,isin_absent|historique_9.8a
+EQ:BE:SOFINASOCIETE,,Sofina Société Anonyme,XBRU,EUR,30,BE,SOF.BR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,242.6,EUR,Sofina Société Anonyme,1.0,,avertissement,isin_absent
+EQ:FR:AYVENS,,AYVENS,XPAR,EUR,50,FR,AYV.PA,,candidat screener yahoo 2026-08-21,480,2017-06-12,2026-08-17,9.2,11.37,EUR,AYVENS,1.0,,avertissement,isin_absent|historique_9.2a
+EQ:DE:BRENNTAG,,Brenntag SE,XETR,EUR,55,DE,BNR.DE,,candidat screener yahoo 2026-08-21,856,2010-03-29,2026-08-17,16.4,60.92,EUR,Brenntag SE,1.0,,avertissement,isin_absent
+EQ:FR:ABIVAXSOCIETE,,ABIVAX Société Anonyme,XPAR,EUR,20,FR,ABVX.PA,,candidat screener yahoo 2026-08-21,583,2015-06-22,2026-08-17,11.2,101.2,EUR,ABIVAX Société Anonyme,1.0,,avertissement,isin_absent|historique_11.2a
+EQ:FI:KESKO,,Kesko Oyj,XHEL,EUR,45,FI,KESKOB.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,21.86,EUR,Kesko Oyj,1.0,,avertissement,isin_absent
+EQ:FR:BIOMERIEUX,,bioMérieux S.A.,XPAR,EUR,20,FR,BIM.PA,,candidat screener yahoo 2026-08-21,1155,2004-07-05,2026-08-17,22.1,73.75,EUR,bioMérieux S.A.,1.0,,avertissement,isin_absent
+EQ:BE:GROUPEBRUXELLESL,,Groupe Bruxelles Lambert SA,XBRU,EUR,30,BE,GBLB.BR,,candidat screener yahoo 2026-08-21,1322,2001-04-23,2026-08-17,25.3,72.55,EUR,Groupe Bruxelles Lambert SA,1.0,,avertissement,isin_absent
+EQ:DE:EVONIKINDUSTRIES,,Evonik Industries AG,XETR,EUR,55,DE,EVK.DE,,candidat screener yahoo 2026-08-21,685,2013-07-08,2026-08-17,13.1,18.41,EUR,Evonik Industries AG,1.0,,avertissement,isin_absent|historique_13.1a
+EQ:DE:PORSCHEAUTOMOBIL,,Porsche Automobil Holding SE,XETR,EUR,40,DE,PAH3.DE,,candidat screener yahoo 2026-08-21,917,2009-01-26,2026-08-17,17.6,27.95,EUR,Porsche Automobil Holding SE,1.0,,avertissement,isin_absent
+EQ:BE:ACKERMANSVANHAAR,,Ackermans & Van Haaren NV,XBRU,EUR,50,BE,ACKB.BR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,259.0,EUR,Ackermans & Van Haaren NV,1.0,,avertissement,isin_absent
+EQ:DE:THYSSENKRUPP,,thyssenkrupp AG,XETR,EUR,50,DE,TKA.DE,,candidat screener yahoo 2026-08-21,1431,1999-03-22,2026-08-17,27.4,13.225,EUR,thyssenkrupp AG,1.0,,avertissement,isin_absent
+EQ:FR:RENAULT,,Renault SA,XPAR,EUR,40,FR,RNO.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,28.49,EUR,Renault SA,1.0,,avertissement,isin_absent
+EQ:FR:SODEXO,,Sodexo S.A.,XPAR,EUR,50,FR,SW.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,56.3,EUR,Sodexo S.A.,1.0,,avertissement,isin_absent
+EQ:ES:REDEIACORPORACIO,,"Redeia Corporación, S.A.",XMAD,EUR,65,ES,RED.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,15.21,EUR,"Redeia Corporación, S.A.",1.0,,avertissement,isin_absent
+EQ:BE:FINANCIERETUBIZE,,Financière de Tubize SA,XBRU,EUR,20,BE,TUB.BR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,184.3,EUR,Financière de Tubize SA,1.0,,avertissement,isin_absent
+EQ:BE:SYENSQOSANV,,Syensqo SA/NV,XBRU,EUR,55,BE,SYENS.BR,,candidat screener yahoo 2026-08-21,141,2023-12-11,2026-08-17,2.7,79.65,EUR,Syensqo SA/NV,1.0,,avertissement,isin_absent|historique_2.7a
+EQ:AT:ANDRITZ,,Andritz AG,XWBO,EUR,50,AT,ANDR.VI,,candidat screener yahoo 2026-08-21,1313,2001-06-25,2026-08-17,25.1,81.1,EUR,Andritz AG,1.0,,avertissement,isin_absent
+EQ:DE:AURUBIS,,Aurubis AG,XETR,EUR,50,DE,NDA.DE,,candidat screener yahoo 2026-08-21,1450,1998-11-09,2026-08-17,27.8,181.7,EUR,Aurubis AG,1.0,,avertissement,isin_absent
+EQ:SI:KRKA,,"Krka, d. d.",XWBO,EUR,20,SI,KRKG.VI,,candidat screener yahoo 2026-08-21,25,2026-03-02,2026-08-17,0.5,261.0,EUR,"Krka, d. d.",1.0,,rejete,historique_tronque_provider(25pts)|isin_absent
+EQ:FR:SPIE,,SPIE SA,XPAR,EUR,50,FR,SPIE.PA,,candidat screener yahoo 2026-08-21,585,2015-06-08,2026-08-17,11.2,45.88,EUR,SPIE SA,1.0,,avertissement,isin_absent|historique_11.2a
+EQ:FI:STORAENSO,,Stora Enso Oyj,XHEL,EUR,40,FI,STEAV.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,9.76,EUR,Stora Enso Oyj,1.0,,avertissement,isin_absent
+EQ:FR:GAZTRANSPORTTECH,,Gaztransport & Technigaz SA,XPAR,EUR,60,FR,GTT.PA,,candidat screener yahoo 2026-08-21,652,2014-02-24,2026-08-17,12.5,206.2,EUR,Gaztransport & Technigaz SA,1.0,,avertissement,isin_absent|historique_12.5a
+EQ:IT:BANCAGENERALI,,Banca Generali S.p.A.,XMIL,EUR,30,IT,BGN.MI,,candidat screener yahoo 2026-08-21,1032,2006-11-13,2026-08-17,19.8,66.7,EUR,Banca Generali S.p.A.,1.0,,avertissement,isin_absent
+EQ:AT:VOESTALPINE,,Voestalpine AG,XWBO,EUR,55,AT,VOE.VI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,44.22,EUR,Voestalpine AG,1.0,,avertissement,isin_absent
+EQ:DE:NEMETSCHEK,,Nemetschek SE,XETR,EUR,10,DE,NEM.DE,,candidat screener yahoo 2026-08-21,1433,1999-03-08,2026-08-17,27.4,65.35,EUR,Nemetschek SE,1.0,,avertissement,isin_absent
+EQ:IT:A2A,,A2A S.p.A.,XMIL,EUR,65,IT,A2A.MI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,2.3005,EUR,A2A S.p.A.,1.0,,avertissement,isin_absent
+EQ:IT:PIRELLI,,Pirelli & C. S.p.A.,XMIL,EUR,40,IT,PIRC.MI,,candidat screener yahoo 2026-08-21,464,2017-10-02,2026-08-17,8.9,6.63,EUR,Pirelli & C. S.p.A.,1.0,,avertissement,isin_absent|historique_8.9a
+EQ:DE:SCHAEFFLER,,Schaeffler AG,XETR,EUR,40,DE,SHA0.DE,,candidat screener yahoo 2026-08-21,568,2015-10-05,2026-08-17,10.9,7.64,EUR,Schaeffler AG,1.0,,avertissement,isin_absent|historique_10.9a
+EQ:DE:DEUTSCHEWOHNEN,,Deutsche Wohnen SE,XETR,EUR,35,DE,DWNI.DE,,candidat screener yahoo 2026-08-21,1051,2006-07-03,2026-08-17,20.1,18.0,EUR,Deutsche Wohnen SE,1.0,,avertissement,isin_absent
+EQ:BE:KBCANCORA,,KBC Ancora SA,XBRU,EUR,30,BE,KBCA.BR,,candidat screener yahoo 2026-08-21,1325,2001-04-02,2026-08-17,25.4,92.8,EUR,KBC Ancora SA,1.0,,avertissement,isin_absent
+EQ:DE:RATIONAL,,RATIONAL Aktiengesellschaft,XETR,EUR,50,DE,RAA.DE,,candidat screener yahoo 2026-08-21,1381,2000-03-06,2026-08-17,26.4,626.5,EUR,RATIONAL Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:IT:BUZZI,,Buzzi S.p.A.,XMIL,EUR,55,IT,BZU.MI,,candidat screener yahoo 2026-08-21,2043,1987-06-29,2026-08-17,39.1,39.99,EUR,Buzzi S.p.A.,1.0,,avertissement,isin_absent
+EQ:NL:CTP,,CTP N.V.,XAMS,EUR,35,NL,CTPNV.AS,,candidat screener yahoo 2026-08-21,283,2021-03-22,2026-08-17,5.4,14.38,EUR,CTP N.V.,1.0,,avertissement,isin_absent|historique_5.4a
+EQ:IT:DAVIDECAMPARIMIL,,Davide Campari-Milano N.V.,XMIL,EUR,45,IT,CPR.MI,,candidat screener yahoo 2026-08-21,1312,2001-07-02,2026-08-17,25.1,5.85,EUR,Davide Campari-Milano N.V.,1.0,,avertissement,isin_absent
+EQ:FI:KONECRANES,,Konecranes Oyj,XHEL,EUR,50,FI,KCR.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,28.3,EUR,Konecranes Plc,1.0,,avertissement,isin_absent
+EQ:IT:CREDITOEMILIANO,,Credito Emiliano S.p.A.,XMIL,EUR,30,IT,CE.MI,,candidat screener yahoo 2026-08-21,1640,1995-03-20,2026-08-17,31.4,20.4,EUR,Credito Emiliano S.p.A.,1.0,,avertissement,isin_absent
+EQ:ES:CORPORACIONACCIO,,"Corporación Acciona Energías Renovables, S.A.",XMAD,EUR,65,ES,ANE.MC,,candidat screener yahoo 2026-08-21,269,2021-06-28,2026-08-17,5.1,21.18,EUR,"Corporación Acciona Energías Renovables, S.A.",1.0,,avertissement,isin_absent|historique_5.1a
+EQ:NL:RANDSTAD,,Randstad N.V.,XAMS,EUR,50,NL,RAND.AS,,candidat screener yahoo 2026-08-21,1633,1995-05-08,2026-08-17,31.3,39.24,EUR,Randstad N.V.,1.0,,avertissement,isin_absent
+EQ:DK:NKT,,NKT A/S,XWBO,EUR,50,DK,NKT.VI,,candidat screener yahoo 2026-08-21,21,2026-03-30,2026-08-17,0.4,127.7,EUR,NKT A/S,1.0,,rejete,historique_tronque_provider(21pts)|isin_absent
+EQ:ES:GRIFOLS,,"Grifols, S.A.",XMAD,EUR,20,ES,GRF.MC,,candidat screener yahoo 2026-08-21,1058,2006-05-15,2026-08-17,20.3,9.966,EUR,"Grifols, S.A.",1.0,,avertissement,isin_absent
+EQ:FR:EDENRED,,Edenred SE,XPAR,EUR,30,FR,EDEN.PA,,candidat screener yahoo 2026-08-21,843,2010-06-28,2026-08-17,16.1,29.08,EUR,Edenred SE,1.0,,avertissement,isin_absent
+EQ:LU:CPIPROPERTYGROUP,,CPI Property Group,XETR,EUR,35,LU,O5G.DE,,candidat screener yahoo 2026-08-21,1057,2006-05-22,2026-08-17,20.2,0.735,EUR,CPI Property Group,1.0,,avertissement,isin_absent
+EQ:FR:COMPAGNIECAMBODG,,Compagnie du Cambodge,XPAR,EUR,30,FR,CBDG.PA,,candidat screener yahoo 2026-08-21,1330,2001-02-26,2026-08-17,25.5,106.0,EUR,Compagnie du Cambodge,1.0,,avertissement,isin_absent
+EQ:FR:NEXANS,,Nexans S.A.,XPAR,EUR,50,FR,NEX.PA,,candidat screener yahoo 2026-08-21,1315,2001-06-11,2026-08-17,25.2,143.1,EUR,Nexans S.A.,1.0,,avertissement,isin_absent
+EQ:IT:DELONGHI,,De'Longhi S.p.A.,XMIL,EUR,40,IT,DLG.MI,,candidat screener yahoo 2026-08-21,1309,2001-07-23,2026-08-17,25.1,40.3,EUR,De'Longhi S.p.A.,1.0,,avertissement,isin_absent
+EQ:FR:SCOR,,SCOR SE,XPAR,EUR,30,FR,SCR.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,33.38,EUR,SCOR SE,1.0,,avertissement,isin_absent
+EQ:IT:BRUNELLOCUCINELL,,Brunello Cucinelli S.p.A.,XMIL,EUR,40,IT,BC.MI,,candidat screener yahoo 2026-08-21,748,2012-04-23,2026-08-17,14.3,87.4,EUR,Brunello Cucinelli S.p.A.,1.0,,avertissement,isin_absent|historique_14.3a
+EQ:AT:OBERBANK,,Oberbank AG,XWBO,EUR,30,AT,OBS.VI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,83.2,EUR,Oberbank AG,1.0,,avertissement,isin_absent
+EQ:DE:FRAPORT,,Fraport AG,XETR,EUR,50,DE,FRA.DE,,candidat screener yahoo 2026-08-21,1315,2001-06-11,2026-08-17,25.2,63.0,EUR,Fraport AG,1.0,,avertissement,isin_absent
+EQ:DE:TKMS,,TKMS AG & Co KGaA,XETR,EUR,50,DE,TKMS.DE,,candidat screener yahoo 2026-08-21,44,2025-10-20,2026-08-17,0.8,91.2,EUR,TKMS AG & Co KGaA,1.0,,rejete,historique_tronque_provider(44pts)|isin_absent
+EQ:FI:ELISA,,Elisa Oyj,XHEL,EUR,15,FI,ELISA.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,36.1,EUR,Elisa Oyj,1.0,,avertissement,isin_absent
+EQ:IT:HERA,,Hera S.p.A.,XMIL,EUR,65,IT,HER.MI,,candidat screener yahoo 2026-08-21,1222,2003-03-24,2026-08-17,23.4,3.886,EUR,Hera S.p.A.,1.0,,avertissement,isin_absent
+EQ:FR:COVIVIO,,Covivio,XPAR,EUR,35,FR,COV.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,51.6,EUR,Covivio,1.0,,avertissement,isin_absent
+EQ:BE:AEDIFICANVSA,,Aedifica NV/SA,XBRU,EUR,35,BE,AED.BR,,candidat screener yahoo 2026-08-21,1035,2006-10-23,2026-08-17,19.8,68.15,EUR,Aedifica NV/SA,1.0,,avertissement,isin_absent
+EQ:AT:UNIQAINSURANCE,,UNIQA Insurance,XWBO,EUR,30,AT,UQA.VI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,17.52,EUR,UNIQA Insurance Group AG,1.0,,avertissement,isin_absent
+EQ:DK:ROCKWOOL,,Rockwool A/S,XWBO,EUR,50,DK,ROCK.VI,,candidat screener yahoo 2026-08-21,21,2026-03-30,2026-08-17,0.4,27.48,EUR,Rockwool A/S,1.0,,rejete,historique_tronque_provider(21pts)|isin_absent
+EQ:IT:LOTTOMATICAGROUP,,Lottomatica Group S.p.A.,XMIL,EUR,40,IT,LTMC.MI,,candidat screener yahoo 2026-08-21,173,2023-05-01,2026-08-17,3.3,24.36,EUR,Lottomatica Group S.p.A.,1.0,,avertissement,isin_absent|historique_3.3a
+EQ:NL:IMCD,,IMCD N.V.,XAMS,EUR,55,NL,IMCD.AS,,candidat screener yahoo 2026-08-21,635,2014-06-23,2026-08-17,12.2,95.62,EUR,IMCD N.V.,1.0,,avertissement,isin_absent|historique_12.2a
+EQ:NL:NEPIROCKCASTLE,,NEPI Rockcastle N.V.,XAMS,EUR,35,NL,NRP.AS,,candidat screener yahoo 2026-08-21,475,2017-07-17,2026-08-17,9.1,7.97,EUR,NEPI Rockcastle N.V.,1.0,,avertissement,isin_absent|historique_9.1a
+EQ:BE:UMICORE,,Umicore SA,XBRU,EUR,50,BE,UMI.BR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,23.1,EUR,Umicore SA,1.0,,avertissement,isin_absent
+EQ:DE:CTSEVENTIM,,CTS Eventim AG & Co. KGaA,XETR,EUR,15,DE,EVD.DE,,candidat screener yahoo 2026-08-21,1386,2000-01-31,2026-08-17,26.5,57.6,EUR,CTS Eventim AG & Co. KGaA,1.0,,avertissement,isin_absent
+EQ:FR:COMPAGNIELODET,,Compagnie de l'Odet,XPAR,EUR,15,FR,ODET.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,1314.0,EUR,Compagnie de l'Odet,1.0,,avertissement,isin_absent
+EQ:AT:AUSTRIATECHNOLOG,,AT & S Austria Technologie & Systemtechnik Aktiengesellschaft,XWBO,EUR,10,AT,ATS.VI,,candidat screener yahoo 2026-08-21,982,2007-10-29,2026-08-17,18.8,140.2,EUR,AT & S Austria Technologie & Systemtechnik Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:DE:ZALANDO,,Zalando SE,XETR,EUR,40,DE,ZAL.DE,,candidat screener yahoo 2026-08-21,621,2014-09-29,2026-08-17,11.9,22.62,EUR,Zalando SE,1.0,,avertissement,isin_absent|historique_11.9a
+EQ:IT:INFRASTRUTTUREWI,,Infrastrutture Wireless Italiane S.p.A.,XMIL,EUR,35,IT,INW.MI,,candidat screener yahoo 2026-08-21,583,2015-06-22,2026-08-17,11.2,6.12,EUR,Infrastrutture Wireless Italiane S.p.A.,1.0,,avertissement,isin_absent|historique_11.2a
+EQ:NL:KONINKLIJKEVOPAK,,Koninklijke Vopak N.V.,XAMS,EUR,60,NL,VPK.AS,,candidat screener yahoo 2026-08-21,1399,1999-11-01,2026-08-17,26.8,47.6,EUR,Koninklijke Vopak N.V.,1.0,,avertissement,isin_absent
+EQ:IT:AZIMUTHOLDING,,Azimut Holding S.p.A.,XMIL,EUR,30,IT,AZM.MI,,candidat screener yahoo 2026-08-21,1155,2004-07-05,2026-08-17,22.1,38.19,EUR,Azimut Holding S.p.A.,1.0,,avertissement,isin_absent
+EQ:DE:KIONGROUP,,KION GROUP,XETR,EUR,50,DE,KGX.DE,,candidat screener yahoo 2026-08-21,685,2013-07-08,2026-08-17,13.1,40.42,EUR,KION GROUP AG,1.0,,avertissement,isin_absent|historique_13.1a
+EQ:DE:FUCHS,,FUCHS SE,XETR,EUR,55,DE,FPE3.DE,,candidat screener yahoo 2026-08-21,1432,1999-03-15,2026-08-17,27.4,39.78,EUR,Fuchs SE,1.0,,avertissement,isin_absent
+EQ:FR:GECINA,,Gecina,XPAR,EUR,35,FR,GFC.PA,,candidat screener yahoo 2026-08-21,1781,1992-07-06,2026-08-17,34.1,72.5,EUR,Gecina,1.0,,avertissement,isin_absent
+EQ:DE:SCOUT24,,Scout24 SE,XETR,EUR,15,DE,G24.DE,,candidat screener yahoo 2026-08-21,569,2015-09-28,2026-08-17,10.9,76.0,EUR,Scout24 SE,1.0,,avertissement,isin_absent|historique_10.9a
+EQ:FR:ELIS,,Elis SA,XPAR,EUR,50,FR,ELIS.PA,,candidat screener yahoo 2026-08-21,602,2015-02-09,2026-08-17,11.5,24.34,EUR,Elis SA,1.0,,avertissement,isin_absent|historique_11.5a
+EQ:FR:TECHNIPENERGIES,,Technip Energies N.V.,XPAR,EUR,60,FR,TE.PA,,candidat screener yahoo 2026-08-21,288,2021-02-15,2026-08-17,5.5,29.84,EUR,Technip Energies N.V.,1.0,,avertissement,isin_absent|historique_5.5a
+EQ:BE:WAREHOUSESPAUW,,Warehouses De Pauw SA,XBRU,EUR,35,BE,WDP.BR,,candidat screener yahoo 2026-08-21,1298,2001-10-08,2026-08-17,24.9,21.32,EUR,Warehouses De Pauw SA,1.0,,avertissement,isin_absent
+EQ:FI:VALMET,,Valmet Oyj,XHEL,EUR,50,FI,VALMT.HE,,candidat screener yahoo 2026-08-21,660,2014-01-01,2026-08-19,12.6,27.76,EUR,Valmet Oyj,1.0,,avertissement,isin_absent|historique_12.6a
+EQ:FR:JCDECAUX,,JCDecaux SE,XPAR,EUR,15,FR,DEC.PA,,candidat screener yahoo 2026-08-21,1314,2001-06-18,2026-08-17,25.2,23.52,EUR,JCDecaux SE,1.0,,avertissement,isin_absent
+EQ:ES:LOGISTAINTEGRAL,,Logista Integral,XMAD,EUR,50,ES,LOG.MC,,candidat screener yahoo 2026-08-21,632,2014-07-14,2026-08-17,12.1,36.52,EUR,"Logista Integral, S.A.",1.0,,avertissement,isin_absent|historique_12.1a
+EQ:IT:NEXI,,Nexi S.p.A.,XMIL,EUR,10,IT,NEXI.MI,,candidat screener yahoo 2026-08-21,384,2019-04-15,2026-08-17,7.3,4.127,EUR,Nexi S.p.A.,1.0,,avertissement,isin_absent|historique_7.3a
+EQ:IT:SOL,,SOL S.p.A.,XMIL,EUR,55,IT,SOL.MI,,candidat screener yahoo 2026-08-21,1467,1998-07-13,2026-08-17,28.1,52.9,EUR,SOL S.p.A.,1.0,,avertissement,isin_absent
+EQ:DE:RENKGROUP,,RENK GROUP AG,XETR,EUR,50,DE,R3NK.DE,,candidat screener yahoo 2026-08-21,133,2024-02-05,2026-08-17,2.5,47.61,EUR,RENK Group AG,1.0,,avertissement,isin_absent|historique_2.5a
+EQ:BE:CENERGYHOLDINGS,,Cenergy Holdings SA,XBRU,EUR,50,BE,CENER.BR,,candidat screener yahoo 2026-08-21,505,2016-12-19,2026-08-17,9.7,22.36,EUR,Cenergy Holdings SA,1.0,,avertissement,isin_absent|historique_9.7a
+EQ:LU:RTLGROUP,,RTL Group S.A.,XETR,EUR,15,LU,RRTL.DE,,candidat screener yahoo 2026-08-21,982,2007-10-29,2026-08-17,18.8,31.35,EUR,RTL Group S.A.,1.0,,avertissement,isin_absent
+EQ:DE:OHB,,OHB SE,XETR,EUR,50,DE,OHB.DE,,candidat screener yahoo 2026-08-21,1328,2001-03-12,2026-08-17,25.4,226.0,EUR,OHB SE,1.0,,avertissement,isin_absent
+EQ:IT:DANIELIOFFICINEM,,Danieli & C. Officine Meccaniche S.p.A.,XMIL,EUR,50,IT,DAN.MI,,candidat screener yahoo 2026-08-21,1640,1995-03-20,2026-08-17,31.4,64.5,EUR,Danieli & C. Officine Meccaniche S.p.A.,1.0,,avertissement,isin_absent
+EQ:DE:AUTO1GROUP,,AUTO1 Group SE,XETR,EUR,40,DE,AG1.DE,,candidat screener yahoo 2026-08-21,290,2021-02-01,2026-08-17,5.5,21.04,EUR,AUTO1 Group SE,1.0,,avertissement,isin_absent|historique_5.5a
+EQ:BE:COLRUYTGROUP,,Colruyt Group N.V.,XBRU,EUR,45,BE,COLR.BR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,38.54,EUR,Colruyt Group N.V.,1.0,,avertissement,isin_absent
+EQ:SI:NOVALJUBLJANSKAB,,Nova Ljubljanska Banka d.d.,XWBO,EUR,30,SI,NLBR.VI,,candidat screener yahoo 2026-08-21,24,2026-03-09,2026-08-17,0.4,228.0,EUR,Nova Ljubljanska Banka d.d.,1.0,,rejete,historique_tronque_provider(24pts)|isin_absent
+EQ:NL:AALBERTS,,Aalberts N.V.,XAMS,EUR,50,NL,AALB.AS,,candidat screener yahoo 2026-08-21,1466,1998-07-20,2026-08-17,28.1,42.8,EUR,Aalberts N.V.,1.0,,avertissement,isin_absent
+EQ:DE:IONOSGROUP,,IONOS Group SE,XETR,EUR,10,DE,IOS.DE,,candidat screener yahoo 2026-08-21,185,2023-02-06,2026-08-17,3.5,33.72,EUR,IONOS Group SE,1.0,,avertissement,isin_absent|historique_3.5a
+EQ:BE:VIOHALCO,,Viohalco S.A.,XBRU,EUR,50,BE,VIO.BR,,candidat screener yahoo 2026-08-21,666,2013-11-18,2026-08-17,12.7,17.42,EUR,Viohalco S.A.,1.0,,avertissement,isin_absent|historique_12.7a
+EQ:IT:ACEA,,ACEA S.p.A.,XMIL,EUR,65,IT,ACE.MI,,candidat screener yahoo 2026-08-21,1415,1999-07-12,2026-08-17,27.1,21.1,EUR,ACEA S.p.A.,1.0,,avertissement,isin_absent
+EQ:IT:FINCANTIERI,,Fincantieri S.p.A.,XMIL,EUR,50,IT,FCT.MI,,candidat screener yahoo 2026-08-21,634,2014-06-30,2026-08-17,12.1,12.455,EUR,Fincantieri S.p.A.,1.0,,avertissement,isin_absent|historique_12.1a
+EQ:ES:ACERINOX,,Acerinox,XMAD,EUR,55,ES,ACX.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,17.21,EUR,"Acerinox, S.A.",1.0,,avertissement,isin_absent
+EQ:AT:FLUGHAFENWIEN,,Flughafen Wien Aktiengesellschaft,XWBO,EUR,50,AT,FLU.VI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,52.0,EUR,Flughafen Wien Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:ES:ENAGAS,,"Enagás, S.A.",XMAD,EUR,65,ES,ENG.MC,,candidat screener yahoo 2026-08-21,1261,2002-06-24,2026-08-17,24.1,16.9,EUR,"Enagás, S.A.",1.0,,avertissement,isin_absent
+EQ:LU:REINETINVESTMENT,,Reinet Investments S.C.A.,XAMS,EUR,30,LU,REINA.AS,,candidat screener yahoo 2026-08-21,458,2017-11-13,2026-08-17,8.8,23.46,EUR,Reinet Investments S.C.A.,1.0,,avertissement,isin_absent|historique_8.8a
+EQ:IT:REPLY,,Reply S.p.A.,XMIL,EUR,10,IT,REY.MI,,candidat screener yahoo 2026-08-21,1342,2000-12-04,2026-08-17,25.7,120.7,EUR,Reply S.p.A.,1.0,,avertissement,isin_absent
+EQ:BE:DEMEGROUP,,DEME Group NV,XBRU,EUR,50,BE,DEME.BR,,candidat screener yahoo 2026-08-21,217,2022-06-27,2026-08-17,4.1,170.2,EUR,DEME Group NV,1.0,,avertissement,isin_absent|historique_4.1a
+EQ:DE:AIXTRON,,AIXTRON SE,XETR,EUR,10,DE,AIXA.DE,,candidat screener yahoo 2026-08-21,1502,1997-11-10,2026-08-17,28.8,37.86,EUR,AIXTRON SE,1.0,,avertissement,isin_absent
+EQ:DE:UNITEDINTERNET,,UNITED INTERNET,XETR,EUR,15,DE,UTDI.DE,,candidat screener yahoo 2026-08-21,1389,2000-01-10,2026-08-17,26.6,24.54,EUR,United Internet AG,1.0,,avertissement,isin_absent
+EQ:FR:TELEPERFORMANCE,,Teleperformance SE,XPAR,EUR,50,FR,TEP.PA,,candidat screener yahoo 2026-08-21,1786,1992-06-01,2026-08-17,34.2,70.02,EUR,Teleperformance SE,1.0,,avertissement,isin_absent
+EQ:FI:IQMQUANTUMCOMPUT,,IQM Quantum Computers Oyj,XHEL,EUR,10,FI,IQMX.HE,,candidat screener yahoo 2026-08-21,8,2026-06-29,2026-08-17,0.1,8.81,EUR,IQM Quantum Computers Oyj,1.0,,rejete,historique_tronque_provider(8pts)|isin_absent
+EQ:FR:FDJUNITED,,FDJ United,XPAR,EUR,40,FR,FDJU.PA,,candidat screener yahoo 2026-08-21,353,2019-11-18,2026-08-17,6.7,22.12,EUR,FDJ UNITED,1.0,,avertissement,isin_absent|historique_6.7a
+EQ:DE:SPRINGERNATURE,,Springer Nature AG & Co. KGaA,XETR,EUR,15,DE,SPG.DE,,candidat screener yahoo 2026-08-21,99,2024-09-30,2026-08-17,1.9,20.25,EUR,Springer Nature AG & Co. KGaA,1.0,,avertissement,isin_absent|historique_1.9a
+EQ:FI:HIAB,,Hiab Oyj,XHEL,EUR,50,FI,HIAB.HE,,candidat screener yahoo 2026-08-21,1108,2005-05-30,2026-08-17,21.2,62.15,EUR,Hiab Oyj,1.0,,avertissement,isin_absent
+EQ:IT:MAIRE,,Maire S.p.A.,XMIL,EUR,50,IT,MAIRE.MI,,candidat screener yahoo 2026-08-21,978,2007-11-26,2026-08-17,18.7,12.28,EUR,Maire S.p.A.,1.0,,avertissement,isin_absent
+EQ:FR:SOITEC,,Soitec SA,XPAR,EUR,10,FR,SOI.PA,,candidat screener yahoo 2026-08-21,1450,1998-11-09,2026-08-17,27.8,111.4,EUR,Soitec SA,1.0,,avertissement,isin_absent
+EQ:FR:LDC,,L.D.C. S.A.,XPAR,EUR,45,FR,LOUP.PA,,candidat screener yahoo 2026-08-21,1604,1995-11-27,2026-08-17,30.7,112.6,EUR,L.D.C. S.A.,1.0,,avertissement,isin_absent
+EQ:DE:LEGIMMOBILIEN,,LEG IMMOBILIEN,XETR,EUR,35,DE,LEG.DE,,candidat screener yahoo 2026-08-21,685,2013-07-08,2026-08-17,13.1,49.96,EUR,LEG Immobilien SE,1.0,,avertissement,isin_absent|historique_13.1a
+EQ:PT:SONAESGPS,,"Sonae, SGPS, S.A.",XLIS,EUR,45,PT,SON.LS,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,2.005,EUR,"Sonae, SGPS, S.A.",1.0,,avertissement,isin_absent
+EQ:IT:INTERPUMPGROUP,,Interpump Group S.p.A.,XMIL,EUR,50,IT,IP.MI,,candidat screener yahoo 2026-08-21,1549,1996-12-16,2026-08-17,29.7,36.82,EUR,Interpump Group S.p.A.,1.0,,avertissement,isin_absent
+EQ:DE:FLATEXDEGIRO,,flatexDEGIRO SE,XETR,EUR,30,DE,FTK.DE,,candidat screener yahoo 2026-08-21,838,2010-08-02,2026-08-17,16.0,35.54,EUR,flatexDEGIRO SE,1.0,,avertissement,isin_absent
+EQ:BE:TITAN,,Titan S.A.,XBRU,EUR,55,BE,TITC.BR,,candidat screener yahoo 2026-08-21,370,2019-07-22,2026-08-17,7.1,50.8,EUR,Titan S.A.,1.0,,avertissement,isin_absent|historique_7.1a
+EQ:DE:OTTOBOCK,,Ottobock SE & Co. KGaA,XETR,EUR,20,DE,OBCK.DE,,candidat screener yahoo 2026-08-21,30,2026-01-26,2026-08-17,0.6,58.6,EUR,Ottobock SE & Co. KGaA        I,1.0,,rejete,historique_tronque_provider(30pts)|isin_absent
+EQ:DE:DMGMORI,,DMG MORI AKTIENGESELLSCHAFT,XETR,EUR,50,DE,GIL.DE,,candidat screener yahoo 2026-08-21,1450,1998-11-09,2026-08-17,27.8,47.3,EUR,DMG MORI AKTIENGESELLSCHAFT,1.0,,avertissement,isin_absent
+EQ:NL:ARCADIS,,Arcadis NV,XAMS,EUR,50,NL,ARCAD.AS,,candidat screener yahoo 2026-08-21,1466,1998-07-20,2026-08-17,28.1,43.58,EUR,Arcadis NV,1.0,,avertissement,isin_absent
+EQ:DE:AUMOVIO,,Aumovio,XETR,EUR,40,DE,AMV0.DE,,candidat screener yahoo 2026-08-21,49,2025-09-15,2026-08-17,0.9,36.45,EUR,Aumovio SE,1.0,,rejete,historique_tronque_provider(49pts)|isin_absent
+EQ:IT:IVECOGROUP,,Iveco Group N.V.,XMIL,EUR,50,IT,IVG.MI,,candidat screener yahoo 2026-08-21,242,2022-01-03,2026-08-17,4.6,13.96,EUR,Iveco Group N.V.,1.0,,avertissement,isin_absent|historique_4.6a
+EQ:IT:DIASORIN,,DiaSorin S.p.A.,XMIL,EUR,20,IT,DIA.MI,,candidat screener yahoo 2026-08-21,997,2007-07-16,2026-08-17,19.1,74.38,EUR,DiaSorin S.p.A.,1.0,,avertissement,isin_absent
+EQ:ES:FLUIDRA,,"Fluidra, S.A.",XMAD,EUR,40,ES,FDR.MC,,candidat screener yahoo 2026-08-21,982,2007-10-29,2026-08-17,18.8,19.36,EUR,"Fluidra, S.A.",1.0,,avertissement,isin_absent
+EQ:DE:KRONES,,Krones AG,XETR,EUR,50,DE,KRN.DE,,candidat screener yahoo 2026-08-21,1448,1998-11-23,2026-08-17,27.7,115.0,EUR,Krones AG,1.0,,avertissement,isin_absent
+EQ:FR:COVIVIOHOTELS,,Covivio Hotels,XPAR,EUR,35,FR,COVH.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,22.5,EUR,Covivio Hotels,1.0,,avertissement,isin_absent
+EQ:DE:SIXT,,SIXT,XETR,EUR,50,DE,SIX2.DE,,candidat screener yahoo 2026-08-21,1450,1998-11-09,2026-08-17,27.8,73.675,EUR,Sixt SE,1.0,,avertissement,isin_absent
+EQ:DE:TUI,,TUI AG,XETR,EUR,40,DE,TUI1.DE,,candidat screener yahoo 2026-08-21,1490,1998-02-02,2026-08-17,28.5,6.952,EUR,TUI AG,1.0,,avertissement,isin_absent
+EQ:FR:RUBIS,,Rubis,XPAR,EUR,60,FR,RUI.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,33.9,EUR,Rubis,1.0,,avertissement,isin_absent
+EQ:FR:SOPRASTERIAGROUP,,Sopra Steria Group SA,XPAR,EUR,10,FR,SOP.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,182.5,EUR,Sopra Steria Group SA,1.0,,avertissement,isin_absent
+EQ:ES:SACYR,,"Sacyr, S.A.",XMAD,EUR,50,ES,SCYR.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,4.386,EUR,"Sacyr, S.A.",1.0,,avertissement,isin_absent
+EQ:FR:VALEO,,Valeo SE,XPAR,EUR,40,FR,FR.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,14.375,EUR,Valeo SE,1.0,,avertissement,isin_absent
+EQ:DE:SCHOTTPHARMA,,SCHOTT Pharma AG & Co. KGaA,XETR,EUR,20,DE,1SXP.DE,,candidat screener yahoo 2026-08-21,152,2023-09-25,2026-08-17,2.9,22.9,EUR,SCHOTT Pharma AG & Co. KGaA,1.0,,avertissement,isin_absent|historique_2.9a
+EQ:ES:COLONIALSFLSOCIM,,"Colonial SFL, Socimi S. A.",XMAD,EUR,35,ES,COL.MC,,candidat screener yahoo 2026-08-21,1267,2002-05-13,2026-08-17,24.3,5.455,EUR,"Colonial SFL, Socimi S. A.",1.0,,avertissement,isin_absent
+EQ:FI:HUHTAMAKI,,Huhtamäki Oyj,XHEL,EUR,40,FI,HUH1V.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,31.6,EUR,Huhtamäki Oyj,1.0,,avertissement,isin_absent
+EQ:FI:MANDATUM,,MANDATUM OYJ,XHEL,EUR,30,FI,MANTA.HE,,candidat screener yahoo 2026-08-21,151,2023-10-02,2026-08-17,2.9,6.18,EUR,Mandatum Oyj,1.0,,avertissement,isin_absent|historique_2.9a
+EQ:FR:WENDEL,,Wendel,XPAR,EUR,30,FR,MF.PA,,candidat screener yahoo 2026-08-21,1925,1989-10-02,2026-08-17,36.9,85.9,EUR,Wendel,1.0,,avertissement,isin_absent
+EQ:DE:FIELMANNGROUP,,Fielmann Group AG,XETR,EUR,20,DE,FIE.DE,,candidat screener yahoo 2026-08-21,1351,2000-10-02,2026-08-17,25.9,39.15,EUR,Fielmann Group AG,1.0,,avertissement,isin_absent
+EQ:IT:ERG,,ERG S.p.A.,XMIL,EUR,65,IT,ERG.MI,,candidat screener yahoo 2026-08-21,1468,1998-07-06,2026-08-17,28.1,22.36,EUR,ERG S.p.A.,1.0,,avertissement,isin_absent
+EQ:LU:APERAM,,Aperam S.A.,XWBO,EUR,55,LU,APAM.VI,,candidat screener yahoo 2026-08-21,445,2018-02-12,2026-08-17,8.5,44.84,EUR,Aperam S.A.,1.0,,avertissement,isin_absent|historique_8.5a
+EQ:AT:BTVVIERLANDER,,BTV Vier Länder Bank AG,XWBO,EUR,30,AT,BTS.VI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,87.5,EUR,BTV Vier Länder Bank AG,1.0,,avertissement,isin_absent
+EQ:IT:IREN,,Iren SpA,XMIL,EUR,65,IT,IRE.MI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,2.506,EUR,Iren SpA,1.0,,avertissement,isin_absent
+EQ:FR:CAISSEREGIONALEC,,Caisse Régionale de Crédit Agricole Mutuel de Paris et d'Ile-de-France,XPAR,EUR,30,FR,CAF.PA,,candidat screener yahoo 2026-08-21,1780,1992-07-13,2026-08-17,34.1,114.76,EUR,Caisse Régionale de Crédit Agricole Mutuel de Paris et d'Ile-de-France,1.0,,avertissement,isin_absent
+EQ:FR:EURAZEO,,Eurazeo SE,XPAR,EUR,30,FR,RF.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,49.52,EUR,Eurazeo SE,1.0,,avertissement,isin_absent
+EQ:FR:EXOSENS,,Exosens,XPAR,EUR,50,FR,EXENS.PA,,candidat screener yahoo 2026-08-21,116,2024-06-03,2026-08-17,2.2,61.35,EUR,Exosens,1.0,,avertissement,isin_absent|historique_2.2a
+EQ:ES:CIEAUTOMOTIVE,,"CIE Automotive, S.A.",XMAD,EUR,40,ES,CIE.MC,,candidat screener yahoo 2026-08-21,1256,2002-07-29,2026-08-17,24.1,26.05,EUR,"CIE Automotive, S.A.",1.0,,avertissement,isin_absent
+EQ:ES:VIDRALA,,"Vidrala, S.A.",XMAD,EUR,40,ES,VID.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,89.5,EUR,"Vidrala, S.A.",1.0,,avertissement,isin_absent
+EQ:IT:CARELINDUSTRIES,,Carel Industries S.p.A.,XMIL,EUR,10,IT,CRL.MI,,candidat screener yahoo 2026-08-21,428,2018-06-11,2026-08-17,8.2,27.15,EUR,Carel Industries S.p.A.,1.0,,avertissement,isin_absent|historique_8.2a
+EQ:ES:LABORATORIOSFARM,,"Laboratorios Farmaceuticos Rovi, S.A.",XMAD,EUR,20,ES,ROVI.MC,,candidat screener yahoo 2026-08-21,977,2007-12-03,2026-08-17,18.7,59.7,EUR,"Laboratorios Farmaceuticos Rovi, S.A.",1.0,,avertissement,isin_absent
+EQ:LU:BREDERODE,,Brederode SA,XBRU,EUR,30,LU,BREB.BR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,104.4,EUR,Brederode SA,1.0,,avertissement,isin_absent
+EQ:NL:KONINKLIJKEBAMGR,,Koninklijke BAM Groep nv,XAMS,EUR,50,NL,BAMNB.AS,,candidat screener yahoo 2026-08-21,1340,2000-12-18,2026-08-17,25.7,11.72,EUR,Koninklijke BAM Groep nv,1.0,,avertissement,isin_absent
+EQ:FR:AIRFRANCEKLM,,Air France-KLM SA,XPAR,EUR,50,FR,AF.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,11.395,EUR,Air France-KLM SA,1.0,,avertissement,isin_absent
+EQ:FR:TIKEHAUCAPITAL,,Tikehau Capital,XPAR,EUR,30,FR,TKO.PA,,candidat screener yahoo 2026-08-21,494,2017-03-06,2026-08-17,9.4,16.96,EUR,Tikehau Capital,1.0,,avertissement,isin_absent|historique_9.4a
+EQ:FR:TRIGANO,,Trigano S.A.,XPAR,EUR,40,FR,TRI.PA,,candidat screener yahoo 2026-08-21,1484,1998-03-16,2026-08-17,28.4,153.0,EUR,Trigano S.A.,1.0,,avertissement,isin_absent
+EQ:FR:LISI,,Lisi S.A.,XPAR,EUR,50,FR,FII.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,63.6,EUR,Lisi S.A.,1.0,,avertissement,isin_absent
+EQ:BE:AZELISGROUP,,Azelis Group NV,XBRU,EUR,55,BE,AZE.BR,,candidat screener yahoo 2026-08-21,258,2021-09-13,2026-08-17,4.9,11.83,EUR,Azelis Group NV,1.0,,avertissement,isin_absent|historique_4.9a
+EQ:DE:BILFINGER,,Bilfinger SE,XETR,EUR,50,DE,GBF.DE,,candidat screener yahoo 2026-08-21,1466,1998-07-20,2026-08-17,28.1,76.55,EUR,Bilfinger SE,1.0,,avertissement,isin_absent
+EQ:DE:SILTRONIC,,SILTRONIC,XETR,EUR,10,DE,WAF.DE,,candidat screener yahoo 2026-08-21,585,2015-06-08,2026-08-17,11.2,83.75,EUR,Siltronic AG,1.0,,avertissement,isin_absent|historique_11.2a
+EQ:FR:VICAT,,Vicat S.A.,XPAR,EUR,55,FR,VCT.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,64.9,EUR,Vicat S.A.,1.0,,avertissement,isin_absent
+EQ:DE:SALZGITTER,,Salzgitter AG,XETR,EUR,55,DE,SZG.DE,,candidat screener yahoo 2026-08-21,1450,1998-11-09,2026-08-17,27.8,51.8,EUR,Salzgitter AG,1.0,,avertissement,isin_absent
+EQ:DE:FREENET,,freenet AG,XETR,EUR,15,DE,FNTN.DE,,candidat screener yahoo 2026-08-21,1389,2000-01-10,2026-08-17,26.6,24.2,EUR,freenet AG,1.0,,avertissement,isin_absent
+EQ:DE:CARLZEISSMEDITEC,,Carl Zeiss Meditec AG,XETR,EUR,20,DE,AFX.DE,,candidat screener yahoo 2026-08-21,1379,2000-03-20,2026-08-17,26.4,32.24,EUR,Carl Zeiss Meditec AG,1.0,,avertissement,isin_absent
+EQ:CY:THEONINTERNATION,,THEON INTERNATIONAL PLC,XAMS,EUR,50,CY,THEON.AS,,candidat screener yahoo 2026-08-21,133,2024-02-05,2026-08-17,2.5,36.04,EUR,THEON INTERNATIONAL PLC,1.0,,avertissement,isin_absent|historique_2.5a
+EQ:ES:EBROFOODS,,"Ebro Foods, S.A.",XMAD,EUR,45,ES,EBRO.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,18.3,EUR,"Ebro Foods, S.A.",1.0,,avertissement,isin_absent
+EQ:FR:VIRBAC,,Virbac SA,XPAR,EUR,20,FR,VIRP.PA,,candidat screener yahoo 2026-08-21,1781,1992-07-06,2026-08-17,34.1,330.0,EUR,Virbac SA,1.0,,avertissement,isin_absent
+EQ:NL:VANLANSCHOTKEMPE,,Van Lanschot Kempen NV,XAMS,EUR,30,NL,VLK.AS,,candidat screener yahoo 2026-08-21,1417,1999-06-28,2026-08-17,27.1,65.3,EUR,Van Lanschot Kempen NV,1.0,,avertissement,isin_absent
+EQ:ES:ELECNOR,,"Elecnor, S.A.",XMAD,EUR,50,ES,ENO.MC,,candidat screener yahoo 2026-08-21,1263,2002-06-10,2026-08-17,24.2,32.4,EUR,"Elecnor, S.A.",1.0,,avertissement,isin_absent
+EQ:IT:ENAV,,ENAV S.p.A.,XMIL,EUR,50,IT,ENAV.MI,,candidat screener yahoo 2026-08-21,526,2016-07-25,2026-08-17,10.1,4.998,EUR,ENAV S.p.A.,1.0,,avertissement,isin_absent|historique_10.1a
+EQ:FR:SOCIETEBIC,,Société BIC SA,XPAR,EUR,45,FR,BB.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,66.3,EUR,Société BIC SA,1.0,,avertissement,isin_absent
+EQ:ES:CEMENTOSMOLINS,,"CEMENTOS MOLINS, S.A.",XMAD,EUR,55,ES,CMO.MC,,candidat screener yahoo 2026-08-21,974,2007-12-24,2026-08-17,18.6,42.0,EUR,"CEMENTOS MOLINS, S.A.",1.0,,avertissement,isin_absent
+EQ:ES:GRENERGYRENOVABL,,"Grenergy Renovables, S.A.",XMAD,EUR,50,ES,GRE.MC,,candidat screener yahoo 2026-08-21,581,2015-07-06,2026-08-17,11.1,94.3,EUR,"Grenergy Renovables, S.A.",1.0,,avertissement,isin_absent|historique_11.1a
+EQ:BE:SOLVAY,,Solvay SA,XBRU,EUR,55,BE,SOLB.BR,,candidat screener yahoo 2026-08-21,1314,2001-06-18,2026-08-17,25.2,25.32,EUR,Solvay SA,1.0,,avertissement,isin_absent
+EQ:FR:LAGARDERE,,Lagardere SA,XPAR,EUR,40,FR,MMB.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,18.46,EUR,Lagardere SA,1.0,,avertissement,isin_absent
+EQ:DE:HUGOBOSS,,Hugo Boss AG,XETR,EUR,40,DE,BOSS.DE,,candidat screener yahoo 2026-08-21,1439,1999-01-25,2026-08-17,27.6,37.8,EUR,Hugo Boss AG,1.0,,avertissement,isin_absent
+EQ:SI:PETROL,,Petrol d.d.,XWBO,EUR,50,SI,PETG.VI,,candidat screener yahoo 2026-08-21,24,2026-03-09,2026-08-17,0.4,63.4,EUR,Petrol d.d.,1.0,,rejete,historique_tronque_provider(24pts)|isin_absent
+EQ:IT:TECHNOGYM,,Technogym S.p.A.,XMIL,EUR,40,IT,TGYM.MI,,candidat screener yahoo 2026-08-21,538,2016-05-02,2026-08-17,10.3,13.03,EUR,Technogym S.p.A.,1.0,,avertissement,isin_absent|historique_10.3a
+EQ:ES:VISCOFAN,,"Viscofan, S.A.",XMAD,EUR,40,ES,VIS.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,56.9,EUR,"Viscofan, S.A.",1.0,,avertissement,isin_absent
+EQ:BE:MELEXIS,,Melexis NV,XBRU,EUR,10,BE,MELE.BR,,candidat screener yahoo 2026-08-21,1267,2002-05-13,2026-08-17,24.3,65.55,EUR,Melexis NV,1.0,,avertissement,isin_absent
+EQ:IT:MFEMEDIAFOREUROP,,MFE-Mediaforeurope N.V.,XMIL,EUR,15,IT,MFEB.MI,,candidat screener yahoo 2026-08-21,1571,1996-07-15,2026-08-17,30.1,3.632,EUR,MFE-Mediaforeurope N.V.,1.0,,avertissement,isin_absent
+EQ:FI:OUTOKUMPU,,Outokumpu Oyj,XHEL,EUR,55,FI,OUT1V.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,5.395,EUR,Outokumpu Oyj,1.0,,avertissement,isin_absent
+EQ:FR:ALTEN,,Alten S.A.,XPAR,EUR,10,FR,ATE.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,74.55,EUR,Alten S.A.,1.0,,avertissement,isin_absent
+EQ:FI:KEMIRA,,Kemira Oyj,XHEL,EUR,55,FI,KEMIRA.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,17.38,EUR,Kemira Oyj,1.0,,avertissement,isin_absent
+EQ:DE:SUDZUCKER,,Südzucker AG,XETR,EUR,45,DE,SZU.DE,,candidat screener yahoo 2026-08-21,1450,1998-11-09,2026-08-17,27.8,12.38,EUR,Südzucker AG,1.0,,avertissement,isin_absent
+EQ:DE:JUNGHEINRICH,,Jungheinrich Aktiengesellschaft,XETR,EUR,50,DE,JUN3.DE,,candidat screener yahoo 2026-08-21,1466,1998-07-20,2026-08-17,28.1,24.5,EUR,Jungheinrich Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:FR:OVHGROUPE,,OVH Groupe S.A.,XPAR,EUR,10,FR,OVH.PA,,candidat screener yahoo 2026-08-21,254,2021-10-11,2026-08-17,4.8,16.46,EUR,OVH Groupe S.A.,1.0,,avertissement,isin_absent|historique_4.8a
+EQ:PT:NOSSGPS,,"NOS, S.G.P.S., S.A.",XLIS,EUR,15,PT,NOS.LS,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,4.844,EUR,"NOS, S.G.P.S., S.A.",1.0,,avertissement,isin_absent
+EQ:FI:KALMAR,,Kalmar Oyj,XHEL,EUR,50,FI,KALMAR.HE,,candidat screener yahoo 2026-08-21,112,2024-07-01,2026-08-17,2.1,38.6,EUR,Kalmar Oyj,1.0,,avertissement,isin_absent|historique_2.1a
+EQ:DE:TAGIMMOBILIEN,,TAG Immobilien AG,XETR,EUR,35,DE,TEG.DE,,candidat screener yahoo 2026-08-21,1350,2000-10-09,2026-08-17,25.9,12.89,EUR,TAG Immobilien AG,1.0,,avertissement,isin_absent
+EQ:FR:ALTAREASCA,,Altarea SCA,XPAR,EUR,35,FR,ALTA.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,99.8,EUR,Altarea SCA,1.0,,avertissement,isin_absent
+EQ:NL:KONINKLIJKEHEIJM,,Koninklijke Heijmans N.V.,XAMS,EUR,50,NL,HEIJM.AS,,candidat screener yahoo 2026-08-21,1466,1998-07-20,2026-08-17,28.1,88.75,EUR,Koninklijke Heijmans N.V.,1.0,,avertissement,isin_absent
+EQ:DE:KWSSAAT,,KWS SAAT SE & Co. KGaA,XETR,EUR,55,DE,KWS.DE,,candidat screener yahoo 2026-08-21,1361,2000-07-24,2026-08-17,26.1,74.0,EUR,KWS SAAT SE & Co. KGaA,1.0,,avertissement,isin_absent
+EQ:BE:VGP,,VGP NV,XBRU,EUR,35,BE,VGP.BR,,candidat screener yahoo 2026-08-21,977,2007-12-03,2026-08-17,18.7,80.5,EUR,VGP NV,1.0,,avertissement,isin_absent
+EQ:LU:SHURGARDSELFSTOR,,Shurgard Self Storage Ltd,XBRU,EUR,35,LU,SHUR.BR,,candidat screener yahoo 2026-08-21,410,2018-10-15,2026-08-17,7.8,23.8,EUR,Shurgard Self Storage Ltd,1.0,,avertissement,isin_absent|historique_7.8a
+EQ:DE:ELMOSSEMICONDUCT,,Elmos Semiconductor SE,XETR,EUR,10,DE,ELG.DE,,candidat screener yahoo 2026-08-21,1402,1999-10-11,2026-08-17,26.9,138.6,EUR,Elmos Semiconductor SE,1.0,,avertissement,isin_absent
+EQ:FR:COFACE,,COFACE SA,XPAR,EUR,30,FR,COFA.PA,,candidat screener yahoo 2026-08-21,635,2014-06-23,2026-08-17,12.2,15.85,EUR,COFACE SA,1.0,,avertissement,isin_absent|historique_12.2a
+EQ:ES:CIRSAENTERPRISES,,"Cirsa Enterprises, S.A.",XMAD,EUR,40,ES,CIRSA.MC,,candidat screener yahoo 2026-08-21,59,2025-07-07,2026-08-17,1.1,14.02,EUR,"Cirsa Enterprises, S.A.",1.0,,avertissement,isin_absent|historique_1.1a
+EQ:PT:RENREDESENERGETI,,"REN - Redes Energéticas Nacionais, SGPS, S.A.",XLIS,EUR,65,PT,RENE.LS,,candidat screener yahoo 2026-08-21,998,2007-07-09,2026-08-17,19.1,3.56,EUR,"REN - Redes Energéticas Nacionais, SGPS, S.A.",1.0,,avertissement,isin_absent
+EQ:FR:VERALLIASOCIETE,,Verallia Société Anonyme,XPAR,EUR,40,FR,VRLA.PA,,candidat screener yahoo 2026-08-21,360,2019-09-30,2026-08-17,6.9,18.89,EUR,Verallia Société Anonyme,1.0,,avertissement,isin_absent|historique_6.9a
+EQ:IT:ANIMAHOLDING,,Anima Holding SpA,XMIL,EUR,30,IT,ANIM.MI,,candidat screener yahoo 2026-08-21,645,2014-04-14,2026-08-17,12.3,7.2,EUR,Anima Holding SpA,1.0,,avertissement,isin_absent|historique_12.3a
+EQ:ES:CONSTRUCCIONESAU,,"Construcciones y Auxiliar de Ferrocarriles, S.A.",XMAD,EUR,50,ES,CAF.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,67.7,EUR,"Construcciones y Auxiliar de Ferrocarriles, S.A.",1.0,,avertissement,isin_absent
+EQ:PT:THENAVIGATORCOMP,,"The Navigator Company, S.A.",XLIS,EUR,55,PT,NVG.LS,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,3.258,EUR,"The Navigator Company, S.A.",1.0,,avertissement,isin_absent
+EQ:FR:INTERPARFUMS,,Interparfums SA,XPAR,EUR,45,FR,ITP.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,26.12,EUR,Interparfums SA,1.0,,avertissement,isin_absent
+EQ:ES:SOLARIAENERGIAME,,"Solaria Energía y Medio Ambiente, S.A.",XMAD,EUR,65,ES,SLR.MC,,candidat screener yahoo 2026-08-21,1001,2007-06-18,2026-08-17,19.2,17.29,EUR,"Solaria Energía y Medio Ambiente, S.A.",1.0,,avertissement,isin_absent
+EQ:FR:CARMILA,,Carmila S.A.,XPAR,EUR,35,FR,CARM.PA,,candidat screener yahoo 2026-08-21,800,2011-04-25,2026-08-17,15.3,16.34,EUR,Carmila S.A.,1.0,,avertissement,isin_absent
+EQ:ES:ALMIRALL,,"Almirall, S.A.",XMAD,EUR,20,ES,ALM.MC,,candidat screener yahoo 2026-08-21,1001,2007-06-18,2026-08-17,19.2,10.42,EUR,"Almirall, S.A.",1.0,,avertissement,isin_absent
+EQ:FR:EMEIS,,EMEIS,XPAR,EUR,20,FR,EMEIS.PA,,candidat screener yahoo 2026-08-21,1271,2002-04-15,2026-08-17,24.3,14.02,EUR,EMEIS,1.0,,avertissement,isin_absent
+EQ:ES:DISTRIBUIDORAINT,,"Distribuidora Internacional de Alimentación, S.A.",XMAD,EUR,45,ES,DIA.MC,,candidat screener yahoo 2026-08-21,790,2011-07-04,2026-08-17,15.1,39.2,EUR,"Distribuidora Internacional de Alimentación, S.A.",1.0,,avertissement,isin_absent
+EQ:FR:LOGISTICSGROUP,,ID Logistics Group SA,XPAR,EUR,50,FR,IDL.PA,,candidat screener yahoo 2026-08-21,749,2012-04-16,2026-08-17,14.3,345.0,EUR,ID Logistics Group SA,1.0,,avertissement,isin_absent|historique_14.3a
+EQ:FR:EUTELSATCOMMUNIC,,Eutelsat Communications S.A.,XPAR,EUR,15,FR,ETL.PA,,candidat screener yahoo 2026-08-21,1082,2005-11-28,2026-08-17,20.7,1.9045,EUR,Eutelsat Communications S.A.,1.0,,avertissement,isin_absent
+EQ:DE:JENOPTIK,,JENOPTIK,XETR,EUR,10,DE,JEN.DE,,candidat screener yahoo 2026-08-21,1450,1998-11-09,2026-08-17,27.8,39.16,EUR,Jenoptik AG,1.0,,avertissement,isin_absent
+EQ:AT:DOCO,,DO & CO Aktiengesellschaft,XWBO,EUR,50,AT,DOC.VI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,203.5,EUR,DO & CO Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:FI:NOKIANRENKAAT,,Nokian Renkaat Oyj,XHEL,EUR,40,FI,TYRES.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,16.19,EUR,Nokian Renkaat Oyj,1.0,,avertissement,isin_absent
+EQ:ES:MELIAHOTELSINTER,,"Meliá Hotels International, S.A.",XMAD,EUR,40,ES,MEL.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,10.11,EUR,"Meliá Hotels International, S.A.",1.0,,avertissement,isin_absent
+EQ:NL:BASICFIT,,Basic-Fit N.V.,XAMS,EUR,40,NL,BFIT.AS,,candidat screener yahoo 2026-08-21,533,2016-06-06,2026-08-17,10.2,34.1,EUR,Basic-Fit N.V.,1.0,,avertissement,isin_absent|historique_10.2a
+EQ:IT:WEBUILD,,Webuild S.p.A.,XMIL,EUR,50,IT,WBD.MI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,2.232,EUR,Webuild S.p.A.,1.0,,avertissement,isin_absent
+EQ:FR:FINANCIEREMONCEY,,Financière Moncey Société anonyme,XPAR,EUR,30,FR,FMONC.PA,,candidat screener yahoo 2026-08-21,1363,2000-07-10,2026-08-17,26.1,117.0,EUR,Financière Moncey Société anonyme,1.0,,avertissement,isin_absent
+EQ:AT:IMMOBILIENANLAGE,,CA Immobilien Anlagen AG,XWBO,EUR,35,AT,CAI.VI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,23.7,EUR,CA Immobilien Anlagen AG,1.0,,avertissement,isin_absent
+EQ:DE:STROER,,Ströer SE & Co. KGaA,XETR,EUR,15,DE,SAX.DE,,candidat screener yahoo 2026-08-21,840,2010-07-19,2026-08-17,16.1,38.84,EUR,Ströer SE & Co. KGaA,1.0,,avertissement,isin_absent
+EQ:FR:VUSION,,Vusion S.A.,XPAR,EUR,10,FR,VU.PA,,candidat screener yahoo 2026-08-21,1073,2006-01-30,2026-08-17,20.5,129.7,EUR,Vusion S.A.,1.0,,avertissement,isin_absent
+EQ:IT:BANCODESIODELLA,,Banco di Desio e della Brianza S.p.A.,XMIL,EUR,30,IT,BDB.MI,,candidat screener yahoo 2026-08-21,1633,1995-05-08,2026-08-17,31.3,16.52,EUR,Banco di Desio e della Brianza S.p.A.,1.0,,avertissement,isin_absent
+EQ:ES:TECNICASREUNIDAS,,"Técnicas Reunidas, S.A.",XMAD,EUR,50,ES,TRE.MC,,candidat screener yahoo 2026-08-21,1053,2006-06-19,2026-08-17,20.2,27.64,EUR,"Técnicas Reunidas, S.A.",1.0,,avertissement,isin_absent
+EQ:AT:WIENERBERGER,,Wienerberger AG,XWBO,EUR,55,AT,WIE.VI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,19.46,EUR,Wienerberger AG,1.0,,avertissement,isin_absent
+EQ:FI:LUMOKODIT,,Lumo Kodit Oyj,XHEL,EUR,35,FI,LUMO.HE,,candidat screener yahoo 2026-08-21,428,2018-06-11,2026-08-17,8.2,8.1,EUR,Lumo Kodit Oyj,1.0,,avertissement,isin_absent|historique_8.2a
+EQ:AT:CPIEUROPE,,CPI Europe AG,XWBO,EUR,35,AT,CPI.VI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,15.46,EUR,CPI Europe AG,1.0,,avertissement,isin_absent
+EQ:AT:OSTERREICHISCHEP,,Österreichische Post AG,XWBO,EUR,50,AT,POST.VI,,candidat screener yahoo 2026-08-21,1056,2006-05-29,2026-08-17,20.2,31.2,EUR,Österreichische Post AG,1.0,,avertissement,isin_absent
+EQ:LU:AROUNDTOWN,,Aroundtown SA,XWBO,EUR,35,LU,TOWN.VI,,candidat screener yahoo 2026-08-21,432,2018-05-14,2026-08-17,8.3,2.056,EUR,Aroundtown SA,1.0,,avertissement,isin_absent|historique_8.3a
+EQ:DE:VERBIO,,Verbio SE,XETR,EUR,55,DE,VBK.DE,,candidat screener yahoo 2026-08-21,1036,2006-10-16,2026-08-17,19.8,33.16,EUR,Verbio SE,1.0,,avertissement,isin_absent
+EQ:FI:TIETO,,Tieto Oyj,XHEL,EUR,10,FI,TIETO.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,19.03,EUR,Tieto Oyj,1.0,,avertissement,isin_absent
+EQ:FR:EXAILTECHNOLOGIE,,Exail Technologies,XPAR,EUR,50,FR,EXA.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,124.4,EUR,Exail Technologies,1.0,,avertissement,isin_absent
+EQ:FR:PLUXEE,,Pluxee N.V.,XPAR,EUR,50,FR,PLX.PA,,candidat screener yahoo 2026-08-21,134,2024-01-29,2026-08-17,2.5,15.35,EUR,Pluxee N.V.,1.0,,avertissement,isin_absent|historique_2.5a
+EQ:LU:SES,,SES S.A.,XPAR,EUR,15,LU,SESG.PA,,candidat screener yahoo 2026-08-21,1164,2004-05-03,2026-08-17,22.3,4.99,EUR,SES S.A.,1.0,,avertissement,isin_absent
+EQ:DE:DRAGERWERK,,Drägerwerk AG & Co. KGaA,XETR,EUR,20,DE,DRW3.DE,,candidat screener yahoo 2026-08-21,1450,1998-11-09,2026-08-17,27.8,110.4,EUR,Drägerwerk AG & Co. KGaA,1.0,,avertissement,isin_absent
+EQ:DE:MVVENERGIE,,MVV Energie AG,XETR,EUR,65,DE,MVV1.DE,,candidat screener yahoo 2026-08-21,1384,2000-02-14,2026-08-17,26.5,30.5,EUR,MVV Energie AG,1.0,,avertissement,isin_absent
+EQ:BE:PROXIMUS,,Proximus PLC,XBRU,EUR,15,BE,PROX.BR,,candidat screener yahoo 2026-08-21,1170,2004-03-22,2026-08-17,22.4,6.17,EUR,Proximus PLC,1.0,,avertissement,isin_absent
+EQ:FR:IMERYS,,Imerys S.A.,XPAR,EUR,55,FR,NK.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,23.46,EUR,Imerys S.A.,1.0,,avertissement,isin_absent
+EQ:NL:TKHGROUP,,TKH Group N.V.,XAMS,EUR,10,NL,TWEKA.AS,,candidat screener yahoo 2026-08-21,1466,1998-07-20,2026-08-17,28.1,49.24,EUR,TKH Group N.V.,1.0,,avertissement,isin_absent
+EQ:DE:DERMAPHARMHOLDIN,,Dermapharm Holding SE,XETR,EUR,20,DE,DMP.DE,,candidat screener yahoo 2026-08-21,437,2018-04-09,2026-08-17,8.4,39.7,EUR,Dermapharm Holding SE,1.0,,avertissement,isin_absent|historique_8.4a
+EQ:FI:VAISALA,,Vaisala Oyj,XHEL,EUR,10,FI,VAIAS.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,53.9,EUR,Vaisala Oyj,1.0,,avertissement,isin_absent
+EQ:AT:AMSOSRAM,,ams-OSRAM,XWBO,EUR,10,AT,AMS2.VI,,candidat screener yahoo 2026-08-21,428,2018-06-11,2026-08-17,8.2,18.5,EUR,AMS OSRAM AG,1.0,,avertissement,isin_absent|historique_8.2a
+EQ:DE:CECONOMY,,Ceconomy AG,XETR,EUR,40,DE,CEC.DE,,candidat screener yahoo 2026-08-21,1487,1998-02-23,2026-08-17,28.5,3.895,EUR,Ceconomy AG,1.0,,avertissement,isin_absent
+EQ:FR:CAISSEREGIONALEC2,,Caisse Régionale de Crédit Agricole Mutuel Brie Picardie Société coopérative,XPAR,EUR,30,FR,CRBP2.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,36.75,EUR,Caisse Régionale de Crédit Agricole Mutuel Brie Picardie Société coopérative,1.0,,avertissement,isin_absent
+EQ:FR:NANOBIOTIX,,Nanobiotix S.A.,XPAR,EUR,20,FR,NANO.PA,,candidat screener yahoo 2026-08-21,721,2012-10-29,2026-08-17,13.8,37.34,EUR,Nanobiotix S.A.,1.0,,avertissement,isin_absent|historique_13.8a
+EQ:FR:ARGAN,,Argan SA,XPAR,EUR,35,FR,ARG.PA,,candidat screener yahoo 2026-08-21,1000,2007-06-25,2026-08-17,19.1,72.9,EUR,Argan SA,1.0,,avertissement,isin_absent
+EQ:BE:BEKAERT,,NV Bekaert SA,XBRU,EUR,50,BE,BEKB.BR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,37.95,EUR,NV Bekaert SA,1.0,,avertissement,isin_absent
+EQ:NL:SIGNIFY,,Signify N.V.,XAMS,EUR,50,NL,LIGHT.AS,,candidat screener yahoo 2026-08-21,535,2016-05-23,2026-08-17,10.2,15.25,EUR,Signify N.V.,1.0,,avertissement,isin_absent|historique_10.2a
+EQ:FR:CAISSEREGIONALEC3,,Caisse Régionale de Crédit Agricole Mutuel du Languedoc Société coopérative,XPAR,EUR,30,FR,CRLA.PA,,candidat screener yahoo 2026-08-21,1341,2000-12-11,2026-08-17,25.7,92.0,EUR,Caisse Régionale de Crédit Agricole Mutuel du Languedoc Société coopérative,1.0,,avertissement,isin_absent
+EQ:BE:SOLVAC,,Solvac S.A.,XBRU,EUR,55,BE,SOLV.BR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,84.5,EUR,Solvac S.A.,1.0,,avertissement,isin_absent
+EQ:FR:LOUISHACHETTEGRO,,Louis Hachette Group S.A.,XPAR,EUR,50,FR,ALHG.PA,,candidat screener yahoo 2026-08-21,88,2024-12-16,2026-08-17,1.7,1.806,EUR,Louis Hachette Group S.A.,1.0,,avertissement,isin_absent|historique_1.7a
+EQ:FR:OPMOBILITY,,OPmobility SE,XPAR,EUR,40,FR,OPM.PA,,candidat screener yahoo 2026-08-21,1341,2000-12-11,2026-08-17,25.7,12.57,EUR,OPmobility SE,1.0,,avertissement,isin_absent
+EQ:ES:DIGISPAINTELECOM,,"DIGI SPAIN TELECOM, S.A.",XMAD,EUR,15,ES,DIGIS.MC,,candidat screener yahoo 2026-08-21,6,2026-07-13,2026-08-17,0.1,6.04,EUR,"DIGI SPAIN TELECOM, S.A.",1.0,,rejete,historique_tronque_provider(6pts)|isin_absent
+EQ:FR:CAISSEREGIONALEC4,,Caisse Régionale de Crédit Agricole Mutuel Nord de France Société coopérative,XPAR,EUR,30,FR,CNDF.PA,,candidat screener yahoo 2026-08-21,1258,2002-07-15,2026-08-17,24.1,30.055,EUR,Caisse Régionale de Crédit Agricole Mutuel Nord de France Société coopérative,1.0,,avertissement,isin_absent
+EQ:ES:INMOCEMENTO,,"Inmocemento, S.A.",XMAD,EUR,50,ES,IMC.MC,,candidat screener yahoo 2026-08-21,93,2024-11-11,2026-08-17,1.8,3.82,EUR,"Inmocemento, S.A.",1.0,,avertissement,isin_absent|historique_1.8a
+EQ:ES:ARTECHELANTEGIEL,,"Arteche Lantegi Elkartea, S.A.",XMAD,EUR,10,ES,ART.MC,,candidat screener yahoo 2026-08-21,270,2021-06-21,2026-08-17,5.2,29.9,EUR,"Arteche Lantegi Elkartea, S.A.",1.0,,avertissement,isin_absent|historique_5.2a
+EQ:FR:PLANISWARE,,PLANISWARE,XPAR,EUR,10,FR,PLNW.PA,,candidat screener yahoo 2026-08-21,123,2024-04-15,2026-08-17,2.3,24.9,EUR,PLANISWARE,1.0,,avertissement,isin_absent|historique_2.3a
+EQ:ES:GESTAMPAUTOMOCIO,,"Gestamp Automoción, S.A.",XMAD,EUR,40,ES,GEST.MC,,candidat screener yahoo 2026-08-21,490,2017-04-03,2026-08-17,9.4,2.95,EUR,"Gestamp Automoción, S.A.",1.0,,avertissement,isin_absent|historique_9.4a
+EQ:FR:ROBERTET,,Robertet SA,XPAR,EUR,55,FR,RBT.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,785.0,EUR,Robertet SA,1.0,,avertissement,isin_absent
+EQ:FR:FORVIA,,Forvia SE,XPAR,EUR,40,FR,FRVIA.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,8.956,EUR,Forvia SE,1.0,,avertissement,isin_absent
+EQ:FR:VIVENDI,,Vivendi SE,XPAR,EUR,15,FR,VIV.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,1.644,EUR,Vivendi SE,1.0,,avertissement,isin_absent
+EQ:PT:SEMAPASOCIEDADEI,,"Semapa - Sociedade de Investimento e Gestão, SGPS, S.A.",XLIS,EUR,55,PT,SEM.LS,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,20.55,EUR,"Semapa - Sociedade de Investimento e Gestão, SGPS, S.A.",1.0,,avertissement,isin_absent
+EQ:FR:STEF,,STEF SA,XPAR,EUR,50,FR,STF.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,129.6,EUR,STEF SA,1.0,,avertissement,isin_absent
+EQ:BE:FAGRON,,Fagron NV,XBRU,EUR,20,BE,FAGR.BR,,candidat screener yahoo 2026-08-21,986,2007-10-01,2026-08-17,18.9,22.3,EUR,Fagron NV,1.0,,avertissement,isin_absent
+EQ:DE:HAMBURGERHAFENUN,,Hamburger Hafen und Logistik Aktiengesellschaft,XETR,EUR,50,DE,HHFA.DE,,candidat screener yahoo 2026-08-21,982,2007-10-29,2026-08-17,18.8,21.7,EUR,Hamburger Hafen und Logistik Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:LU:GRANDCITYPROPERT,,Grand City Properties S.A.,XWBO,EUR,35,LU,GYC.VI,,candidat screener yahoo 2026-08-21,468,2017-09-04,2026-08-17,9.0,9.22,EUR,Grand City Properties S.A.,1.0,,avertissement,isin_absent|historique_9.0a
+EQ:BE:GIMV,,Gimv NV,XBRU,EUR,30,BE,GIMB.BR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,44.0,EUR,Gimv NV,1.0,,avertissement,isin_absent
+EQ:DE:KSB,,KSB SE & Co. KGaA,XETR,EUR,50,DE,KSB.DE,,candidat screener yahoo 2026-08-21,1447,1998-11-30,2026-08-17,27.7,922.0,EUR,KSB SE & Co. KGaA,1.0,,avertissement,isin_absent
+EQ:DE:ALZCHEMGROUP,,AlzChem Group AG,XETR,EUR,55,DE,ACT.DE,,candidat screener yahoo 2026-08-21,1150,2004-08-09,2026-08-17,22.0,158.9,EUR,AlzChem Group AG,1.0,,avertissement,isin_absent
+EQ:ES:METROVACESA,,Metrovacesa S.A.,XMAD,EUR,35,ES,MVC.MC,,candidat screener yahoo 2026-08-21,446,2018-02-05,2026-08-17,8.5,10.62,EUR,Metrovacesa S.A.,1.0,,avertissement,isin_absent|historique_8.5a
+EQ:FR:IPSOS,,Ipsos SA,XPAR,EUR,50,FR,IPS.PA,,candidat screener yahoo 2026-08-21,1338,2001-01-01,2026-08-17,25.6,38.46,EUR,Ipsos SA,1.0,,avertissement,isin_absent
+EQ:IE:PERMANENTTSBGROU,,Permanent TSB Group Holdings plc,XDUB,EUR,30,IE,PTSB.IR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,2.93,EUR,Permanent TSB Group Holdings plc,1.0,,avertissement,isin_absent
+EQ:BE:MONTEACOMM,,Montea Comm. VA,XBRU,EUR,35,BE,MONT.BR,,candidat screener yahoo 2026-08-21,1036,2006-10-16,2026-08-17,19.8,67.7,EUR,Montea Comm. VA,1.0,,avertissement,isin_absent
+EQ:FR:ANTININFRASTRUCT,,Antin Infrastructure Partners S.A.,XPAR,EUR,30,FR,ANTIN.PA,,candidat screener yahoo 2026-08-21,257,2021-09-20,2026-08-17,4.9,8.86,EUR,Antin Infrastructure Partners S.A.,1.0,,avertissement,isin_absent|historique_4.9a
+EQ:DE:DEUTZ,,DEUTZ Aktiengesellschaft,XETR,EUR,50,DE,DEZ.DE,,candidat screener yahoo 2026-08-21,1466,1998-07-20,2026-08-17,28.1,10.3,EUR,DEUTZ Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:IE:CAIRNHOMES,,Cairn Homes plc,XDUB,EUR,40,IE,C5H.IR,,candidat screener yahoo 2026-08-21,474,2017-07-24,2026-08-17,9.1,2.51,EUR,Cairn Homes plc,1.0,,avertissement,isin_absent|historique_9.1a
+EQ:IT:TAMBURIINVESTMEN,,Tamburi Investment Partners S.p.A.,XMIL,EUR,30,IT,TIP.MI,,candidat screener yahoo 2026-08-21,1085,2005-11-07,2026-08-17,20.8,9.64,EUR,Tamburi Investment Partners S.p.A.,1.0,,avertissement,isin_absent
+EQ:AT:RHIMAGNESITA,,RHI Magnesita N.V.,XWBO,EUR,50,AT,RHIM.VI,,candidat screener yahoo 2026-08-21,461,2017-10-23,2026-08-17,8.8,32.7,EUR,RHI Magnesita N.V.,1.0,,avertissement,isin_absent|historique_8.8a
+EQ:AT:MAYRMELNHOFKARTO,,Mayr-Melnhof Karton AG,XWBO,EUR,40,AT,MMK.VI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,79.3,EUR,Mayr-Melnhof Karton AG,1.0,,avertissement,isin_absent
+EQ:ES:REALIABUSINESS,,"Realia Business, S.A.",XMAD,EUR,35,ES,RLIA.MC,,candidat screener yahoo 2026-08-21,1003,2007-06-04,2026-08-17,19.2,1.015,EUR,"Realia Business, S.A.",1.0,,avertissement,isin_absent
+EQ:DE:ATOSSSOFTWARE,,ATOSS Software SE,XETR,EUR,10,DE,AOF.DE,,candidat screener yahoo 2026-08-21,1420,1999-06-07,2026-08-17,27.2,96.7,EUR,ATOSS Software SE,1.0,,avertissement,isin_absent
+EQ:AT:PORR,,PORR AG,XWBO,EUR,50,AT,POS.VI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,38.95,EUR,PORR AG,1.0,,avertissement,isin_absent
+EQ:ES:NEINORHOMES,,"Neinor Homes, S.A.",XMAD,EUR,35,ES,HOME.MC,,candidat screener yahoo 2026-08-21,491,2017-03-27,2026-08-17,9.4,15.76,EUR,"Neinor Homes, S.A.",1.0,,avertissement,isin_absent|historique_9.4a
+EQ:FI:SANOMA,,Sanoma Oyj,XHEL,EUR,45,FI,SANOMA.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,9.41,EUR,Sanoma Oyj,1.0,,avertissement,isin_absent
+EQ:ES:PROSEGURCOMPANIA,,"Prosegur Compañía de Seguridad, S.A.",XMAD,EUR,50,ES,PSG.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,2.82,EUR,"Prosegur Compañía de Seguridad, S.A.",1.0,,avertissement,isin_absent
+EQ:IT:SALVATOREFERRAGA,,Salvatore Ferragamo S.p.A.,XMIL,EUR,40,IT,SFER.MI,,candidat screener yahoo 2026-08-21,791,2011-06-27,2026-08-17,15.1,9.13,EUR,Salvatore Ferragamo S.p.A.,1.0,,avertissement,isin_absent
+EQ:FR:METROPOLETELEVIS,,Métropole Télévision S.A.,XPAR,EUR,15,FR,MMT.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,11.96,EUR,Métropole Télévision S.A.,1.0,,avertissement,isin_absent
+EQ:FI:METSABOARD,,Metsä Board Oyj,XHEL,EUR,40,FI,METSA.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,4.22,EUR,Metsä Board Oyj,1.0,,avertissement,isin_absent
+EQ:BE:ORANGEBELGIUM,,Orange Belgium S.A.,XBRU,EUR,15,BE,OBEL.BR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,22.0,EUR,Orange Belgium S.A.,1.0,,avertissement,isin_absent
+EQ:BE:SPADEL,,Spadel SA,XBRU,EUR,45,BE,SPA.BR,,candidat screener yahoo 2026-08-21,1323,2001-04-16,2026-08-17,25.3,356.0,EUR,Spadel SA,1.0,,avertissement,isin_absent
+EQ:NL:EUROCOMMERCIALPR,,Eurocommercial Properties N.V.,XAMS,EUR,35,NL,ECMPA.AS,,candidat screener yahoo 2026-08-21,253,2021-10-18,2026-08-17,4.8,27.0,EUR,Eurocommercial Properties N.V.,1.0,,avertissement,isin_absent|historique_4.8a
+EQ:FR:TF1,,TF1 SA,XPAR,EUR,15,FR,TFI.PA,,candidat screener yahoo 2026-08-21,1780,1992-07-13,2026-08-17,34.1,6.95,EUR,TF1 SA,1.0,,avertissement,isin_absent
+EQ:IT:OVS,,OVS S.p.A.,XMIL,EUR,40,IT,OVS.MI,,candidat screener yahoo 2026-08-21,599,2015-03-02,2026-08-17,11.5,6.02,EUR,OVS S.p.A.,1.0,,avertissement,isin_absent|historique_11.5a
+EQ:IT:AVIO,,Avio S.p.A.,XMIL,EUR,50,IT,AVIO.MI,,candidat screener yahoo 2026-08-21,578,2015-07-27,2026-08-17,11.1,31.52,EUR,Avio S.p.A.,1.0,,avertissement,isin_absent|historique_11.1a
+EQ:DE:NURNBERGERBETEIL,,NÜRNBERGER Beteiligungs-AG,XETR,EUR,30,DE,NBG6.DE,,candidat screener yahoo 2026-08-21,1427,1999-04-19,2026-08-17,27.3,125.0,EUR,NÜRNBERGER Beteiligungs-AG,1.0,,avertissement,isin_absent
+EQ:DE:WACKERNEUSON,,Wacker Neuson SE,XETR,EUR,50,DE,WAC.DE,,candidat screener yahoo 2026-08-21,1006,2007-05-14,2026-08-17,19.3,21.0,EUR,Wacker Neuson SE,1.0,,avertissement,isin_absent
+EQ:FR:CLARIANE,,Clariane SE,XPAR,EUR,20,FR,CLARI.PA,,candidat screener yahoo 2026-08-21,1338,2001-01-01,2026-08-17,25.6,4.02,EUR,Clariane SE,1.0,,avertissement,isin_absent
+EQ:ES:LINEADIRECTAASEG,,"Línea Directa Aseguradora, S.A., Compañía de Seguros y Reaseguros",XMAD,EUR,30,ES,LDA.MC,,candidat screener yahoo 2026-08-21,277,2021-05-03,2026-08-17,5.3,1.326,EUR,"Línea Directa Aseguradora, S.A., Compañía de Seguros y Reaseguros",1.0,,avertissement,isin_absent|historique_5.3a
+EQ:BE:FLUXYSBELGIUM,,Fluxys Belgium SA,XBRU,EUR,60,BE,FLUX.BR,,candidat screener yahoo 2026-08-21,1289,2001-12-10,2026-08-17,24.7,20.4,EUR,Fluxys Belgium SA,1.0,,avertissement,isin_absent
+EQ:LU:BEFESA,,Befesa S.A.,XETR,EUR,50,LU,BFSA.DE,,candidat screener yahoo 2026-08-21,452,2017-12-25,2026-08-17,8.6,35.75,EUR,Befesa S.A.,1.0,,avertissement,isin_absent|historique_8.6a
+EQ:LU:TONIES,,tonies SE,XETR,EUR,40,LU,TNIE.DE,,candidat screener yahoo 2026-08-21,277,2021-05-03,2026-08-17,5.3,11.72,EUR,tonies SE,1.0,,avertissement,isin_absent|historique_5.3a
+EQ:FR:ICADE,,Icade,XPAR,EUR,35,FR,ICAD.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,18.77,EUR,Icade,1.0,,avertissement,isin_absent
+EQ:ES:FAESFARMA,,"Faes Farma, S.A.",XMAD,EUR,20,ES,FAE.MC,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,4.555,EUR,"Faes Farma, S.A.",1.0,,avertissement,isin_absent
+EQ:ES:PHARMAMAR,,"Pharma Mar, S.A.",XMAD,EUR,20,ES,PHM.MC,,candidat screener yahoo 2026-08-21,1355,2000-09-04,2026-08-17,25.9,81.7,EUR,"Pharma Mar, S.A.",1.0,,avertissement,isin_absent
+EQ:DE:DEUTSCHEEUROSHOP,,Deutsche EuroShop AG,XETR,EUR,35,DE,DEQ.DE,,candidat screener yahoo 2026-08-21,1338,2001-01-01,2026-08-17,25.6,18.7,EUR,Deutsche EuroShop AG,1.0,,avertissement,isin_absent
+EQ:FR:PEUGEOTINVESTSOC,,Peugeot Invest Société anonyme,XPAR,EUR,30,FR,PEUG.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,56.7,EUR,Peugeot Invest Société anonyme,1.0,,avertissement,isin_absent
+EQ:FI:PUUILO,,Puuilo Oyj,XHEL,EUR,40,FI,PUUILO.HE,,candidat screener yahoo 2026-08-21,270,2021-06-21,2026-08-17,5.2,16.74,EUR,Puuilo Oyj,1.0,,avertissement,isin_absent|historique_5.2a
+EQ:FR:DERICHEBOURG,,Derichebourg SA,XPAR,EUR,50,FR,DBG.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,8.86,EUR,Derichebourg SA,1.0,,avertissement,isin_absent
+EQ:DE:SUSSMICROTEC,,SUSS MicroTec SE,XETR,EUR,10,DE,SMHN.DE,,candidat screener yahoo 2026-08-21,1423,1999-05-17,2026-08-17,27.3,74.1,EUR,SUSS MicroTec SE,1.0,,avertissement,isin_absent
+EQ:ES:CASTELLANAPROPER,,"Castellana Properties Socimi, S.A.",XMAD,EUR,35,ES,YCPS.MC,,candidat screener yahoo 2026-08-21,316,2020-08-03,2026-08-17,6.0,9.5,EUR,"Castellana Properties Socimi, S.A.",1.0,,avertissement,isin_absent|historique_6.0a
+EQ:DE:FRIEDRICHVORWERK,,Friedrich Vorwerk Group SE,XETR,EUR,50,DE,VH2.DE,,candidat screener yahoo 2026-08-21,283,2021-03-22,2026-08-17,5.4,68.9,EUR,Friedrich Vorwerk Group SE,1.0,,avertissement,isin_absent|historique_5.4a
+EQ:FI:BITTIUM,,Bittium Oyj,XHEL,EUR,10,FI,BITTI.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,38.35,EUR,Bittium Oyj,1.0,,avertissement,isin_absent
+EQ:IT:MOLTIPLYGROUP,,Moltiply Group S.p.A.,XMIL,EUR,30,IT,MOL.MI,,candidat screener yahoo 2026-08-21,1003,2007-06-04,2026-08-17,19.2,37.05,EUR,Moltiply Group S.p.A.,1.0,,avertissement,isin_absent
+EQ:FR:ERAMET,,ERAMET S.A.,XPAR,EUR,55,FR,ERA.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,47.2,EUR,ERAMET S.A.,1.0,,avertissement,isin_absent
+EQ:IT:SANLORENZO,,Sanlorenzo S.p.A.,XMIL,EUR,40,IT,SL.MI,,candidat screener yahoo 2026-08-21,350,2019-12-09,2026-08-17,6.7,38.58,EUR,Sanlorenzo S.p.A.,1.0,,avertissement,isin_absent|historique_6.7a
+EQ:IT:CEMBRE,,Cembre S.p.A.,XMIL,EUR,50,IT,CMB.MI,,candidat screener yahoo 2026-08-21,1467,1998-07-13,2026-08-17,28.1,80.8,EUR,Cembre S.p.A.,1.0,,avertissement,isin_absent
+EQ:IT:SESA,,SeSa S.p.A.,XMIL,EUR,10,IT,SES.MI,,candidat screener yahoo 2026-08-21,791,2011-06-27,2026-08-17,15.1,89.65,EUR,SeSa S.p.A.,1.0,,avertissement,isin_absent
+EQ:IT:ARISTONHOLDING,,Ariston Holding N.V.,XMIL,EUR,50,IT,ARIS.MI,,candidat screener yahoo 2026-08-21,248,2021-11-22,2026-08-17,4.7,3.668,EUR,Ariston Holding N.V.,1.0,,avertissement,isin_absent|historique_4.7a
+EQ:AT:KONTRON,,Kontron AG,XWBO,EUR,10,AT,KTN.VI,,candidat screener yahoo 2026-08-21,468,2017-09-04,2026-08-17,9.0,21.98,EUR,Kontron AG,1.0,,avertissement,isin_absent|historique_9.0a
+EQ:DE:WUSTENROTWURTTEM,,Wüstenrot & Württembergische AG,XETR,EUR,30,DE,WUW.DE,,candidat screener yahoo 2026-08-21,1406,1999-09-13,2026-08-17,26.9,14.24,EUR,Wüstenrot & Württembergische AG,1.0,,avertissement,isin_absent
+EQ:IT:BF,,B.F. S.p.A.,XMIL,EUR,45,IT,BFG.MI,,candidat screener yahoo 2026-08-21,470,2017-08-21,2026-08-17,9.0,4.98,EUR,B.F. S.p.A.,1.0,,avertissement,isin_absent|historique_9.0a
+EQ:IT:INDUSTRIENORA,,Industrie De Nora S.p.A.,XMIL,EUR,50,IT,DNR.MI,,candidat screener yahoo 2026-08-21,215,2022-07-11,2026-08-17,4.1,6.56,EUR,Industrie De Nora S.p.A.,1.0,,avertissement,isin_absent|historique_4.1a
+EQ:IT:COMERINDUSTRIES,,Comer Industries S.p.A.,XMIL,EUR,50,IT,COM.MI,,candidat screener yahoo 2026-08-21,389,2019-03-11,2026-08-17,7.4,45.6,EUR,Comer Industries S.p.A.,1.0,,avertissement,isin_absent|historique_7.4a
+EQ:DE:PFISTERERHOLDING,,PFISTERER Holding SE,XETR,EUR,10,DE,PFSE.DE,,candidat screener yahoo 2026-08-21,67,2025-05-12,2026-08-17,1.3,72.0,EUR,PFISTERER Holding SE,1.0,,avertissement,isin_absent|historique_1.3a
+EQ:DE:HORNBACHHOLDING,,HORNBACH Holding AG & Co. KGaA,XETR,EUR,40,DE,HBH.DE,,candidat screener yahoo 2026-08-21,974,2007-12-24,2026-08-17,18.6,80.8,EUR,HORNBACH Holding AG & Co. KGaA,1.0,,avertissement,isin_absent
+EQ:BE:XIORSTUDENTHOUSI,,Xior Student Housing NV,XBRU,EUR,35,BE,XIOR.BR,,candidat screener yahoo 2026-08-21,559,2015-12-07,2026-08-17,10.7,27.2,EUR,Xior Student Housing NV,1.0,,avertissement,isin_absent|historique_10.7a
+EQ:IT:INTERCOS,,Intercos S.p.A.,XMIL,EUR,45,IT,ICOS.MI,,candidat screener yahoo 2026-08-21,250,2021-11-08,2026-08-17,4.8,13.58,EUR,Intercos S.p.A.,1.0,,avertissement,isin_absent|historique_4.8a
+EQ:IT:RAIWAY,,Rai Way S.p.A.,XMIL,EUR,50,IT,RWAY.MI,,candidat screener yahoo 2026-08-21,614,2014-11-17,2026-08-17,11.7,4.71,EUR,Rai Way S.p.A.,1.0,,avertissement,isin_absent|historique_11.7a
+EQ:IT:LUVE,,LU-VE S.p.A.,XMIL,EUR,50,IT,LUVE.MI,,candidat screener yahoo 2026-08-21,581,2015-07-06,2026-08-17,11.1,56.4,EUR,LU-VE S.p.A.,1.0,,avertissement,isin_absent|historique_11.1a
+EQ:IE:GLENVEAGHPROPERT,,Glenveagh Properties PLC,XDUB,EUR,40,IE,GVR.IR,,candidat screener yahoo 2026-08-21,463,2017-10-09,2026-08-17,8.9,2.42,EUR,Glenveagh Properties PLC,1.0,,avertissement,isin_absent|historique_8.9a
+EQ:BE:TESSENDERLOGROUP,,Tessenderlo Group NV,XBRU,EUR,55,BE,TESB.BR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,20.9,EUR,Tessenderlo Group NV,1.0,,avertissement,isin_absent
+EQ:NL:FLOWTRADERS,,Flow Traders Ltd.,XAMS,EUR,30,NL,FLOW.AS,,candidat screener yahoo 2026-08-21,581,2015-07-06,2026-08-17,11.1,27.88,EUR,Flow Traders Ltd.,1.0,,avertissement,isin_absent|historique_11.1a
+EQ:IT:ELEN,,EL.En. S.p.A.,XMIL,EUR,20,IT,ELN.MI,,candidat screener yahoo 2026-08-21,1341,2000-12-11,2026-08-17,25.7,15.27,EUR,EL.En. S.p.A.,1.0,,avertissement,isin_absent
+EQ:FR:RAMSAYGENERALESA,,Ramsay Générale de Santé SA,XPAR,EUR,20,FR,GDS.PA,,candidat screener yahoo 2026-08-21,1314,2001-06-18,2026-08-17,25.2,11.05,EUR,Ramsay Générale de Santé SA,1.0,,avertissement,isin_absent
+EQ:IT:CALTAGIRONE,,Caltagirone SpA,XMIL,EUR,55,IT,CALT.MI,,candidat screener yahoo 2026-08-21,1640,1995-03-20,2026-08-17,31.4,10.14,EUR,Caltagirone SpA,1.0,,avertissement,isin_absent
+EQ:FR:ELECTRICITESTRAS,,Électricite de Strasbourg Société Anonyme,XPAR,EUR,65,FR,ELEC.PA,,candidat screener yahoo 2026-08-21,1838,1991-06-03,2026-08-17,35.2,166.4,EUR,Électricite de Strasbourg Société Anonyme,1.0,,avertissement,isin_absent
+EQ:DE:ADTRANNETWORKS,,Adtran Networks SE,XETR,EUR,10,DE,ADV.DE,,candidat screener yahoo 2026-08-21,1430,1999-03-29,2026-08-17,27.4,23.0,EUR,Adtran Networks SE,1.0,,avertissement,isin_absent
+EQ:DE:DURR,,Dürr Aktiengesellschaft,XETR,EUR,50,DE,DUE.DE,,candidat screener yahoo 2026-08-21,1466,1998-07-20,2026-08-17,28.1,17.24,EUR,Dürr Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:ES:GMPPROPERTYSOCIM,,"GMP Property SOCIMI, S.A.",XMAD,EUR,35,ES,YGMP.MC,,candidat screener yahoo 2026-08-21,526,2016-07-25,2026-08-17,10.1,62.0,EUR,"GMP Property SOCIMI, S.A.",1.0,,avertissement,isin_absent|historique_10.1a
+EQ:BE:KINEPOLISGROUP,,Kinepolis Group NV,XBRU,EUR,15,BE,KIN.BR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,44.4,EUR,Kinepolis Group NV,1.0,,avertissement,isin_absent
+EQ:FR:VIELCIESOCIETE,,"VIEL & Cie, société anonyme",XPAR,EUR,30,FR,VIL.PA,,candidat screener yahoo 2026-08-21,1858,1991-01-14,2026-08-17,35.6,19.22,EUR,"VIEL & Cie, société anonyme",1.0,,avertissement,isin_absent
+EQ:DE:SECUNETSECURITYN,,secunet Security Networks Aktiengesellschaft,XETR,EUR,10,DE,YSN.DE,,candidat screener yahoo 2026-08-21,1398,1999-11-08,2026-08-17,26.8,182.6,EUR,secunet Security Networks Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:FI:ALMAMEDIA,,Alma Media Oyj,XHEL,EUR,15,FI,ALMA.HE,,candidat screener yahoo 2026-08-21,1113,2005-04-25,2026-08-17,21.3,14.35,EUR,Alma Media Oyj,1.0,,avertissement,isin_absent
+EQ:ES:ATRESMEDIACORPOR,,"Atresmedia Corporación de Medios de Comunicación, S.A.",XMAD,EUR,15,ES,A3M.MC,,candidat screener yahoo 2026-08-21,1191,2003-10-27,2026-08-17,22.8,5.21,EUR,"Atresmedia Corporación de Medios de Comunicación, S.A.",1.0,,avertissement,isin_absent
+EQ:BG:SHELLYGROUP,,Shelly Group SE,XETR,EUR,50,BG,SLYG.DE,,candidat screener yahoo 2026-08-21,121,2024-04-29,2026-08-17,2.3,63.6,EUR,Shelly Group SE,1.0,,avertissement,isin_absent|historique_2.3a
+EQ:NL:CORBION,,Corbion N.V.,XAMS,EUR,55,NL,CRBN.AS,,candidat screener yahoo 2026-08-21,1639,1995-03-27,2026-08-17,31.4,20.06,EUR,Corbion N.V.,1.0,,avertissement,isin_absent
+EQ:AT:PALFINGER,,Palfinger AG,XWBO,EUR,50,AT,PAL.VI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,30.3,EUR,Palfinger AG,1.0,,avertissement,isin_absent
+EQ:FR:FREY,,Frey SA,XPAR,EUR,35,FR,FREY.PA,,candidat screener yahoo 2026-08-21,960,2008-03-31,2026-08-17,18.4,35.8,EUR,Frey SA,1.0,,avertissement,isin_absent
+EQ:FI:FISKARS,,Fiskars Oyj Abp,XHEL,EUR,40,FI,FSKRS.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,13.84,EUR,Fiskars Oyj Abp,1.0,,avertissement,isin_absent
+EQ:DE:VOSSLOH,,Vossloh AG,XETR,EUR,50,DE,VOS.DE,,candidat screener yahoo 2026-08-21,1465,1998-07-27,2026-08-17,28.1,57.25,EUR,Vossloh AG,1.0,,avertissement,isin_absent
+EQ:IT:ITALMOBILIARE,,Italmobiliare S.p.A.,XMIL,EUR,45,IT,ITM.MI,,candidat screener yahoo 2026-08-21,2064,1987-02-02,2026-08-17,39.5,25.9,EUR,Italmobiliare S.p.A.,1.0,,avertissement,isin_absent
+EQ:IT:GENSAUREA,,GENS AUREA,XMIL,EUR,40,IT,OROX.MI,,candidat screener yahoo 2026-08-21,6,2026-07-13,2026-08-17,0.1,10.61,EUR,GENS AUREA,1.0,,rejete,historique_tronque_provider(6pts)|isin_absent
+EQ:IE:UNIPHAR,,Uniphar plc,XDUB,EUR,20,IE,UPR.IR,,candidat screener yahoo 2026-08-21,371,2019-07-15,2026-08-17,7.1,4.155,EUR,Uniphar plc,1.0,,avertissement,isin_absent|historique_7.1a
+EQ:DE:TEAMVIEWER,,TEAMVIEWER,XETR,EUR,10,DE,TMV.DE,,candidat screener yahoo 2026-08-21,361,2019-09-23,2026-08-17,6.9,6.84,EUR,TeamViewer SE,1.0,,avertissement,isin_absent|historique_6.9a
+EQ:FR:MERCIALYS,,Mercialys SA,XPAR,EUR,35,FR,MERY.PA,,candidat screener yahoo 2026-08-21,1089,2005-10-10,2026-08-17,20.9,11.42,EUR,Mercialys SA,1.0,,avertissement,isin_absent
+EQ:DE:CHAPTERSGROUP,,CHAPTERS Group AG,XETR,EUR,10,DE,CHG.DE,,candidat screener yahoo 2026-08-21,1108,2005-05-30,2026-08-17,21.2,44.7,EUR,CHAPTERS Group AG,1.0,,avertissement,isin_absent
+EQ:AT:BAJAJMOBILITY,,Bajaj Mobility AG,XWBO,EUR,40,AT,BMAG.VI,,candidat screener yahoo 2026-08-21,1170,2004-03-22,2026-08-17,22.4,30.7,EUR,Bajaj Mobility AG,1.0,,avertissement,isin_absent
+EQ:FR:CAISSEREGIONALEC5,,Caisse Régionale de Crédit Agricole Mutuel Sud Rhône Alpes,XPAR,EUR,30,FR,CRSU.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,231.0,EUR,Caisse Régionale de Crédit Agricole Mutuel Sud Rhône Alpes,1.0,,avertissement,isin_absent
+EQ:IT:ALERIONCLEANPOWE,,Alerion Clean Power S.p.A.,XMIL,EUR,65,IT,ARN.MI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,19.5,EUR,Alerion Clean Power S.p.A.,1.0,,avertissement,isin_absent
+EQ:IT:FERRETTI,,Ferretti S.p.A.,XMIL,EUR,40,IT,YACHT.MI,,candidat screener yahoo 2026-08-21,165,2023-06-26,2026-08-17,3.1,3.088,EUR,Ferretti S.p.A.,1.0,,avertissement,isin_absent|historique_3.1a
+EQ:IE:IRISHCONTINENTAL,,Irish Continental Group plc,XDUB,EUR,50,IE,IR5B.IR,,candidat screener yahoo 2026-08-21,1204,2003-07-28,2026-08-17,23.1,6.96,EUR,Irish Continental Group plc,1.0,,avertissement,isin_absent
+EQ:DE:SAFHOLLAND,,SAF-Holland SE,XETR,EUR,40,DE,SFQ.DE,,candidat screener yahoo 2026-08-21,996,2007-07-23,2026-08-17,19.1,22.8,EUR,SAF-Holland SE,1.0,,avertissement,isin_absent
+EQ:FR:COMPAGNIEDESALPE,,Compagnie des Alpes SA,XPAR,EUR,40,FR,CDA.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,20.1,EUR,Compagnie des Alpes SA,1.0,,avertissement,isin_absent
+EQ:FR:CAISSEREGIONALEC6,,Caisse régionale de Crédit Agricole Mutuel Atlantique Vendée,XPAR,EUR,30,FR,CRAV.PA,,candidat screener yahoo 2026-08-21,1258,2002-07-15,2026-08-17,24.1,138.98,EUR,Caisse régionale de Crédit Agricole Mutuel Atlantique Vendée,1.0,,avertissement,isin_absent
+EQ:FR:ALTAREITSCA,,Altareit SCA,XPAR,EUR,35,FR,AREIT.PA,,candidat screener yahoo 2026-08-21,1381,2000-03-06,2026-08-17,26.4,585.0,EUR,Altareit SCA,1.0,,avertissement,isin_absent
+EQ:DE:ENERGY,,2G Energy AG,XETR,EUR,50,DE,2GB.DE,,candidat screener yahoo 2026-08-21,995,2007-07-30,2026-08-17,19.0,56.95,EUR,2G Energy AG,1.0,,avertissement,isin_absent
+EQ:FR:FNACDARTY,,Fnac Darty SA,XPAR,EUR,40,FR,FNAC.PA,,candidat screener yahoo 2026-08-21,687,2013-06-24,2026-08-17,13.1,34.6,EUR,Fnac Darty SA,1.0,,avertissement,isin_absent|historique_13.1a
+EQ:FR:CAISSEREGIONALEC7,,Caisse Régionale de Crédit Agricole Mutuel Alpes Provence Société coopérative,XPAR,EUR,30,FR,CRAP.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,136.0,EUR,Caisse Régionale de Crédit Agricole Mutuel Alpes Provence Société coopérative,1.0,,avertissement,isin_absent
+EQ:NL:FUGRO,,Fugro N.V.,XAMS,EUR,60,NL,FUR.AS,,candidat screener yahoo 2026-08-21,1466,1998-07-20,2026-08-17,28.1,9.015,EUR,Fugro N.V.,1.0,,avertissement,isin_absent
+EQ:DE:THYSSENKRUPPNUCE,,thyssenkrupp nucera AG & Co. KGaA,XETR,EUR,50,DE,NCH2.DE,,candidat screener yahoo 2026-08-21,164,2023-07-03,2026-08-17,3.1,7.92,EUR,thyssenkrupp nucera AG & Co. KGaA,1.0,,avertissement,isin_absent|historique_3.1a
+EQ:ES:COXINFRASTRUCTUR,,"Cox Infrastructure Group, S.A.",XMAD,EUR,65,ES,COXG.MC,,candidat screener yahoo 2026-08-21,90,2024-12-02,2026-08-17,1.7,11.75,EUR,"Cox Infrastructure Group, S.A.",1.0,,avertissement,isin_absent|historique_1.7a
+EQ:BE:RETAILESTATES,,Retail Estates N.V.,XBRU,EUR,35,BE,RET.BR,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,66.0,EUR,Retail Estates N.V.,1.0,,avertissement,isin_absent
+EQ:AT:AMAGAUSTRIAMETAL,,AMAG Austria Metall AG,XWBO,EUR,55,AT,AMAG.VI,,candidat screener yahoo 2026-08-21,802,2011-04-11,2026-08-17,15.4,28.1,EUR,AMAG Austria Metall AG,1.0,,avertissement,isin_absent
+EQ:AT:BKSBANK,,BKS Bank AG,XWBO,EUR,30,AT,BKS.VI,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,21.6,EUR,BKS Bank AG,1.0,,avertissement,isin_absent
+EQ:DE:JOSTWERKE,,JOST Werke SE,XETR,EUR,40,DE,JST.DE,,candidat screener yahoo 2026-08-21,475,2017-07-17,2026-08-17,9.1,60.35,EUR,JOST Werke SE,1.0,,avertissement,isin_absent|historique_9.1a
+EQ:DE:RHONKLINIKUM,,RHÖN-KLINIKUM Aktiengesellschaft,XETR,EUR,20,DE,RHK.DE,,candidat screener yahoo 2026-08-21,1448,1998-11-23,2026-08-17,27.7,14.6,EUR,RHÖN-KLINIKUM Aktiengesellschaft,1.0,,avertissement,isin_absent
+EQ:FR:CAISSEREGIONALEC8,,Caisse Régionale de Crédit Agricole Mutuel de Normandie-Seine Société coopérative,XPAR,EUR,30,FR,CCN.PA,,candidat screener yahoo 2026-08-21,1319,2001-05-14,2026-08-17,25.3,162.5,EUR,Caisse Régionale de Crédit Agricole Mutuel de Normandie-Seine Société coopérative,1.0,,avertissement,isin_absent
+EQ:FI:TERVEYSTALO,,Terveystalo Oyj,XHEL,EUR,20,FI,TTALO.HE,,candidat screener yahoo 2026-08-21,463,2017-10-09,2026-08-17,8.9,7.76,EUR,Terveystalo Oyj,1.0,,avertissement,isin_absent|historique_8.9a
+EQ:FR:NORTHATLANTICENE,,North Atlantic Energies,XPAR,EUR,60,FR,NAE.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,75.65,EUR,North Atlantic Energies,1.0,,avertissement,isin_absent
+EQ:DE:MLP,,MLP SE,XETR,EUR,30,DE,MLP.DE,,candidat screener yahoo 2026-08-21,1448,1998-11-23,2026-08-17,27.7,8.9,EUR,MLP SE,1.0,,avertissement,isin_absent
+EQ:PT:ALTRISGPS,,"Altri, SGPS, S.A.",XLIS,EUR,55,PT,ALTR.LS,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,4.73,EUR,"Altri, SGPS, S.A.",1.0,,avertissement,isin_absent
+EQ:DE:NAGARRO,,Nagarro SE,XETR,EUR,10,DE,NA9.DE,,candidat screener yahoo 2026-08-21,297,2020-12-14,2026-08-17,5.7,78.2,EUR,Nagarro SE,1.0,,avertissement,isin_absent|historique_5.7a
+EQ:DE:MBB,,MBB SE,XETR,EUR,50,DE,MBB.DE,,candidat screener yahoo 2026-08-21,1059,2006-05-08,2026-08-17,20.3,181.8,EUR,MBB SE,1.0,,avertissement,isin_absent
+EQ:ES:AEDASHOMES,,"Aedas Homes, S.A.",XMAD,EUR,35,ES,AEDAS.MC,,candidat screener yahoo 2026-08-21,462,2017-10-16,2026-08-17,8.8,21.9,EUR,"Aedas Homes, S.A.",1.0,,avertissement,isin_absent|historique_8.8a
+EQ:ES:PROSEGURCASH,,"Prosegur Cash, S.A.",XMAD,EUR,50,ES,CASH.MC,,candidat screener yahoo 2026-08-21,493,2017-03-13,2026-08-17,9.4,0.651,EUR,"Prosegur Cash, S.A.",1.0,,avertissement,isin_absent|historique_9.4a
+EQ:AT:FREQUENTIS,,Frequentis AG,XWBO,EUR,10,AT,FQT.VI,,candidat screener yahoo 2026-08-21,380,2019-05-13,2026-08-17,7.3,71.8,EUR,Frequentis AG,1.0,,avertissement,isin_absent|historique_7.3a
+EQ:DE:GERRESHEIMER,,Gerresheimer AG,XETR,EUR,20,DE,GXI.DE,,candidat screener yahoo 2026-08-21,1002,2007-06-11,2026-08-17,19.2,27.5,EUR,Gerresheimer AG,1.0,,avertissement,isin_absent
+EQ:IT:PHILOGEN,,Philogen S.p.A.,XMIL,EUR,20,IT,PHIL.MI,,candidat screener yahoo 2026-08-21,286,2021-03-01,2026-08-17,5.5,23.45,EUR,Philogen S.p.A.,1.0,,avertissement,isin_absent|historique_5.5a
+EQ:ES:CLINICABAVIERA,,"Clínica Baviera, S.A.",XMAD,EUR,20,ES,CBAV.MC,,candidat screener yahoo 2026-08-21,1012,2007-04-02,2026-08-17,19.4,59.0,EUR,"Clínica Baviera, S.A.",1.0,,avertissement,isin_absent
+EQ:FI:FINNAIR,,Finnair Oyj,XHEL,EUR,50,FI,FIA1S.HE,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,4.584,EUR,Finnair Oyj,1.0,,avertissement,isin_absent
+EQ:FR:INVENTIVA,,Inventiva S.A.,XPAR,EUR,20,FR,IVA.PA,,candidat screener yahoo 2026-08-21,497,2017-02-13,2026-08-17,9.5,3.96,EUR,Inventiva S.A.,1.0,,avertissement,isin_absent|historique_9.5a
+EQ:IT:ICOPSOCIETABENEF,,I.CO.P. S.p.A. Società Benefit,XMIL,EUR,50,IT,ICOP.MI,,candidat screener yahoo 2026-08-21,109,2024-07-22,2026-08-17,2.1,29.1,EUR,I.CO.P. S.p.A. Società Benefit,1.0,,avertissement,isin_absent|historique_2.1a
+EQ:BE:ENERGYVISION,,ENERGYVISION,XBRU,EUR,65,BE,ENRGY.BR,,candidat screener yahoo 2026-08-21,59,2025-07-07,2026-08-17,1.1,15.2,EUR,ENERGYVISION,1.0,,avertissement,isin_absent|historique_1.1a
+EQ:DE:ZEALNETWORK,,ZEAL Network SE,XETR,EUR,40,DE,TIMA.DE,,candidat screener yahoo 2026-08-21,1445,1998-12-14,2026-08-17,27.7,43.5,EUR,ZEAL Network SE,1.0,,avertissement,isin_absent
+EQ:IT:BANCAIFIS,,Banca IFIS S.p.A.,XMIL,EUR,30,IT,IF.MI,,candidat screener yahoo 2026-08-21,1626,1995-06-26,2026-08-17,31.1,14.93,EUR,Banca IFIS S.p.A.,1.0,,avertissement,isin_absent
+EQ:FR:MERSEN,,Mersen S.A.,XPAR,EUR,50,FR,MRN.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,37.48,EUR,Mersen S.A.,1.0,,avertissement,isin_absent
+EQ:DE:INDUSHOLDING,,INDUS Holding AG,XETR,EUR,50,DE,INH.DE,,candidat screener yahoo 2026-08-21,1450,1998-11-09,2026-08-17,27.8,33.95,EUR,INDUS Holding AG,1.0,,avertissement,isin_absent
+EQ:FR:NEURONES,,Neurones S.A.,XPAR,EUR,10,FR,NRO.PA,,candidat screener yahoo 2026-08-21,1370,2000-05-22,2026-08-17,26.2,37.9,EUR,Neurones S.A.,1.0,,avertissement,isin_absent
+EQ:PT:CORTICEIRAAMORIM,,"Corticeira Amorim, S.G.P.S., S.A.",XLIS,EUR,55,PT,COR.LS,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,6.88,EUR,"Corticeira Amorim, S.G.P.S., S.A.",1.0,,avertissement,isin_absent
+EQ:PT:SONAECOMSGPS,,"Sonaecom, SGPS, S.A.",XLIS,EUR,15,PT,SNC.LS,,candidat screener yahoo 2026-08-21,1369,2000-05-29,2026-08-17,26.2,2.96,EUR,"Sonaecom, SGPS, S.A.",1.0,,avertissement,isin_absent
+EQ:FI:AKTIAPANKKI,,Aktia Pankki Oyj,XHEL,EUR,30,FI,AKTIA.HE,,candidat screener yahoo 2026-08-21,882,2009-09-28,2026-08-17,16.9,12.28,EUR,Aktia Pankki Oyj,1.0,,avertissement,isin_absent
+EQ:FI:GRKINFRA,,GRK Infra Oyj,XHEL,EUR,50,FI,GRK.HE,,candidat screener yahoo 2026-08-21,73,2025-03-31,2026-08-17,1.4,21.1,EUR,GRK Infra Oyj,1.0,,avertissement,isin_absent|historique_1.4a
+EQ:FI:GROUP,,Qt Group Oyj,XHEL,EUR,10,FI,QTCOM.HE,,candidat screener yahoo 2026-08-21,538,2016-05-02,2026-08-17,10.3,34.3,EUR,Qt Group Oyj,1.0,,avertissement,isin_absent|historique_10.3a
+EQ:IT:GVS,,GVS S.p.A.,XMIL,EUR,50,IT,GVS.MI,,candidat screener yahoo 2026-08-21,323,2020-06-15,2026-08-17,6.2,4.735,EUR,GVS S.p.A.,1.0,,avertissement,isin_absent|historique_6.2a
+EQ:FR:MEDINCELL,,MedinCell S.A.,XPAR,EUR,20,FR,MEDCL.PA,,candidat screener yahoo 2026-08-21,411,2018-10-08,2026-08-17,7.9,24.42,EUR,MedinCell S.A.,1.0,,avertissement,isin_absent|historique_7.9a
+EQ:DE:PROSIEBENSAT1MED,,ProSiebenSat.1 Media SE,XETR,EUR,15,DE,PSM.DE,,candidat screener yahoo 2026-08-21,1318,2001-05-21,2026-08-17,25.2,3.752,EUR,ProSiebenSat.1 Media SE,1.0,,avertissement,isin_absent
+EQ:NL:WERELDHAVE,,Wereldhave N.V.,XAMS,EUR,35,NL,WHA.AS,,candidat screener yahoo 2026-08-21,1037,2006-10-09,2026-08-17,19.9,18.52,EUR,Wereldhave N.V.,1.0,,avertissement,isin_absent
+EQ:DE:DOUGLAS,,Douglas AG,XETR,EUR,40,DE,DOU.DE,,candidat screener yahoo 2026-08-21,127,2024-03-18,2026-08-17,2.4,8.01,EUR,Douglas AG,1.0,,avertissement,isin_absent|historique_2.4a
+EQ:FR:PIERREVACANCES,,Pierre et Vacances SA,XPAR,EUR,40,FR,VAC.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,1.872,EUR,Pierre et Vacances SA,1.0,,avertissement,isin_absent
+EQ:AT:ASTAENERGYSOLUTI,,ASTA Energy Solutions AG,XWBO,EUR,50,AT,1AST.VI,,candidat screener yahoo 2026-08-21,29,2026-02-02,2026-08-17,0.5,60.6,EUR,ASTA Energy Solutions AG,1.0,,rejete,historique_tronque_provider(29pts)|isin_absent
+EQ:FR:CAISSEREGIONALEC9,,Caisse Régionale de Crédit Agricole Mutuel de la Touraine et du Poitou Société Coopérative,XPAR,EUR,30,FR,CRTO.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,138.0,EUR,Caisse Régionale de Crédit Agricole Mutuel de la Touraine et du Poitou Société Coopérative,1.0,,avertissement,isin_absent
+EQ:FR:VOLTALIA,,Voltalia SA,XPAR,EUR,65,FR,VLTSA.PA,,candidat screener yahoo 2026-08-21,1060,2006-05-01,2026-08-17,20.3,6.58,EUR,Voltalia SA,1.0,,avertissement,isin_absent
+EQ:FR:EVENTS,,GL Events SA,XPAR,EUR,50,FR,GLO.PA,,candidat screener yahoo 2026-08-21,1448,1998-11-23,2026-08-17,27.7,29.15,EUR,GL Events SA,1.0,,avertissement,isin_absent
+EQ:IT:JUVENTUSFOOTBALL,,Juventus Football Club S.p.A.,XMIL,EUR,15,IT,JUVE.MI,,candidat screener yahoo 2026-08-21,1288,2001-12-17,2026-08-17,24.7,2.054,EUR,Juventus Football Club S.p.A.,1.0,,avertissement,isin_absent
+EQ:DE:INNOSCRIPTA,,innoscripta SE,XETR,EUR,10,DE,1INN.DE,,candidat screener yahoo 2026-08-21,66,2025-05-19,2026-08-17,1.2,85.9,EUR,innoscripta SE,1.0,,avertissement,isin_absent|historique_1.2a
+EQ:PT:CTTCORREIOSPORTU,,"CTT - Correios De Portugal, S.A.",XLIS,EUR,50,PT,CTT.LS,,candidat screener yahoo 2026-08-21,664,2013-12-02,2026-08-17,12.7,6.425,EUR,"CTT - Correios De Portugal, S.A.",1.0,,avertissement,isin_absent|historique_12.7a
+EQ:FR:LECTRA,,Lectra SA,XPAR,EUR,10,FR,LSS.PA,,candidat screener yahoo 2026-08-21,1390,2000-01-03,2026-08-17,26.6,22.65,EUR,Lectra SA,1.0,,avertissement,isin_absent

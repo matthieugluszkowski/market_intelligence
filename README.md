@@ -15,7 +15,7 @@ Spécification complète dans les documents à la racine. **Ordre de lecture :**
 | Lot | Contenu | Statut |
 |---|---|---|
 | **L0** | Socle : dépôt, env Python, DDL, seeds, keepalive | **fait** |
-| **L1** | Référentiel de l'univers — 57 titres vérifiés | **fait** |
+| **L1** | Référentiel de l'univers — 586 titres vérifiés | **fait** |
 | **L2** | Ingestion des cours, archive Parquet, journal | **fait** |
 | **L3** | Corporate actions, facteurs, 9 contrôles qualité | **fait** |
 | **L4** | Moteur analytique, diagnostics, `regression_fits` | **fait** |
@@ -265,8 +265,16 @@ heure du dernier passage, et un avertissement si un passage a été manqué.
 
 ## Référentiel de l'univers (L1)
 
-57 titres de la zone euro éligibles PEA : FR 29, DE 10, NL 8, ES 4, BE 3, IT 3.
-Y compris les cas de test cités par la spec — Seb, Arkema, BMW.
+**586 titres** de la zone euro éligibles PEA : FR 138, DE 128, IT 78, ES 62,
+NL 39, BE 38, FI 36, AT 26, PT 13, LU 12, IE 9, et sept titres de quatre autres
+pays de l'EEE cotés sur ces places. Y compris les cas de test cités par la
+spec — Seb, Arkema, BMW.
+
+**Deux populations, qui ne se valent pas et ne doivent pas se confondre.**
+59 titres saisis et vérifiés à la main, ISIN renseigné, identité recoupée par
+trois contrôles indépendants. **527 issus du screener Yahoo** (§ suivant), sans
+ISIN et dont l'identité repose sur une source unique. En base,
+`instruments.attributes->>'notes'` les distingue.
 
 ```bash
 python scripts/propose_universe.py   # propose des candidats, n'écrit qu'un CSV

@@ -141,7 +141,7 @@ Traitement explicite des cinq pools, parce qu'écarter sans dire pourquoi serait
 
 | Besoin | Couvert par | Phase |
 |---|---|---|
-| B1 - Stock picking PEA | Docs 01 à 05, univers Europe PEA. *⚙ 57 titres* | v1 |
+| B1 - Stock picking PEA | Docs 01 à 05, univers Europe PEA. *⚙ 586 titres au 2026-08-21* | v1 |
 | B2 - Aide à la décision | Doc 04, matrice qualité × prix du doc 08 | v1 |
 | B3 - Rapport hebdomadaire | Doc 04 §4, job `weekly_full` du doc 02 | v1 |
 | B4 - Méthode de décote | Doc 03 §1 à §5 | v1 |
