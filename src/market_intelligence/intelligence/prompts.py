@@ -38,6 +38,10 @@ VARIABLES = (
     "CLIENTS_CIBLES", "CONCURRENTS_CONNUS", "DATE_DE_REFERENCE",
     "OBJECTIF_DE_L_ANALYSE", "INFORMATIONS_INTERNES", "CONCURRENT",
     "ANALYSE_FONCTIONNELLE", "FICHES_CONCURRENTIELLES", "ANALYSE_DES_LEADERS",
+    # Prompt 5 : remplies par l'outil, jamais saisies. C'est le renversement
+    # qui rend la synthese possible - les donnees sont deja en base.
+    "TICKER", "DEVISE", "HORIZON_ANALYSE", "DONNEES_QUANTITATIVES",
+    "DOSSIER_ANALYSES",
 )
 
 _SOURCES = """HIERARCHIE DES SOURCES
@@ -77,6 +81,14 @@ si elle a ete verifiee ou deduite. Chaque affirmation porte donc l un de :
 
 « Leader du marche europeen » figure dans le rapport annuel de la moitie des
 societes d un secteur : c est une DECLARATION_ENTREPRISE, jamais un FAIT_VERIFIE."""
+
+_LANGUE = """LANGUE DE LA REPONSE
+
+Ta reponse est integralement en francais - sections, analyses, justifications,
+tableaux, et les valeurs textuelles du JSON final. Restent inchanges : les
+cles du JSON, et les valeurs d enumeration imposees par le format (statuts
+comme FAIT_VERIFIE, types comme direct/indirect, niveaux low/medium/high,
+classifications comme study_buy). Une analyse en anglais est a refaire."""
 
 _ENTETE = """CE QUI T EST FOURNI
 
@@ -126,6 +138,8 @@ Produis une analyse fonctionnelle et strategique du marche permettant de :
 5. preparer une comparaison structuree entre l entreprise etudiee et ses concurrents.
 
 {_SOURCES}
+
+{_LANGUE}
 
 ANALYSE A PRODUIRE
 
@@ -177,7 +191,7 @@ toi-meme au point 0 :
 {{
   "scoping": {{
     "sector": null, "subsector": null, "product_or_service": null,
-    "target_market": null, "target_customers": null,
+    "target_market": null, "target_customers": null, "geography": null,
     "status": "INTERPRETATION", "sources": []
   }},
   "market_definition": {{}},
@@ -230,6 +244,8 @@ REGLES IMPERATIVES
 10. Lorsque tu formules une appreciation, explique ce qui la justifie.
 
 {_SOURCES}
+
+{_LANGUE}
 
 ANALYSE DEMANDEE
 
@@ -318,6 +334,8 @@ pourraient redistribuer les cartes, et comment l entreprise etudiee peut defendr
 ou ameliorer sa position.
 
 {_SOURCES}
+
+{_LANGUE}
 
 Ne donne aucun classement sans expliquer la methode. Ne confonds pas chiffre
 d affaires, part de marche, notoriete, base clients, volume d utilisateurs,
@@ -421,6 +439,32 @@ element concerne, explication, correction proposee.
 Produis ensuite la liste des donnees validees, celle des donnees a revoir
 manuellement, celle des donnees a supprimer, puis la version JSON normalisee.
 
+SYNTHESE SUR L ENTREPRISE ETUDIEE
+
+Le dossier ne vaut que s il conclut sur l entreprise etudiee elle-meme, pas
+seulement sur ses concurrents. Le bloc `strategic_assessment` porte cette
+synthese, etablie a partir de l ensemble des analyses controlees :
+
+- position_verdict : leader, challenger, follower ou niche
+- durability_verdict : solid, watch, eroding ou none
+- moat_sources : parmi brand, patent, switching, network, cost, scale
+- threats : les menaces principales qui pesent sur la position
+- main_strengths / main_weaknesses : de l entreprise etudiee, pas des concurrents
+- rationale : la justification en quelques phrases, appuyee sur le dossier
+
+Ce sont des **propositions** : l analyste les confirme, les corrige ou les pose
+lui-meme au moment de l import. La validation reste humaine.
+
+Le bloc `quality_control.blocking_issues` ne liste que les problemes NON
+resolus. Tant qu il en reste, le dossier sera conserve en brouillon : il ne
+validera pas le titre.
+
+LANGUE DE LA REPONSE
+
+Ta reponse est integralement en francais - controle, listes et valeurs
+textuelles du JSON normalise. Restent inchanges : les cles du JSON et les
+valeurs d enumeration imposees (statuts, low/medium/high, draft).
+
 REGLE IMPORTANTE
 
 **Ne complete jamais silencieusement une donnee manquante.** Utilise `null`
@@ -461,6 +505,11 @@ Le JSON normalise respecte exactement cette structure :
   "market_leaders": [],
   "market_trends": [],
   "future_scenarios": [],
+  "strategic_assessment": {
+    "position_verdict": null, "durability_verdict": null,
+    "moat_sources": [], "threats": [], "main_strengths": [],
+    "main_weaknesses": [], "rationale": null, "status": "INTERPRETATION"
+  },
   "manual_review": [],
   "quality_control": {
     "validated": false, "quality_score": null, "blocking_issues": [],
@@ -471,6 +520,206 @@ Le JSON normalise respecte exactement cette structure :
 
 `analyst` reste `null` et `validated` reste `false` : seul un humain les
 renseigne, au moment de l import."""
+
+
+SYNTHESE = """Tu es un analyste senior independant, specialise en analyse d entreprise,
+valorisation, intelligence concurrentielle et analyse des risques.
+
+Ta mission : produire une evaluation synthetique et contradictoire de
+l entreprise etudiee, a partir des DONNEES DE L OUTIL fournies ci-dessous.
+Elles sont ta seule matiere : tu peux les critiquer, les juger insuffisantes,
+jamais les completer en silence.
+
+CE QUE MESURENT LES SCORES - LA REGLE CENTRALE
+
+Les scores mesurent la solidite de l analyse et l attractivite relative du
+dossier. **Ils ne predisent pas le cours futur**, et rien dans ta reponse ne
+doit le laisser croire. Un LLM peut produire une reponse tres assuree sur des
+donnees incompletes, anciennes ou contradictoires : la separation des scores
+existe pour empecher cela.
+
+- score d attractivite : qualite et interet potentiel du dossier ;
+- score de confiance : robustesse, fraicheur, coherence et verifiabilite de
+  l analyse - il ne dit PAS si l action va monter ;
+- score d alignement : coherence entre qualite, risque, perspectives et prix ;
+- verdict : une des six conclusions, dont s abstenir.
+
+INTERDITS
+
+- aucune certitude artificielle : l incertitude s affiche, elle ne se lisse pas ;
+- aucune donnee inventee : une donnee absente est dite absente ;
+- aucun conseil financier personnalise, aucun ordre, aucune garantie ;
+- « INSUFFISANT POUR CONCLURE » est une reponse valide et respectable.
+
+CONTRAT DE SORTIE - NON NEGOCIABLE
+
+Ta reponse suit le FORMAT DE SORTIE decrit en fin de prompt et se termine
+OBLIGATOIREMENT par le bloc JSON final - y compris si tu conclus
+« INSUFFISANT POUR CONCLURE », et y compris si les donnees te parviennent en
+fichier joint plutot que dans le prompt : un fichier joint est une source de
+donnees, pas un document a resumer.
+
+CONTEXTE
+
+- Entreprise etudiee : {{ENTREPRISE_ANALYSEE}}
+- Identifiant : {{TICKER}}
+- Secteur : {{SECTEUR_ACTIVITE}} · Sous-secteur : {{SOUS_SECTEUR}}
+- Devise : {{DEVISE}}
+- Date de reference : {{DATE_DE_REFERENCE}}
+- Horizon d analyse : {{HORIZON_ANALYSE}}
+- Objectif : {{OBJECTIF_DE_L_ANALYSE}}
+
+DONNEES QUANTITATIVES DE L OUTIL (JSON, dans le prompt ou en fichier joint)
+
+Prix et tendance (z-score, regression, statistiques de regime), ratios
+fondamentaux, qualite quantitative (rente, erosion), evaluation qualitative.
+Un bloc null ou absent est une donnee manquante : signale-la, ne l estime pas.
+
+{{DONNEES_QUANTITATIVES}}
+
+DOSSIER D ANALYSES DE L OUTIL (JSON, dans le prompt ou en fichier joint)
+
+Le dossier accumule par les prompts 1 a 4 : cadrage, concurrents, fiches
+concurrentielles, leaders, tendances, scenarios, controle qualite, synthese
+strategique.
+
+{{DOSSIER_ANALYSES}}
+
+CONTROLE PREALABLE OBLIGATOIRE
+
+Avant tout score, verifie : la date de chaque donnee importante ; la coherence
+entre la date du prix et celle des comptes ; devises, unites et perimetres ;
+les doublons ; les contradictions entre analyses ; les sources ; les problemes
+BLOQUANTS du controle qualite ; les indicateurs manquants ou aberrants.
+
+Regle des bloquants :
+- un probleme BLOQUANT non resolu ET non acquitte nominativement
+  (`quality_control.blocking_issues` present sans
+  `quality_control.blocking_issues_reviewed`) interdit toute conclusion
+  d investissement : limite-toi a un diagnostic de qualite et plafonne le
+  score de confiance a 30/100 ;
+- un bloquant acquitte par un analyste nomme ne plafonne plus la confiance,
+  mais reste cite dans les limites de l analyse.
+
+Donnees anciennes ou manquantes : baisse le score de confiance, indique l age
+ou l absence, n utilise jamais une estimation a la place d un fait.
+
+ANALYSE DEMANDEE
+
+1. Fondamentaux : qualite economique (croissance, marges, tresorerie,
+   rentabilite des capitaux, recurrence), solidite financiere (dette,
+   liquidite, dilution, resistance a un scenario defavorable), avantage
+   concurrentiel (a partir du dossier), gouvernance **uniquement si le dossier
+   porte des elements - ne deduis rien du silence**, risques (sectoriel,
+   reglementaire, technologique, geographique, concentration, liquidite).
+
+2. Valorisation : le niveau actuel par rapport a l historique du titre, aux
+   comparables du dossier, a la croissance, aux marges, aux risques. Une
+   decote ne prouve rien seule : explique ce qui la justifie ou non - qualite,
+   croissance, risque, dette, perception, information manquante. Presente
+   trois scenarios (defavorable, central, favorable) avec hypotheses et
+   conditions d invalidation. Pas de cible de prix si les hypotheses ne la
+   justifient pas.
+
+3. Prix et moment de marche : tendance, z-score, regime, episodes passes sous
+   le seuil - en disant si ces signaux confirment, contredisent ou n apportent
+   rien a l analyse fondamentale. Un indicateur technique n est jamais une
+   preuve de valeur intrinseque.
+
+SCORES
+
+**Score d attractivite /100** - ponderation indicative : qualite economique 20,
+solidite financiere 15, avantage concurrentiel 15, management et gouvernance
+10, croissance et potentiel du marche 10, valorisation actuelle 20, risques et
+resilience 10. Pour chaque categorie : note, maximum, justification, donnees
+utilisees, donnees manquantes, confiance de la note. Une note elevee ne
+compense jamais un risque critique ; un risque de solvabilite critique
+plafonne le score global.
+
+**Score de confiance /100** - grille : controle qualite 20, fraicheur des
+donnees 15, couverture des indicateurs importants 15, qualite des sources 15,
+coherence entre sources 10, coherence fondamentaux/prix/valorisation 10,
+couverture concurrentielle 10, clarte des hypotheses et scenarios 5.
+Lecture : 85-100 elevee · 70-84 correcte · 50-69 limitee · 30-49 faible ·
+0-29 non exploitable. **Sous 50, aucune conclusion forte.** Une entreprise
+attractive avec une confiance faible se place sous surveillance, jamais en
+achat a etudier.
+
+**Score d alignement /100** (facultatif) : le rapport entre qualite
+fondamentale, risque, perspectives et prix actuel est-il coherent ? Explique
+les desaccords : excellente mais chere, mediocre mais decotee, attractive
+uniquement dans le scenario favorable...
+
+VERDICT
+
+Un parmi : ACHAT A ETUDIER · CONSERVATION A ETUDIER · SURVEILLANCE ·
+ATTENDRE UNE MEILLEURE VALORISATION · EVITER OU ATTENDRE · INSUFFISANT POUR
+CONCLURE.
+
+Accompagne de : la these en trois phrases maximum ; les trois elements les
+plus favorables ; les trois risques les plus importants ; le principal facteur
+d invalidation ; les donnees a actualiser ; les conditions qui feraient
+evoluer l avis ; les indicateurs a surveiller ; la date recommandee de
+revision.
+
+""" + _STATUTS + "\n\n" + _LANGUE + """
+
+FORMAT DE SORTIE
+
+Sections A. Verdict, B. Score d attractivite, C. Score de confiance,
+D. Score d alignement, E. Notes par categorie, F. Fondamentaux,
+G. Valorisation, H. Prix et marche, I. Forces, J. Risques, K. Hypotheses
+critiques, L. Donnees manquantes ou a actualiser, M. Conditions
+d invalidation, N. Indicateurs a surveiller, O. Conclusion.
+
+Termine imperativement par un JSON valide, sans texte autour :
+
+{
+  "analysis_metadata": {
+    "company_analyzed": null, "ticker": null, "reference_date": null,
+    "analysis_horizon": null, "status": "draft"
+  },
+  "quality_gate": {
+    "passed": false, "blocking_issues": [], "blocking_issues_acknowledged": false,
+    "important_issues": [], "manual_review_required": true,
+    "conclusion_allowed": false
+  },
+  "scores": {
+    "attractiveness_score": null, "confidence_score": null,
+    "alignment_score": null, "maximum_confidence_allowed": null,
+    "score_version": "1.0", "scored_by": "llm"
+  },
+  "category_scores": [
+    {
+      "category": "economic_quality", "score": null, "maximum": 20,
+      "justification": null, "evidence": [], "missing_data": [],
+      "confidence": "low"
+    }
+  ],
+  "valuation_assessment": {
+    "current_price": null, "currency": null,
+    "valuation_status": "cheap|fair|expensive|uncertain",
+    "valuation_method": [], "bear_case": {}, "base_case": {}, "bull_case": {},
+    "key_assumptions": [], "invalidation_conditions": []
+  },
+  "market_assessment": {
+    "trend": null, "volatility": null,
+    "technical_signal": "positive|neutral|negative|unavailable",
+    "fundamental_signal": "positive|neutral|negative|unavailable",
+    "alignment": "confirmed|mixed|contradictory|unavailable"
+  },
+  "recommendation_status": {
+    "classification": "study_buy|study_hold|monitor|wait_for_better_valuation|avoid_or_wait|insufficient_to_conclude",
+    "rationale": null, "not_investment_advice": true
+  },
+  "key_strengths": [], "key_risks": [], "critical_hypotheses": [],
+  "missing_or_stale_data": [], "monitoring_indicators": [],
+  "review_triggers": [], "review_recommended_at": null,
+  "sources": []
+}
+
+`scored_by` reste `llm` : un humain peut relire cette synthese, jamais la
+produire retroactivement. Les scores mesurent le dossier, pas le cours futur."""
 
 
 PROMPTS = {
@@ -486,6 +735,12 @@ PROMPTS = {
     "controle": ("4 · Controle qualite et normalisation", CONTROLE,
                  "Verifie avant integration et produit le JSON normalise. "
                  "Non facultatif."),
+    "synthese": ("5 · Synthese decisionnelle et scoring", SYNTHESE,
+                 "Trois scores separes - attractivite du dossier, confiance "
+                 "dans l analyse, alignement qualite/prix - et un verdict qui "
+                 "peut etre de s abstenir. **Les scores mesurent la solidite "
+                 "du dossier, jamais le cours futur.** Les donnees sont "
+                 "injectees par l outil : a lancer apres le prompt 4."),
 }
 
 

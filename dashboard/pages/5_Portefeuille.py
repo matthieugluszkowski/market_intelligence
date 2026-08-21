@@ -1,16 +1,19 @@
 """Portefeuille et paper trading (doc 11, écrans 8 à 10).
 
-Trois principes portés par cet écran, tous issus de la spécification :
+Principes portés par cet écran — les deux premiers viennent de la spécification,
+le troisième d'un défaut constaté à l'usage :
 
 - **La thèse avant le montant.** Décider combien avant de dire pourquoi inverse
-  le raisonnement. Le formulaire suit donc l'ordre titre → support → thèse →
-  quantité, et la thèse s'écrit **en regard** de ce que le système affirme
-  aujourd'hui, affiché à côté.
-- **Le support est une colonne, jamais un onglet.** Voir en un coup d'œil qu'une
-  concentration porte sur un seul support est utile ; le découper en onglets la
-  masque.
-- **Aucun écran n'agrège du réel et du fictif dans le même chiffre.** Les
-  positions fictives sont étiquetées et sorties des totaux.
+  le raisonnement. Le formulaire suit l'ordre mode → titre → thèse → quantité,
+  et la thèse s'écrit **en regard** de ce que le système affirme aujourd'hui.
+- **Le réel et le fictif ne partagent jamais un chiffre.** Pas une étiquette
+  dans un coin de tableau : deux sections, chacune avec ses totaux. Les colonnes
+  sont identiques pour rester comparables — comparer n'est pas agréger.
+- **Le support n'existe que pour le réel.** Un support (PEA, CTO…) sert à trois
+  choses vérifiables : l'éligibilité géographique, le plafond de versements, la
+  comparaison à fiscalité identique. En paper trading, la notion n'a aucun sens :
+  l'écran ne la montre pas. Le support reste une colonne du tableau réel, jamais
+  un onglet — une concentration sur un seul support doit se voir d'un coup d'œil.
 """
 
 from __future__ import annotations
@@ -30,7 +33,7 @@ from dashboard.rechargement import recharge_si_modifie  # noqa: E402
 
 recharge_si_modifie()
 
-from dashboard import data  # noqa: E402
+from dashboard import data, definitions  # noqa: E402
 from dashboard.theme import css, palette  # noqa: E402
 from market_intelligence import portfolio as P  # noqa: E402
 from market_intelligence.db import connect_direct  # noqa: E402
@@ -58,7 +61,90 @@ supports = charge(P.SUPPORTS)
 positions = charge(P.POSITIONS, {"ouvertes": False})
 
 onglet_lignes, onglet_ouvrir, onglet_supports = st.tabs(
-    ["Positions", "Prendre une position", "Supports"])
+    ["Positions", "Prendre une position", "Supports (réglages)"])
+
+COLONNES_FORMAT = {
+    "%": st.column_config.NumberColumn("%", format="%+.1f%%"),
+    "Rdt total": st.column_config.NumberColumn(
+        "Rdt total", format="%+.1f%%",
+        help="Dividendes réinvestis, via `factor_total` — la seule mesure "
+             "économiquement juste."),
+    "z entrée": st.column_config.NumberColumn(
+        format="%+.2f", help="z-score figé le jour de l'ouverture."),
+    "z actuel": st.column_config.NumberColumn(
+        format="%+.2f", help="z-score du dernier calcul hebdomadaire."),
+}
+
+
+def lignes_valorisees(rows: pd.DataFrame, courant: pd.Series,
+                      avec_support: bool) -> tuple[list[dict], dict]:
+    """Valorise chaque position et rend (lignes d'affichage, totaux)."""
+    lignes, totaux = [], {"investi": 0.0, "valeur": 0.0}
+    with connect_direct() as conn, conn.cursor() as cur:
+        for _, position in rows.iterrows():
+            v = P.valorise(cur, position.to_dict(), AUJOURDHUI)
+            code = position["internal_code"]
+            ligne = {
+                "Titre": position["name"],
+                "Qté": v.quantite,
+                "PRU": round(v.prix_de_revient, 2),
+                "Cours": round(v.cours, 2) if v.cours else None,
+                "Investi": round(v.montant_investi, 2),
+                "Valeur": round(v.valeur, 2) if v.valeur else None,
+                "+/- value": round(v.plus_value, 2) if v.plus_value else None,
+                "%": round(v.plus_value_pct, 4) if v.plus_value_pct else None,
+                "Rdt total": (round(v.rendement_total_pct, 4)
+                              if v.rendement_total_pct is not None else None),
+                "z entrée": (round(float(position["z_at_entry"]), 2)
+                             if pd.notna(position["z_at_entry"]) else None),
+                "z actuel": (round(float(courant.loc[code]), 2)
+                             if code in courant.index else None),
+                "Jours": v.jours,
+                "Thèse": ("à relire" if position["review_at"]
+                          and position["review_at"] <= AUJOURDHUI else ""),
+            }
+            if avec_support:
+                # Le support reste une colonne, jamais un onglet : une
+                # concentration sur un seul support doit se voir d'un coup d'œil.
+                ligne = {"Titre": ligne.pop("Titre"),
+                         "Support": position["support"] or "—", **ligne}
+            lignes.append(ligne)
+            totaux["investi"] += v.montant_investi
+            totaux["valeur"] += v.valeur or 0
+    return lignes, totaux
+
+
+def section_positions(titre: str, rows: pd.DataFrame, courant: pd.Series,
+                      est_paper: bool) -> None:
+    """Une section = un univers (réel ou fictif), ses totaux, son tableau."""
+    st.subheader(titre)
+    if rows.empty:
+        st.caption("Aucune position " + ("fictive." if est_paper else "réelle."))
+        return
+
+    lignes, totaux = lignes_valorisees(rows, courant, avec_support=not est_paper)
+
+    etiquette = "fictif" if est_paper else "réel"
+    plus_value = totaux["valeur"] - totaux["investi"]
+    metriques = st.columns(4)
+    metriques[0].metric(f"Investi ({etiquette})", f"{totaux['investi']:,.0f} €")
+    metriques[1].metric(f"Valeur ({etiquette})", f"{totaux['valeur']:,.0f} €")
+    metriques[2].metric(f"+/- value ({etiquette})", f"{plus_value:+,.0f} €",
+                        f"{plus_value / totaux['investi']:+.1%}"
+                        if totaux["investi"] else None)
+    metriques[3].metric("Lignes", len(rows))
+
+    st.dataframe(pd.DataFrame(lignes), use_container_width=True,
+                 hide_index=True, column_config=COLONNES_FORMAT)
+
+    if est_paper:
+        st.markdown(
+            "<div class='avertissement'>Le paper trading <b>mesure la méthode, "
+            "pas l'investisseur</b> : il supprime la peur de la perte, la "
+            "tentation de vendre au creux, l'attente sans rien faire. Ses "
+            "chiffres qualifient la méthode ; ils ne prédisent pas ce qu'on "
+            "obtiendrait réellement.</div>", unsafe_allow_html=True)
+
 
 # --------------------------------------------------------------------------- #
 # Écran 8 - Les positions
@@ -69,88 +155,50 @@ with onglet_lignes:
 
     if ouvertes.empty:
         st.info("Aucune position ouverte. L'onglet **Prendre une position** en "
-                "ouvre une, réelle ou fictive.")
+                "ouvre une — fictive par défaut : en phase de qualification, "
+                "c'est le paper trading qui travaille.")
     else:
-        lignes, totaux_reels = [], {"investi": 0.0, "valeur": 0.0}
-        with connect_direct() as conn, conn.cursor() as cur:
-            for _, position in ouvertes.iterrows():
-                v = P.valorise(cur, position.to_dict(), AUJOURDHUI)
-                lignes.append({
-                    "": "fictif" if position["is_paper"] else "",
-                    "Titre": position["name"],
-                    "Support": position["support"] or "—",
-                    "Qté": v.quantite,
-                    "PRU": round(v.prix_de_revient, 2),
-                    "Cours": round(v.cours, 2) if v.cours else None,
-                    "Investi": round(v.montant_investi, 2),
-                    "Valeur": round(v.valeur, 2) if v.valeur else None,
-                    "+/- value": round(v.plus_value, 2) if v.plus_value else None,
-                    "%": round(v.plus_value_pct, 4) if v.plus_value_pct else None,
-                    "Rdt total": (round(v.rendement_total_pct, 4)
-                                  if v.rendement_total_pct is not None else None),
-                    "z entrée": (round(float(position["z_at_entry"]), 2)
-                                 if pd.notna(position["z_at_entry"]) else None),
-                    "z actuel": None,
-                    "Jours": v.jours,
-                    "Thèse": ("à relire" if position["review_at"]
-                              and position["review_at"] <= AUJOURDHUI else ""),
-                })
-                if not position["is_paper"]:
-                    totaux_reels["investi"] += v.montant_investi
-                    totaux_reels["valeur"] += v.valeur or 0
-
         as_of = data.derniere_date_de_calcul()
         courant = data.screener(as_of).set_index("internal_code")["z_score"] \
             if as_of else pd.Series(dtype=float)
-        for ligne, (_, position) in zip(lignes, ouvertes.iterrows()):
-            code = position["internal_code"]
-            if code in courant.index:
-                ligne["z actuel"] = round(float(courant.loc[code]), 2)
 
-        # Les totaux ne portent que sur le reel : agreger du fictif dans le meme
-        # chiffre fabriquerait un portefeuille fantome dont on mesure la
-        # performance sans y avoir engage d argent.
-        if totaux_reels["investi"]:
-            hauts = st.columns(4)
-            plus_value = totaux_reels["valeur"] - totaux_reels["investi"]
-            hauts[0].metric("Investi (réel)", f"{totaux_reels['investi']:,.0f} €")
-            hauts[1].metric("Valeur (réel)", f"{totaux_reels['valeur']:,.0f} €")
-            hauts[2].metric("+/- value", f"{plus_value:+,.0f} €",
-                            f"{plus_value / totaux_reels['investi']:+.1%}")
-            hauts[3].metric("Lignes", f"{(~ouvertes['is_paper']).sum()} réelles · "
-                                      f"{ouvertes['is_paper'].sum()} fictives")
+        reelles = ouvertes[~ouvertes["is_paper"]]
+        fictives = ouvertes[ouvertes["is_paper"]]
 
-        st.dataframe(
-            pd.DataFrame(lignes), use_container_width=True, hide_index=True,
-            column_config={
-                "%": st.column_config.NumberColumn("%", format="%+.1f%%"),
-                "Rdt total": st.column_config.NumberColumn(
-                    "Rdt total", format="%+.1f%%",
-                    help="Dividendes réinvestis, via `factor_total` — la seule "
-                         "mesure économiquement juste."),
-                "z entrée": st.column_config.NumberColumn(format="%+.2f"),
-                "z actuel": st.column_config.NumberColumn(format="%+.2f"),
-            },
-        )
+        # Deux sections, jamais un chiffre commun. L'ordre s'adapte à l'usage :
+        # tant qu'aucune position réelle n'existe - toute la phase de
+        # qualification - le paper trading passe en premier.
+        sections = [("Positions réelles", reelles, False),
+                    ("Paper trading — positions fictives", fictives, True)]
+        if reelles.empty and not fictives.empty:
+            sections.reverse()
+        for titre_section, rows, est_paper in sections:
+            section_positions(titre_section, rows, courant, est_paper)
 
-        st.markdown(
-            "<div class='avertissement'><b>Les totaux ne portent que sur le "
-            "réel.</b> Agréger du fictif dans le même chiffre fabriquerait un "
-            "portefeuille fantôme dont on mesurerait la performance sans y avoir "
-            "engagé d'argent.</div>", unsafe_allow_html=True)
+        definitions.glossaire(definitions.PORTEFEUILLE,
+                              "Que signifient ces colonnes ?")
 
         # --- Fermeture et revue de thèse (écran 10) -------------------------
         st.subheader("Fermer une position")
         st.caption("La revue de thèse se fait ici, à la fermeture, pendant qu'on "
                    "se souvient encore de ce qu'on attendait.")
 
+        index_ouvertes = ouvertes.set_index("id")
         choix_id = st.selectbox(
             "Position", ouvertes["id"],
             format_func=lambda i: (
-                f"{ouvertes.set_index('id').loc[i, 'name']} · "
-                f"{ouvertes.set_index('id').loc[i, 'support'] or '—'}"),
+                f"{index_ouvertes.loc[i, 'name']}"
+                + (" · fictive" if index_ouvertes.loc[i, "is_paper"]
+                   else f" · {index_ouvertes.loc[i, 'support'] or '—'}")),
         )
-        position = ouvertes.set_index("id").loc[choix_id]
+        position = index_ouvertes.loc[choix_id]
+        with connect_direct() as conn, conn.cursor() as cur:
+            v = P.valorise(cur, position.to_dict(), AUJOURDHUI)
+        if v.cours:
+            latente = (f" · +/- value latente {v.plus_value:+,.2f}"
+                       if v.plus_value is not None else "")
+            st.caption(f"PRU {v.prix_de_revient:.2f} · cours {v.cours:.2f}"
+                       f"{latente} · détenue {v.jours} jour(s)")
         st.markdown(f"**Thèse d'origine** — {position['thesis']}")
 
         with st.form("fermeture"):
@@ -192,8 +240,10 @@ with onglet_lignes:
         with st.expander(f"Positions fermées ({len(fermees)})"):
             table = pd.DataFrame({
                 "Titre": fermees["name"],
-                "Support": fermees["support"],
-                "Fictif": fermees["is_paper"],
+                "Mode": fermees["is_paper"].map({True: "fictive", False: "réelle"}),
+                "Support": fermees.apply(
+                    lambda l: "—" if l["is_paper"] else (l["support"] or "—"),
+                    axis=1),
                 "Ouverte": fermees["opened_at"],
                 "Fermée": fermees["closed_at"],
                 "PRU": fermees["avg_price"].round(2),
@@ -218,23 +268,60 @@ with onglet_lignes:
 # Écran 9 - Prendre une position
 # --------------------------------------------------------------------------- #
 with onglet_ouvrir:
-    if supports.empty:
-        st.warning("Aucun support. En créer un dans l'onglet **Supports**.")
-    else:
-        univers = data.instruments()
-        gauche, droite = st.columns(2)
-        with gauche:
-            titre = st.selectbox(
-                "Titre", univers["internal_code"],
-                format_func=lambda c: univers.set_index("internal_code").loc[c, "name"])
-        with droite:
-            support_code = st.selectbox(
-                "Support", supports["code"],
-                format_func=lambda c: (
-                    f"{supports.set_index('code').loc[c, 'label']}"
-                    f"{'  (fictif)' if supports.set_index('code').loc[c, 'is_paper'] else ''}"))
+    univers = data.instruments()
 
-        support = supports.set_index("code").loc[support_code]
+    # Le mode d'abord : c'est LA première décision, pas un suffixe dans une
+    # liste de supports. Fictif par défaut - en phase de qualification, le
+    # paper trading est l'usage normal, et engager du réel doit être un choix
+    # explicite, jamais un défaut.
+    mode = st.radio(
+        "Mode", ["paper", "reel"], horizontal=True,
+        format_func=lambda m: ("Fictive — paper trading" if m == "paper"
+                               else "Réelle — argent engagé"),
+        help="Une position fictive s'exécute à la dernière clôture hebdomadaire "
+             "connue et reste à jamais séparée du réel. Une position réelle "
+             "enregistre un achat déjà passé chez votre courtier — l'outil ne "
+             "passe aucun ordre.")
+
+    support = None
+    if mode == "paper":
+        paper_supports = supports[supports["is_paper"]]
+        if paper_supports.empty:
+            st.error("Aucun support de paper trading en base — la migration 014 "
+                     "aurait dû le créer. Vérifier la table `accounts`.")
+        else:
+            # Un seul support paper dans le cas courant : rien a choisir, rien
+            # a configurer. La notion de support n'a aucun sens en fictif.
+            support = (paper_supports.iloc[0] if len(paper_supports) == 1
+                       else paper_supports.set_index("code").loc[st.selectbox(
+                           "Compte fictif", paper_supports["code"])])
+            st.caption("Exécution à la dernière clôture hebdomadaire, position "
+                       "étiquetée fictive, exclue de tout total réel. Aucun "
+                       "support à configurer.")
+    else:
+        reels = supports[~supports["is_paper"]]
+        if reels.empty:
+            st.info(
+                "**Aucun support réel déclaré.** Un support est l'endroit où la "
+                "position est réellement détenue — PEA, CTO, PER, assurance-vie. "
+                "Le déclarer sert à trois choses : vérifier l'éligibilité "
+                "géographique du titre (un PEA n'accepte que des émetteurs "
+                "UE/EEE), suivre le plafond de versements, et comparer les "
+                "performances à fiscalité identique. À créer dans l'onglet "
+                "**Supports (réglages)**.")
+        else:
+            index_reels = reels.set_index("code")
+            code_support = st.selectbox(
+                "Support", reels["code"],
+                format_func=lambda c: index_reels.loc[c, "label"],
+                help="L'éligibilité du titre est vérifiée contre les pays "
+                     "déclarés de ce support.")
+            support = index_reels.loc[code_support]
+
+    if support is not None:
+        titre = st.selectbox(
+            "Titre", univers["internal_code"],
+            format_func=lambda c: univers.set_index("internal_code").loc[c, "name"])
         instrument = univers.set_index("internal_code").loc[titre]
 
         with connect_direct() as conn, conn.cursor() as cur:
@@ -254,13 +341,24 @@ with onglet_ouvrir:
         st.markdown("**Ce que le système affirme aujourd'hui**")
         vignettes = st.columns(5)
         vignettes[0].metric("z-score", f"{signal.z_score:+.2f}"
-                            if signal.z_score is not None else "—")
-        vignettes[1].metric("Fit", signal.fit_quality or "—")
-        vignettes[2].metric("Qualité", signal.quality_tier or "non qualifié")
-        vignettes[3].metric("Régime", signal.regime or "—")
+                            if signal.z_score is not None else "—",
+                            help="Écart à la tendance de long terme, en écarts "
+                                 "types. −2 = décote rare historiquement.")
+        vignettes[1].metric("Fit", signal.fit_quality or "—",
+                            help="Validité statistique de la tendance : good = "
+                                 "le retour vers la tendance est démontré.")
+        vignettes[2].metric("Qualité", signal.quality_tier or "non qualifié",
+                            help="Position concurrentielle : solid, watch, "
+                                 "eroding ou unqualified. Voir la fiche "
+                                 "instrument, bloc D.")
+        vignettes[3].metric("Régime", signal.regime or "—",
+                            help="Nature de la rente : rent, cyclical, eroding, "
+                                 "no_moat ou unknown.")
         vignettes[4].metric("Demi-vie",
                             f"{signal.half_life_days / 30.44:.0f} mois"
-                            if signal.half_life_days else "—")
+                            if signal.half_life_days else "—",
+                            help="Temps de résorption de la moitié d'un écart à "
+                                 "la tendance, estimé sur l'historique.")
 
         stats = signal.regime_stats or {}
         if stats.get("n_episodes"):
@@ -284,14 +382,21 @@ with onglet_ouvrir:
                 min_value=0.0, value=0.0, step=0.01,
                 help="La clôture par défaut évite le biais rétrospectif : on "
                      "choisit toujours un meilleur point d'entrée quand on "
-                     "connaît la suite.")
-            frais = d.number_input("Frais", min_value=0.0, value=0.0, step=0.01)
+                     "connaît la suite. Un prix saisi est marqué `manual` et "
+                     "distingué dans les agrégats.")
+            frais = d.number_input(
+                "Frais", min_value=0.0, value=0.0, step=0.01,
+                help="Suivis à part, jamais noyés dans le PRU. En paper, les "
+                     "simuler rapproche la mesure du réel.")
 
             if cours:
                 montant = quantite * (prix_saisi or float(cours)) + frais
-                st.caption(f"Montant : {montant:,.2f} {instrument['currency']}")
+                st.caption(f"Montant : {montant:,.2f} {instrument['currency']}"
+                           + (" — fictif" if mode == "paper" else ""))
 
-            if st.form_submit_button("Ouvrir la position", type="primary",
+            libelle_bouton = ("Ouvrir la position fictive" if mode == "paper"
+                              else "Enregistrer la position réelle")
+            if st.form_submit_button(libelle_bouton, type="primary",
                                      disabled=not elig.autorise):
                 try:
                     with connect_direct() as conn, conn.cursor() as cur:
@@ -306,7 +411,8 @@ with onglet_ouvrir:
                 except ValueError as exc:
                     st.error(str(exc))
 
-        if support["contribution_cap"]:
+        # Le plafond n'a de sens que sur un support réel qui en déclare un.
+        if mode == "reel" and support["contribution_cap"]:
             plafond = float(support["contribution_cap"])
             st.progress(min(deja_verse / plafond, 1.0))
             st.caption(
@@ -317,12 +423,30 @@ with onglet_ouvrir:
                 f"qu'il compte ici.")
 
 # --------------------------------------------------------------------------- #
-# Supports
+# Supports — des réglages qu'on visite une fois, pas un onglet de travail
 # --------------------------------------------------------------------------- #
 with onglet_supports:
+    st.markdown(
+        "**À quoi sert un support ?** C'est l'endroit où une position **réelle** "
+        "est détenue — PEA, CTO, PER, assurance-vie. Le déclarer sert à trois "
+        "choses, toutes vérifiables :\n"
+        "- **l'éligibilité géographique** : un PEA n'accepte que des émetteurs "
+        "UE/EEE, et l'outil refuse un achat non éligible avec le motif ;\n"
+        "- **le plafond de versements**, suivi par support et jamais déductible "
+        "d'une position isolée ;\n"
+        "- **la comparaison des performances à fiscalité identique** : PEA et "
+        "CTO ne se comparent pas sans le dire.\n\n"
+        "Le paper trading a son support intégré (`PAPER`) : **rien à configurer "
+        "pour le fictif**."
+    )
+
     st.dataframe(
         supports[["code", "label", "kind", "broker", "currency", "is_paper",
-                  "eligible_countries", "contribution_cap"]],
+                  "eligible_countries", "contribution_cap"]].rename(columns={
+            "code": "Code", "label": "Libellé", "kind": "Type",
+            "broker": "Courtier", "currency": "Devise", "is_paper": "Fictif",
+            "eligible_countries": "Pays éligibles",
+            "contribution_cap": "Plafond déclaré"}),
         use_container_width=True, hide_index=True)
 
     st.markdown(

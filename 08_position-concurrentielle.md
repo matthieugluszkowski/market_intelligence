@@ -298,6 +298,48 @@ C'est de la **synthèse documentaire vérifiable**, pas de la prédiction. Chaqu
 
 **Garde-fou : l'agent produit une évaluation, il ne la valide pas.** Le champ `reviewed_by` reste humain, et une évaluation non revue ne fait jamais passer un titre dans le quadrant cible.
 
+### 8.4 L'import du dossier : brouillon, acquittement, verdicts
+
+Trois règles issues du premier dossier réel (adidas, août 2026) :
+
+- **Un bloquant ne détruit plus le travail.** Le prompt 4 signale presque toujours des points à vérifier — c'est son rôle, pas un accident. Un dossier porteur de `blocking_issues` est donc **conservé en brouillon** au lieu d'être refusé : sans validation, sans projection, mais sans perte. Rien n'est complété automatiquement.
+- **L'acquittement est nominatif et tracé.** L'analyste qui a vérifié les points bloquants les acquitte à l'import ; le dossier conserve `quality_control.blocking_issues_reviewed = {par, le}`. Sans nom, rien n'est levé.
+- **Les verdicts sont posés par l'analyste, à l'import.** Le prompt 4 *propose* un bloc `strategic_assessment` (position, durabilité, sources de rente, menaces, justification) sur l'entreprise étudiée — c'est ce qui fait du dossier une analyse de l'instrument, pas seulement de ses concurrents. L'écran d'import permet de les confirmer ou de les corriger ; ce sont eux qui se projettent vers `moat_assessments`. Sans verdicts, le titre ne peut pas atteindre `solid`.
+
+L'appariement des sociétés (fiche du prompt 2 ↔ concurrent du prompt 1, profils résumés du prompt 4 ↔ fiches détaillées) tolère casse, ponctuation et suffixes juridiques : « NIKE, Inc. » et « Nike Inc. » sont la même société, et une fiche détaillée n'est jamais écrasée par son résumé.
+
+### 8.5 Le prompt 5 : synthèse décisionnelle et scoring
+
+Ajouté en août 2026, l'écran passe de « Dossier concurrentiel » à « Analyses ».
+Le prompt 5 produit un avis structuré à partir de **toutes** les données de
+l'outil — pas seulement du dossier concurrentiel — avec une règle centrale :
+
+> **Les scores mesurent la solidité de l'analyse et l'attractivité relative du
+> dossier, jamais le cours futur.** Un LLM peut produire une réponse très
+> assurée sur des données incomplètes, anciennes ou contradictoires : la
+> séparation des scores existe pour empêcher cela.
+
+Quatre décisions de conception :
+
+- **Trois scores séparés, jamais agrégés.** Attractivité (le dossier),
+  confiance (la robustesse de l'analyse elle-même : fraîcheur, couverture,
+  sources, cohérence), alignement (qualité × risque × prix). Une entreprise
+  attractive avec une confiance faible se surveille, elle ne s'achète pas.
+- **L'abstention est un verdict.** Six conclusions dont « insuffisant pour
+  conclure » — valide et respectable quand les données ne portent pas une
+  opinion. Un bloquant du contrôle qualité non acquitté nominativement
+  interdit toute conclusion et plafonne la confiance à 30/100.
+- **Les données sont injectées, pas ressaisies.** L'outil compose le prompt
+  avec un instantané quantitatif (prix, tendance, régime, ratios, qualité,
+  évaluation) et le dossier complet en JSON. Un bloc `null` se signale, ne
+  s'estime pas — et la synthèse est datée par construction.
+- **La synthèse ne touche pas le moteur.** Elle vit dans le dossier (blocs
+  `synthese`, `scoring`, `decision_gate`), ne projette rien vers
+  `moat_assessments` ni `quality_scores`, et n'efface pas une validation :
+  un dossier signé le reste, la synthèse ajoutée porte son propre état
+  (`human_review_status = not_reviewed`). Une nouvelle synthèse remplace
+  l'ancienne — deux avis datés contradictoires ne s'additionnent pas.
+
 ---
 
 ## 9. Conséquence sur l'ordre des opérations

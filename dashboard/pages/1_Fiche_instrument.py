@@ -23,10 +23,11 @@ from dashboard.rechargement import recharge_si_modifie  # noqa: E402
 
 recharge_si_modifie()
 
-from dashboard import charts, data  # noqa: E402
+from dashboard import charts, data, definitions, navigation  # noqa: E402
 from market_intelligence import watchlist  # noqa: E402
 from market_intelligence.analytics.quality import quadrant  # noqa: E402
 from market_intelligence.db import connect_direct  # noqa: E402
+from market_intelligence.intelligence import schema  # noqa: E402
 from dashboard.theme import (  # noqa: E402
     css, motif_en_clair, palette, pastille_statut, vignette,
 )
@@ -43,8 +44,16 @@ if as_of is None:
     st.stop()
 
 univers = data.instruments()
+codes = list(univers["internal_code"])
+
+# Une navigation depuis le screener, la watchlist ou la matrice arrive ici avec
+# son titre : il preselectionne la liste, puis la main revient a l'utilisateur.
+cible = navigation.cible_demandee(codes)
+if cible is not None:
+    st.session_state["fiche_instrument_choix"] = cible
+
 choix = st.sidebar.selectbox(
-    "Instrument", univers["internal_code"],
+    "Instrument", codes, key="fiche_instrument_choix",
     format_func=lambda c: univers.set_index("internal_code").loc[c, "name"],
 )
 
@@ -182,6 +191,8 @@ if motifs:
         + "</div>", unsafe_allow_html=True,
     )
 
+definitions.glossaire(definitions.DIAGNOSTICS)
+
 with st.expander("Detail technique des tests"):
     ar_bas, ar_haut = f["ar1_ci_low"], f["ar1_ci_high"]
     diagnostics = pd.DataFrame([
@@ -258,6 +269,8 @@ if stats.get("n_episodes"):
                        "un ordre de grandeur, pas comme une esperance.")
 else:
     st.info("Ce titre n'est jamais passe sous −2σ sur la fenetre analysee.")
+
+definitions.glossaire(definitions.REGIME)
 
 # --------------------------------------------------------------------------- #
 # Bloc D - Position concurrentielle (L6b)
@@ -379,6 +392,277 @@ else:
             "une decote, c'est un ajustement de prix correct.</div>",
             unsafe_allow_html=True)
 
+    definitions.glossaire(definitions.QUALITE)
+
+# --------------------------------------------------------------------------- #
+# Bloc D bis - Le dossier concurrentiel, tel qu'importe
+#
+# La jambe qualitative du bloc D : ce que les prompts 1 a 4 ont etabli, relu ou
+# non. Il s'affiche des le premier fragment - un dossier en cours de
+# constitution se montre comme tel, il ne se cache pas derriere un ecran vide.
+# --------------------------------------------------------------------------- #
+st.markdown("#### Dossier concurrentiel")
+
+info_dossier = data.dossier_concurrentiel(choix)
+if not info_dossier:
+    st.info("Aucun dossier. Le constituer sur l'écran « Analyses » : "
+            "cinq prompts, cinq imports.")
+else:
+    d = info_dossier["dossier"]
+    r = schema.resume(d)
+
+    if info_dossier["status"] == "validated":
+        etat_dossier = f"**validé** par {info_dossier['analyst']}"
+    else:
+        etat_dossier = "**brouillon** — non validé, aucun verdict projeté"
+    st.caption(
+        f"Dossier {etat_dossier} · référence {r['date_reference']} · importé le "
+        f"{info_dossier['importe_le']} · expire le {info_dossier['expires_at']} · "
+        f"{r['n_concurrents']} concurrent(s) · {r['n_fonctions']} fonction(s) · "
+        f"{r['n_sources']} source(s)"
+    )
+
+    etapes = schema.avancement(d)
+    st.markdown(" · ".join(
+        ("<span style='color:#0ca30c'>●</span> " if e["fait"]
+         else "<span style='color:#898781'>○</span> ") + e["etape"]
+        for e in etapes), unsafe_allow_html=True)
+    manques = [e["manque"] for e in etapes if e["manque"]]
+    if manques:
+        st.caption("Reste à faire : " + " · ".join(manques))
+
+    # --- Synthèse décisionnelle et scoring (prompt 5) -----------------------
+    scoring = schema.lire(d, "scoring", defaut={})
+    synthese5 = schema.lire(d, "synthese", defaut={})
+    if scoring or synthese5:
+        verdict5 = schema.lire(synthese5, "recommendation_status",
+                               "classification")
+        def note(cle: str) -> str:
+            valeur = schema.lire(scoring, cle)
+            try:
+                return f"{float(valeur):.0f}/100"
+            except (TypeError, ValueError):
+                return "—"
+        quatre = st.columns(4)
+        quatre[0].metric("Attractivité", note("attractiveness_score"),
+                         help="Qualité et intérêt potentiel du dossier. Ne "
+                              "prédit pas le cours futur.")
+        quatre[1].metric("Confiance", note("confidence_score"),
+                         help="Robustesse, fraîcheur, cohérence et "
+                              "vérifiabilité de l'analyse. Sous 50, aucune "
+                              "conclusion forte n'est permise.")
+        quatre[2].metric("Alignement", note("alignment_score"),
+                         help="Cohérence entre qualité, risque, perspectives "
+                              "et prix actuel.")
+        quatre[3].metric("Avis",
+                         schema.VERDICTS_SYNTHESE.get(verdict5, verdict5 or "—"),
+                         help="Conclusion prudente du prompt 5 — un avis "
+                              "d'analyse, jamais un conseil d'investissement. "
+                              "« Insuffisant pour conclure » est une réponse "
+                              "valide.")
+        porte = schema.lire(d, "decision_gate", defaut={})
+        etat_revue = {"not_reviewed": "non relue", "reviewed": "relue",
+                      "approved": "approuvée", "rejected": "rejetée"}.get(
+            schema.lire(scoring, "human_review_status"), "non relue")
+        st.caption(
+            f"Synthèse du {schema.lire(scoring, 'scored_at', defaut='—')} · "
+            f"produite par {schema.lire(scoring, 'scored_by', defaut='llm')} · "
+            f"**{etat_revue}** · conclusion "
+            f"{'autorisée' if schema.lire(porte, 'conclusion_allowed') else 'non autorisée'} "
+            f"par le contrôle préalable · "
+            f"{schema.lire(porte, 'blocking_issues_count', defaut=0)} point(s) "
+            f"bloquant(s) signalé(s)")
+
+        with st.expander("Synthèse décisionnelle — détail"):
+            if schema.lire(synthese5, "recommendation_status", "rationale"):
+                st.markdown(f"**Thèse.** "
+                            f"{schema.lire(synthese5, 'recommendation_status', 'rationale')}")
+            for titre_bloc, cle_bloc in (
+                    ("Points favorables", "key_strengths"),
+                    ("Risques principaux", "key_risks"),
+                    ("Hypothèses critiques", "critical_hypotheses"),
+                    ("Données manquantes ou à actualiser", "missing_or_stale_data"),
+                    ("Indicateurs à surveiller", "monitoring_indicators"),
+                    ("Déclencheurs de révision", "review_triggers")):
+                valeurs = schema.lire(synthese5, cle_bloc, defaut=[])
+                if valeurs:
+                    st.markdown(f"**{titre_bloc}**")
+                    for v in valeurs:
+                        st.markdown(f"- {v}")
+            revision = schema.lire(synthese5, "review_recommended_at")
+            if revision:
+                st.caption(f"Révision recommandée : {revision}")
+            st.json(synthese5, expanded=False)
+
+    synthese = schema.lire(d, "strategic_assessment", defaut={})
+    if any(schema.lire(synthese, cle) for cle in
+           ("position_verdict", "durability_verdict", "rationale",
+            "main_strengths", "main_weaknesses", "threats")):
+        with st.expander("Synthèse stratégique sur le titre", expanded=True):
+            elements = []
+            if schema.lire(synthese, "position_verdict"):
+                elements.append(f"position **{schema.lire(synthese, 'position_verdict')}**")
+            if schema.lire(synthese, "durability_verdict"):
+                elements.append(f"durabilité **{schema.lire(synthese, 'durability_verdict')}**")
+            moats = schema.lire(synthese, "moat_sources", defaut=[])
+            if moats:
+                elements.append("rente : " + ", ".join(moats))
+            if elements:
+                st.markdown(" · ".join(elements))
+            if schema.lire(synthese, "rationale"):
+                st.markdown(f"*{schema.lire(synthese, 'rationale')}*")
+            forces = schema.lire(synthese, "main_strengths", defaut=[])
+            faiblesses = schema.lire(synthese, "main_weaknesses", defaut=[])
+            menaces = schema.lire(synthese, "threats", defaut=[])
+            for titre_liste, valeurs in (("Forces", forces),
+                                         ("Faiblesses", faiblesses),
+                                         ("Menaces", menaces)):
+                if valeurs:
+                    st.markdown(f"**{titre_liste}** : "
+                                + " · ".join(str(x) for x in valeurs))
+            if info_dossier["status"] != "validated":
+                st.caption("Proposition non validée : ces verdicts ne sont "
+                           "projetés qu'à l'import signé du prompt 4.")
+
+    concurrents = schema.lire(d, "competitors", defaut=[])
+    if concurrents:
+        with st.expander(f"Concurrents retenus ({len(concurrents)})"):
+            st.dataframe(pd.DataFrame([{
+                "Concurrent": schema.lire(c, "company_name"),
+                "Pays": schema.lire(c, "country", defaut="—"),
+                "Type": schema.lire(c, "competition_type", defaut="—"),
+                "Fiche": "oui" if schema.lire(c, "profile_available") else "—",
+                "Statut": schema.lire(c, "status", defaut="—"),
+                "Justification": (schema.lire(c, "relevance_explanation",
+                                              defaut="") or "")[:120],
+            } for c in concurrents]), use_container_width=True, hide_index=True)
+
+    profils = [p for p in schema.lire(d, "company_profiles", defaut=[])
+               if isinstance(p, dict)]
+    if profils:
+        with st.expander(f"Fiches concurrents ({len(profils)})"):
+            st.dataframe(pd.DataFrame([{
+                "Concurrent": schema.lire(p, "company_name", defaut="sans nom"),
+                "Menace globale": schema.lire(p, "competitive_relevance",
+                                              "overall_threat_level", defaut="—"),
+                "Menace principale": (schema.lire(p, "strategic_assessment",
+                                                  "main_threat", defaut="") or "")[:110],
+                "Vulnérabilité": (schema.lire(p, "strategic_assessment",
+                                              "main_vulnerability", defaut="") or "")[:110],
+                "Forces": len(schema.lire(p, "strengths", defaut=[])),
+                "Faiblesses": len(schema.lire(p, "weaknesses", defaut=[])),
+                "Signaux": len(schema.lire(p, "trajectory_signals", defaut=[])),
+            } for p in profils]), use_container_width=True, hide_index=True)
+            nom_fiche = st.selectbox(
+                "Fiche détaillée", [schema.lire(p, "company_name",
+                                                defaut="sans nom") for p in profils])
+            profil = next(p for p in profils
+                          if schema.lire(p, "company_name", defaut="sans nom") == nom_fiche)
+            st.json(profil, expanded=False)
+
+    leaders = schema.lire(d, "market_leaders", defaut=[])
+    if leaders:
+        with st.expander(f"Leaders du marché ({len(leaders)})"):
+            st.dataframe(pd.DataFrame([{
+                "Rang": schema.lire(le, "rank", defaut="—"),
+                "Acteur": schema.lire(le, "company", defaut=schema.lire(le, "name")),
+                "Critère de leadership": (schema.lire(le, "leadership_criteria",
+                                                      defaut="") or "")[:120],
+                "Segments dominés": ", ".join(s) if isinstance(
+                    (s := schema.lire(le, "dominated_segments", defaut="—")), list)
+                    else str(s)[:120],
+            } for le in leaders]), use_container_width=True, hide_index=True)
+
+    tendances = schema.lire(d, "market_trends", defaut=[])
+    if tendances:
+        with st.expander(f"Tendances structurantes ({len(tendances)})"):
+            st.dataframe(pd.DataFrame([{
+                "Tendance": schema.lire(t, "trend", defaut="—"),
+                "Horizon": schema.lire(t, "horizon", defaut="—"),
+                "Preuves": (schema.lire(t, "description",
+                                        defaut=schema.lire(t, "evidence", defaut="")) or "")[:130],
+                "Impact sur le titre": (schema.lire(t, "impact",
+                                                    defaut=schema.lire(t, "impact_on_adidas",
+                                                                       defaut="")) or "")[:130],
+            } for t in tendances]), use_container_width=True, hide_index=True)
+
+    ruptures = schema.lire(d, "disruption_points", defaut=[])
+    if ruptures:
+        with st.expander(f"Points de rupture possibles ({len(ruptures)})"):
+            st.dataframe(pd.DataFrame([{
+                "Rupture": schema.lire(x, "point", defaut="—"),
+                "Nature": schema.lire(x, "nature", defaut="—"),
+                "Probabilité": schema.lire(x, "probability", defaut="—"),
+                "Scénario": (schema.lire(x, "rupture_scenario", defaut="") or "")[:130],
+            } for x in ruptures]), use_container_width=True, hide_index=True)
+
+    scenarios = schema.lire(d, "future_scenarios", defaut=[])
+    if scenarios:
+        with st.expander(f"Scénarios à 12-36 mois ({len(scenarios)})"):
+            st.dataframe(pd.DataFrame([{
+                "Scénario": schema.lire(s, "scenario_name", defaut="—"),
+                "Probabilité": schema.lire(s, "probability",
+                                           defaut=schema.lire(s, "qualitative_probability",
+                                                              defaut="—")),
+                "Hypothèses": (schema.lire(s, "hypotheses", defaut="") or "")[:160],
+            } for s in scenarios]), use_container_width=True, hide_index=True)
+
+    contradictoire = schema.lire(d, "contrarian_conclusion", defaut={})
+    if contradictoire:
+        with st.expander("Conclusion contradictoire"):
+            st.caption("Le meilleur argument dans chaque sens, l'hypothèse la plus "
+                       "fragile, et ce qui ferait changer d'avis : c'est la partie "
+                       "du dossier qui protège contre la lecture complaisante.")
+            # Les clés varient avec l'entreprise analysée
+            # (`best_argument_for_adidas`) : on les lit par motif, pas par nom.
+            for cle, valeur in contradictoire.items():
+                if cle == "status" or not isinstance(valeur, str) or not valeur:
+                    continue
+                if cle.startswith("best_argument_for"):
+                    libelle = "Pour le titre"
+                elif cle.startswith("best_argument_against"):
+                    libelle = "Contre le titre"
+                elif cle == "most_fragile_hypothesis":
+                    libelle = "Hypothèse la plus fragile"
+                elif cle == "information_that_would_change_conclusion":
+                    libelle = "Ce qui ferait changer d'avis"
+                else:
+                    libelle = cle.replace("_", " ").capitalize()
+                st.markdown(f"**{libelle}.** {valeur}")
+
+    recommandations = schema.lire(d, "recommendations", defaut=[])
+    implications = schema.lire(d, "implications_for_company", defaut=[])
+    if recommandations or implications:
+        with st.expander("Recommandations et implications pour le titre"):
+            for imp in implications:
+                st.markdown(f"- {imp}")
+            for rec in recommandations:
+                if isinstance(rec, dict):
+                    st.markdown(f"**{schema.lire(rec, 'category', defaut='—')}**")
+                    for action in schema.lire(rec, "actions", defaut=[]):
+                        st.markdown(f"- {action}")
+                else:
+                    st.markdown(f"- {rec}")
+
+    a_revoir = schema.lire(d, "manual_review", defaut=[])
+    bloquants_qc = schema.lire(d, "quality_control", "blocking_issues", defaut=[])
+    if a_revoir or bloquants_qc:
+        with st.expander(f"À vérifier à la main ({len(a_revoir)}) · "
+                         f"bloquants restants ({len(bloquants_qc)})"):
+            for probleme in bloquants_qc:
+                st.markdown(f"- **BLOQUANT** : {probleme}")
+            for element in a_revoir:
+                if isinstance(element, dict):
+                    st.markdown(
+                        f"- **{schema.lire(element, 'item', defaut='—')}** — "
+                        f"{schema.lire(element, 'issue', defaut='')} "
+                        f"*(priorité {schema.lire(element, 'priority', defaut='—')})*")
+                else:
+                    st.markdown(f"- {element}")
+
+    definitions.glossaire(definitions.DOSSIER,
+                          "Comment lire le dossier concurrentiel ?")
+
 # --------------------------------------------------------------------------- #
 # Bloc E - Fondamentaux (regime A)
 # --------------------------------------------------------------------------- #
@@ -457,6 +741,8 @@ else:
                 ]),
                 use_container_width=True, hide_index=True,
             )
+
+    definitions.glossaire(definitions.FONDAMENTAUX)
 
     st.markdown(
         "<div class='avertissement'><b>Ce bloc est un filtre de solvabilite, pas un "

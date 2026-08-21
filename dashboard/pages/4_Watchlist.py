@@ -28,7 +28,7 @@ from dashboard.rechargement import recharge_si_modifie  # noqa: E402
 
 recharge_si_modifie()
 
-from dashboard import data  # noqa: E402
+from dashboard import data, navigation  # noqa: E402
 from dashboard.theme import css, palette, statut  # noqa: E402
 from market_intelligence import watchlist as W  # noqa: E402
 from market_intelligence.db import connect_direct  # noqa: E402
@@ -76,8 +76,10 @@ else:
         "Secteur": suivis["secteur"],
     })
 
-    st.dataframe(
-        table, use_container_width=True, hide_index=True,
+    st.caption("**Sélectionner une ligne ouvre la fiche instrument.**")
+    navigation.tableau_vers_fiche(
+        table, list(suivis["internal_code"]), cle="watchlist_table",
+        use_container_width=True, hide_index=True,
         column_config={
             "z à l'ajout": st.column_config.NumberColumn(format="%+.2f"),
             "z actuel": st.column_config.NumberColumn(format="%+.2f"),

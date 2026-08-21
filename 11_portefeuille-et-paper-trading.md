@@ -267,23 +267,42 @@ thèse.
 concentration est sur un seul support est utile ; le découper en onglets la
 masque.
 
-Les positions fictives apparaissent **grisées et étiquetées**, et n'entrent dans
-aucun total.
+**Révision (août 2026) : le réel et le fictif sont deux sections, pas deux
+lignes d'un même tableau.** La première version étiquetait les positions
+fictives dans le tableau commun et ne totalisait que le réel — ce qui laissait
+la phase de qualification, entièrement en paper, **sans aucun agrégat**. Chaque
+section porte désormais ses propres totaux, clairement étiquetés (réel /
+fictif), avec des colonnes identiques : comparer n'est pas agréger, et le
+principe « aucun chiffre commun » tient mieux avec deux sections qu'avec une
+étiquette. La colonne support ne figure que dans la section réelle — en fictif,
+la notion n'a pas de sens. Tant qu'aucune position réelle n'existe, la section
+paper s'affiche en premier.
 
 ### Écran 9 - Prendre une position
 
-Trois étapes, dans cet ordre, et l'ordre compte.
+Quatre étapes, dans cet ordre, et l'ordre compte.
 
-1. **Le titre et le support.** L'éligibilité est vérifiée ici ; un titre non
-   éligible au support choisi est refusé avec le motif.
-2. **La thèse.** Champ obligatoire, minimum 30 caractères. L'écran affiche à
+1. **Le mode : fictive ou réelle.** *(Révision d'août 2026 : c'était un suffixe
+   « (fictif) » dans la liste des supports, c'est devenu le premier choix de
+   l'écran.)* Fictif par défaut — en phase de qualification, le paper trading
+   est l'usage normal, et engager du réel doit être un choix explicite, jamais
+   un défaut. En mode fictif, aucun support n'est demandé : le compte `PAPER`
+   intégré est utilisé, rien n'est à configurer.
+2. **Le titre, et le support en mode réel.** L'éligibilité est vérifiée ici ; un
+   titre non éligible au support choisi est refusé avec le motif.
+3. **La thèse.** Champ obligatoire, minimum 30 caractères. L'écran affiche à
    côté ce que le système affirme aujourd'hui — z-score, fit, qualité, régime,
    statistiques de régime — pour que la thèse s'écrive **en regard** de ces
    chiffres, et non à leur place.
-3. **La quantité et le prix.** Clôture par défaut, saisie possible avec marquage.
+4. **La quantité et le prix.** Clôture par défaut, saisie possible avec marquage.
 
 **La thèse avant le montant, délibérément.** Décider combien avant de dire
 pourquoi inverse le raisonnement.
+
+**L'onglet Supports devient des réglages, et il le dit.** Il explique à l'écran
+ce qu'aucune interface ne disait : à quoi sert un support (éligibilité
+géographique vérifiable, plafond par support, comparaison à fiscalité
+identique), et que le fictif n'en demande aucun.
 
 ### Écran 10 - Position fermée, revue
 

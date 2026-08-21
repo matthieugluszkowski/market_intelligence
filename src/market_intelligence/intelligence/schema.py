@@ -26,6 +26,7 @@ qui a l'air complet et ne l'est pas.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 
@@ -56,6 +57,44 @@ EUROPE = {
     "CH", "GB", "UK", "PL", "CZ", "GR", "LU", "HU", "RO", "SK", "SI", "HR", "BG",
     "EE", "LV", "LT", "IS", "MT", "CY",
 }
+
+
+# Suffixes juridiques ignores pour apparier deux noms de societe. « NIKE, Inc. »,
+# « Nike Inc. » et « Nike » designent la meme entreprise ; sans cette tolerance,
+# la fiche du prompt 2 ne se rattache a aucun concurrent du prompt 1 et le
+# dossier compte deux fois la meme societe.
+_SUFFIXES_JURIDIQUES = {
+    "inc", "incorporated", "corp", "corporation", "co", "company", "ag", "se",
+    "sa", "sas", "sarl", "plc", "ltd", "limited", "llc", "gmbh", "nv", "bv",
+    "spa", "ab", "asa", "oyj", "kk", "kgaa", "holding", "holdings", "group",
+    "groupe", "brands",
+}
+
+
+def normalise_nom(nom: str | None) -> str:
+    """Cle d'appariement d'un nom de societe : casse, ponctuation et suffixes
+    juridiques ignores."""
+    if not nom:
+        return ""
+    mots = [m for m in re.split(r"[^a-z0-9]+", nom.lower()) if m]
+    utiles = [m for m in mots if m not in _SUFFIXES_JURIDIQUES]
+    return " ".join(utiles or mots)
+
+
+def meme_societe(a: str | None, b: str | None) -> bool:
+    """Vrai si deux noms designent selon toute vraisemblance la meme societe.
+
+    Egalite des noms normalises, ou inclusion des mots de l'un dans l'autre :
+    « HOKA (Deckers Brands) » et « HOKA ONE ONE (Deckers Brands) » doivent se
+    reconnaitre sans qu'on maintienne une table d'alias.
+    """
+    na, nb = normalise_nom(a), normalise_nom(b)
+    if not na or not nb:
+        return False
+    if na == nb:
+        return True
+    ma, mb = set(na.split()), set(nb.split())
+    return ma <= mb or mb <= ma
 
 
 def lire(dossier: dict | None, *chemin, defaut=None):
@@ -96,6 +135,12 @@ def gabarit(internal_code: str, nom: str, reference_date: date) -> dict:
         "market_leaders": [],
         "market_trends": [],
         "future_scenarios": [],
+        "strategic_assessment": {
+            "position_verdict": None, "durability_verdict": None,
+            "moat_sources": [], "threats": [], "main_strengths": [],
+            "main_weaknesses": [], "rationale": None,
+            "status": "INTERPRETATION",
+        },
         "manual_review": [],
         "quality_control": {
             "validated": False, "quality_score": None,
@@ -247,11 +292,29 @@ def valide(dossier: dict) -> Validation:
                 f"un de {', '.join(STATUTS)}")
 
     # --- controle qualite ---------------------------------------------------
-    if lire(dossier, "quality_control", "blocking_issues", defaut=[]):
-        _ajoute(v, "BLOQUANT", "quality_control.blocking_issues",
-                "le controle qualite du prompt 4 signale des problemes bloquants "
-                "non resolus",
-                "les traiter avant import")
+    # Le prompt 4 signale presque toujours des points a verifier a la main :
+    # c'est son travail, pas un accident. Ils bloquent la validation tant qu'un
+    # analyste ne les a pas acquittes **nominativement** - l'acquittement est
+    # trace dans le dossier, rien n'est complete ni leve en silence.
+    bloquants_controle = lire(dossier, "quality_control", "blocking_issues",
+                              defaut=[])
+    if bloquants_controle:
+        acquittement = lire(dossier, "quality_control",
+                            "blocking_issues_reviewed", defaut=None)
+        acquitte_par = (lire(acquittement, "par") or "").strip() \
+            if isinstance(acquittement, dict) else ""
+        if acquitte_par:
+            _ajoute(v, "IMPORTANT", "quality_control.blocking_issues",
+                    f"{len(bloquants_controle)} point(s) bloquant(s) du controle "
+                    f"qualite, acquitte(s) par {acquitte_par} le "
+                    f"{lire(acquittement, 'le', defaut='?')}",
+                    "verifier que l'acquittement couvre bien chaque point")
+        else:
+            _ajoute(v, "BLOQUANT", "quality_control.blocking_issues",
+                    "le controle qualite du prompt 4 signale des problemes "
+                    "bloquants non resolus",
+                    "les traiter, ou les verifier a la main et les acquitter "
+                    "nominativement a l'import")
 
     return v
 
@@ -267,6 +330,19 @@ FRAGMENTS = {
     "concurrent": "2 · Fiche d'un concurrent",
     "leaders": "3 · Leaders et perspectives",
     "controle": "4 · Contrôle qualité — dossier normalisé",
+    "synthese": "5 · Synthèse décisionnelle et scoring",
+}
+
+# Verdicts possibles du prompt 5, avec leur libellé d'affichage. La sixième
+# valeur est la plus importante : s'abstenir est une conclusion valide, et un
+# outil qui ne la propose pas force une opinion là où il n'y a pas de dossier.
+VERDICTS_SYNTHESE = {
+    "study_buy": "Achat à étudier",
+    "study_hold": "Conservation à étudier",
+    "monitor": "Surveillance",
+    "wait_for_better_valuation": "Attendre une meilleure valorisation",
+    "avoid_or_wait": "Éviter ou attendre",
+    "insufficient_to_conclude": "Insuffisant pour conclure",
 }
 
 
@@ -282,6 +358,11 @@ SIGNATURES = {
                    "products_and_features", "strategic_assessment"),
     "leaders": ("market_leadership_method", "market_leaders", "contrarian_conclusion",
                 "disruption_points", "market_scenarios", "defensible_advantages"),
+    # La synthese porte `analysis_metadata` mais PAS `quality_control` (elle a
+    # son propre `quality_gate`) : elle ne peut donc pas etre prise pour un
+    # dossier normalise par la detection du controle.
+    "synthese": ("scores", "category_scores", "recommendation_status",
+                 "quality_gate", "valuation_assessment", "market_assessment"),
 }
 
 
@@ -334,9 +415,16 @@ def fusionne(dossier: dict, fragment: dict, type_fragment: str) -> dict:
                  lire(fragment, "analysis_metadata", defaut={}))
 
     if type_fragment == "controle":
-        # Le prompt 4 rend le dossier normalise complet : il fait autorite, mais
-        # on conserve ce qu'il aurait perdu.
+        # Le prompt 4 rend le dossier normalise complet : il fait autorite sur
+        # la structure, mais ses profils de societes sont des **resumes**. Un
+        # simple ecrasement perdrait les fiches detaillees du prompt 2 - forces,
+        # faiblesses, signaux de trajectoire - deja relues. On fusionne donc les
+        # profils societe par societe, sans rien perdre.
+        profils_detailles = lire(resultat, "company_profiles", defaut=[])
         fusionne_dict(resultat, fragment, ecrase=True)
+        resultat["company_profiles"] = _fusionne_profils(
+            profils_detailles, lire(fragment, "company_profiles", defaut=[]))
+        _rattache_fiches(resultat)
         return resultat
 
     if type_fragment == "cadrage":
@@ -384,19 +472,24 @@ def fusionne(dossier: dict, fragment: dict, type_fragment: str) -> dict:
 
     elif type_fragment == "concurrent":
         # Une fiche par concurrent : elle s'ajoute aux profils et enrichit
-        # l'entree correspondante de la liste des concurrents.
-        nom = lire(fragment, "company_identity", "company_name",
-                   defaut=lire(fragment, "company_identity", "name"))
+        # l'entree correspondante de la liste des concurrents. Les LLM nomment
+        # la societe tantot `company_name`, tantot `name`, tantot `legal_name`
+        # (« NIKE, Inc. ») : refuser ces variantes laisserait une fiche
+        # orpheline, rattachee a aucun concurrent.
+        identite = lire(fragment, "company_identity", defaut={})
+        nom = (lire(identite, "company_name") or lire(identite, "name")
+               or lire(identite, "legal_name"))
+        # Le nom canonique est celui de la liste des concurrents - c'est elle
+        # que l'analyste a relue. « NIKE, Inc. » redevient « Nike Inc. ».
+        for concurrent in resultat.get("competitors", []):
+            if meme_societe(concurrent.get("company_name"), nom):
+                nom = concurrent.get("company_name") or nom
+                break
         profil = json_copie(fragment)
         if nom:
             profil["company_name"] = nom
         _concatene(resultat, "company_profiles", [profil], cle="company_name")
-        if nom:
-            for concurrent in resultat.get("competitors", []):
-                if (concurrent.get("company_name") or "").lower() == nom.lower():
-                    concurrent.setdefault(
-                        "country", lire(fragment, "company_identity", "country"))
-                    concurrent["profile_available"] = True
+        _rattache_fiches(resultat)
 
     elif type_fragment == "leaders":
         for cle in ("market_leaders", "market_trends", "structural_trends",
@@ -409,6 +502,37 @@ def fusionne(dossier: dict, fragment: dict, type_fragment: str) -> dict:
                 _concatene(resultat, cible, valeurs)
         _ajoute_dict(resultat, "contrarian_conclusion",
                      lire(fragment, "contrarian_conclusion", defaut={}))
+
+    elif type_fragment == "synthese":
+        # La synthese est un avis DATE sur l'etat du dossier : la nouvelle
+        # remplace l'ancienne - deux avis contradictoires qui coexistent sans
+        # date de peremption ne s'additionnent pas, ils se neutralisent.
+        # C'est l'exception assumee a la regle « on ajoute, on n'ecrase pas ».
+        resultat["synthese"] = json_copie(fragment)
+        scores = lire(fragment, "scores", defaut={})
+        porte = lire(fragment, "quality_gate", defaut={})
+        # Raccourcis d'affichage (modele de donnees du doc 08 §8.5) : l'ecran
+        # lit ces deux blocs, jamais le JSON complet de la synthese.
+        resultat["scoring"] = {
+            "attractiveness_score": lire(scores, "attractiveness_score"),
+            "confidence_score": lire(scores, "confidence_score"),
+            "alignment_score": lire(scores, "alignment_score"),
+            "score_version": lire(scores, "score_version", defaut="1.0"),
+            "scored_at": lire(fragment, "analysis_metadata", "reference_date"),
+            "scored_by": lire(scores, "scored_by", defaut="llm"),
+            # Toujours non relu a l'import : un humain peut relire une
+            # synthese, jamais la produire retroactivement.
+            "human_review_status": "not_reviewed",
+        }
+        resultat["decision_gate"] = {
+            "quality_control_passed": bool(lire(porte, "passed", defaut=False)),
+            "blocking_issues_count": len(lire(porte, "blocking_issues",
+                                              defaut=[]) or []),
+            "manual_review_required": bool(lire(porte, "manual_review_required",
+                                                defaut=True)),
+            "conclusion_allowed": bool(lire(porte, "conclusion_allowed",
+                                            defaut=False)),
+        }
 
     _concatene(resultat, "sources", lire(fragment, "sources", defaut=[]), cle="url")
     return resultat
@@ -455,6 +579,44 @@ def _concatene(dossier: dict, champ: str, valeurs: list, cle: str = "") -> None:
         existants.extend(valeurs)
 
 
+def _fusionne_profils(detailles: list, resumes: list) -> list:
+    """Fusionne les profils du prompt 4 (resumes) dans ceux du prompt 2
+    (detailles), societe par societe. Aucune fiche detaillee n'est perdue :
+    le resume ne fait que completer les cles absentes.
+    """
+    resultat = [json_copie(p) for p in (detailles or []) if isinstance(p, dict)]
+    for resume_ in resumes or []:
+        if not isinstance(resume_, dict):
+            continue
+        nom = lire(resume_, "company_name", defaut=lire(resume_, "normalized_name"))
+        for profil in resultat:
+            if meme_societe(profil.get("company_name"), nom):
+                fusionne_dict(profil, resume_)  # complete, n'ecrase pas
+                break
+        else:
+            resultat.append(json_copie(resume_))
+    return resultat
+
+
+def _rattache_fiches(dossier: dict) -> None:
+    """Marque `profile_available` sur chaque concurrent dont une fiche existe,
+    et complete son pays depuis la fiche s'il manque. C'est ce marquage qui
+    raye le concurrent de la liste « sans fiche » du prompt 2."""
+    profils = [p for p in lire(dossier, "company_profiles", defaut=[])
+               if isinstance(p, dict)]
+    for concurrent in lire(dossier, "competitors", defaut=[]):
+        if not isinstance(concurrent, dict):
+            continue
+        for profil in profils:
+            if meme_societe(concurrent.get("company_name"),
+                            profil.get("company_name")):
+                concurrent["profile_available"] = True
+                pays = lire(profil, "company_identity", "country")
+                if pays and not concurrent.get("country"):
+                    concurrent["country"] = pays
+                break
+
+
 def peremption(reference_date: date) -> date:
     """Une evaluation de 2026 inspire la meme confiance qu'une de 2029, et c'est
     le probleme. La peremption force la revue."""
@@ -471,11 +633,15 @@ def avancement(dossier: dict) -> list[dict]:
     """
     concurrents = lire(dossier, "competitors", defaut=[])
     profils = lire(dossier, "company_profiles", defaut=[])
-    noms_profiles = {(lire(p, "company_name") or "").lower() for p in profils}
+    noms_profiles = [lire(p, "company_name") for p in profils]
     sans_fiche = [lire(c, "company_name") for c in concurrents
-                  if (lire(c, "company_name") or "").lower() not in noms_profiles]
+                  if not any(meme_societe(lire(c, "company_name"), n)
+                             for n in noms_profiles)]
 
     strategie = lire(dossier, "strategic_assessment", defaut={})
+    synthese = lire(dossier, "synthese", defaut={})
+    verdict_synthese = lire(synthese, "recommendation_status", "classification")
+    scoring = lire(dossier, "scoring", defaut={})
     return [
         {
             "etape": "1 · Cadrage",
@@ -507,6 +673,15 @@ def avancement(dossier: dict) -> list[dict]:
             "manque": ("`strategic_assessment` doit porter `position_verdict` et "
                        "`durability_verdict`"
                        if not lire(strategie, "position_verdict") else ""),
+        },
+        {
+            "etape": "5 · Synthèse & scoring",
+            "apporte": ((f"{VERDICTS_SYNTHESE.get(verdict_synthese, verdict_synthese)} · "
+                         f"attractivité {lire(scoring, 'attractiveness_score', defaut='—')}/100 · "
+                         f"confiance {lire(scoring, 'confidence_score', defaut='—')}/100")
+                        if verdict_synthese else "aucune synthèse"),
+            "fait": bool(verdict_synthese),
+            "manque": "" if verdict_synthese else "lancer le prompt 5, après le prompt 4",
         },
     ]
 

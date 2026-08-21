@@ -118,7 +118,7 @@ def _resout_concurrents(cur, concurrents: list) -> tuple[list, list]:
 
 
 DOSSIER_EXISTANT = """
-select dossier from market_analyses
+select dossier, status, analyst, validated_at from market_analyses
  where instrument_id = %(instrument_id)s
  order by reference_date desc, imported_at desc limit 1;
 """
@@ -126,7 +126,8 @@ select dossier from market_analyses
 
 def importe(cur, instrument_id: int, internal_code: str, sector_code: str | None,
             fragment: dict, analyste: str | None,
-            type_fragment: str = "controle") -> ResultatImport:
+            type_fragment: str = "controle",
+            nom_instrument: str | None = None) -> ResultatImport:
     """Integre un fragment, puis projette si le dossier est complet et signe.
 
     Chaque prompt rend un JSON de forme differente : le dossier se construit par
@@ -142,30 +143,72 @@ def importe(cur, instrument_id: int, internal_code: str, sector_code: str | None
     cur.execute(DOSSIER_EXISTANT, {"instrument_id": instrument_id})
     ligne = cur.fetchone()
     precedent = ligne[0] if ligne else None
+    statut_precedent = ligne[1] if ligne else None
+    analyste_precedent = ligne[2] if ligne else None
+    valide_le_precedent = ligne[3] if ligne else None
 
     dossier = fusionne(precedent or {}, fragment, type_fragment)
+
+    # Le nom de l'entreprise analysee vient de l'instrument choisi a l'ecran :
+    # aucun fragment intermediaire ne le porte, et sans lui le dossier final
+    # serait refuse pour « entreprise analysee absente ».
+    if nom_instrument:
+        meta_fusion = dossier.setdefault("analysis_metadata", {})
+        if not meta_fusion.get("company_analyzed"):
+            meta_fusion["company_analyzed"] = nom_instrument
+
     resultat = ResultatImport(validation=valide(dossier))
     resultat.type_fragment = type_fragment
     resultat.fusionne_avec_precedent = precedent is not None
 
     if type_fragment != "controle":
         # Un fragment intermediaire est conserve tel quel, sans exiger la
-        # completude : c'est un brouillon en cours de constitution.
+        # completude. **Il n'annule pas une validation existante** : ajouter la
+        # synthese du prompt 5 a un dossier signe ne retire pas la signature -
+        # le bloc ajoute porte son propre etat de relecture (`not_reviewed`).
         resultat.dossier = dossier
-        _enregistre(cur, instrument_id, internal_code, dossier, analyste=None,
-                    force_draft=True, resultat=resultat)
-        resultat.messages.append(
-            f"Fragment « {FRAGMENTS.get(type_fragment, type_fragment)} » integre "
-            f"au brouillon. Aucune projection : seul le dossier normalise du "
-            f"prompt 4 qualifie un titre."
-        )
+        conserve_validation = (statut_precedent == "validated"
+                               and analyste_precedent)
+        _enregistre(cur, instrument_id, internal_code, dossier,
+                    analyste=analyste_precedent if conserve_validation else None,
+                    force_draft=not conserve_validation, resultat=resultat,
+                    valide_le=valide_le_precedent if conserve_validation else None)
+        if type_fragment == "synthese":
+            resultat.messages.append(
+                "Synthèse et scores intégrés. **Les scores mesurent la solidité "
+                "du dossier et la confiance dans l'analyse, jamais le cours "
+                "futur.** Produits par LLM, non relus : la relecture se fait "
+                "sur la fiche instrument."
+            )
+        else:
+            resultat.messages.append(
+                f"Fragment « {FRAGMENTS.get(type_fragment, type_fragment)} » integre "
+                f"au brouillon. Aucune projection : seul le dossier normalise du "
+                f"prompt 4 qualifie un titre."
+            )
+        if conserve_validation:
+            resultat.messages.append(
+                f"Le dossier reste validé par {analyste_precedent} : un ajout "
+                f"n'efface pas une relecture."
+            )
         return resultat
 
     if not resultat.validation.importable:
+        # Refuser tout enregistrement ferait perdre le travail accumule : le
+        # prompt 4 signale presque toujours des points a verifier, c'est son
+        # role. Le dossier est donc **conserve en brouillon**, sans validation
+        # ni projection - rien n'est complete automatiquement, et le titre
+        # reste non qualifie tant que les bloquants ne sont pas traites ou
+        # acquittes nominativement.
+        _enregistre(cur, instrument_id, internal_code, dossier, analyste=None,
+                    force_draft=True, resultat=resultat)
+        details = "; ".join(p.element for p in resultat.validation.bloquants)
         resultat.messages.append(
-            "Import refuse : "
-            f"{len(resultat.validation.bloquants)} probleme(s) bloquant(s). "
-            "Le dossier n'est pas complete automatiquement."
+            f"{len(resultat.validation.bloquants)} probleme(s) bloquant(s) "
+            f"({details}) : dossier conserve en `draft`, sans validation ni "
+            f"projection. Corriger les points signales - ou verifier a la main "
+            f"et acquitter nominativement ceux du controle qualite - puis "
+            f"reimporter."
         )
         return resultat
 
@@ -295,8 +338,12 @@ def importe(cur, instrument_id: int, internal_code: str, sector_code: str | None
 
 def _enregistre(cur, instrument_id: int, internal_code: str, dossier: dict,
                 analyste: str | None, force_draft: bool,
-                resultat: ResultatImport) -> None:
-    """Ecrit un brouillon sans projeter. Utilise par les fragments 1 a 3."""
+                resultat: ResultatImport, valide_le=None) -> None:
+    """Ecrit le dossier sans projeter. Utilise par les fragments 1, 2, 3 et 5.
+
+    `force_draft=False` avec un analyste conserve une validation existante :
+    un fragment additif n'efface pas une relecture deja faite.
+    """
     meta = lire(dossier, "analysis_metadata", defaut={})
     reference = lire(meta, "reference_date")
     reference_date = (date.fromisoformat(reference)
@@ -304,22 +351,30 @@ def _enregistre(cur, instrument_id: int, internal_code: str, dossier: dict,
     analysis_id = (lire(meta, "analysis_id")
                    or f"{internal_code}@{reference_date.isoformat()}")
 
+    statut = "draft" if force_draft or not analyste else "validated"
+
     stocke = json.loads(json.dumps(dossier, ensure_ascii=False, default=str))
     stocke.setdefault("analysis_metadata", {})
     stocke["analysis_metadata"]["analysis_id"] = analysis_id
-    stocke["analysis_metadata"]["status"] = "draft"
+    stocke["analysis_metadata"]["status"] = statut
     # La date de reference est persistee dans le dossier lui-meme : sinon elle
     # se perd d'un fragment a l'autre, et le dossier final ressort incomplet.
     stocke["analysis_metadata"]["reference_date"] = reference_date.isoformat()
     stocke["analysis_metadata"].setdefault("analyst", None)
+    if statut == "validated":
+        stocke["analysis_metadata"]["analyst"] = analyste
     stocke.setdefault("quality_control", {})
-    stocke["quality_control"]["validated"] = False
+    stocke["quality_control"].setdefault("validated", False)
+    if statut != "validated":
+        stocke["quality_control"]["validated"] = False
 
     cur.execute(UPSERT_ANALYSE, {
         "instrument_id": instrument_id, "analysis_id": analysis_id,
-        "reference_date": reference_date, "status": "draft", "analyst": None,
+        "reference_date": reference_date, "status": statut,
+        "analyst": analyste if statut == "validated" else None,
         "dossier": json.dumps(stocke, ensure_ascii=False),
-        "validated_at": None, "expires_at": peremption(reference_date),
+        "validated_at": (valide_le or date.today()) if statut == "validated" else None,
+        "expires_at": peremption(reference_date),
     })
     resultat.analyse_id = cur.fetchone()[0]
     resultat.dossier = stocke

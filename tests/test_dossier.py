@@ -180,11 +180,13 @@ def test_un_concurrent_europeen_ne_rend_pas_le_groupe_complet(pays):
 # --------------------------------------------------------------------------- #
 # Les prompts
 # --------------------------------------------------------------------------- #
-def test_les_quatre_prompts_existent():
-    assert set(prompts.PROMPTS) == {"cadrage", "concurrent", "leaders", "controle"}
+def test_les_cinq_prompts_existent():
+    assert set(prompts.PROMPTS) == {"cadrage", "concurrent", "leaders",
+                                    "controle", "synthese"}
 
 
-@pytest.mark.parametrize("cle", ["cadrage", "concurrent", "leaders", "controle"])
+@pytest.mark.parametrize("cle", ["cadrage", "concurrent", "leaders",
+                                 "controle", "synthese"])
 def test_chaque_prompt_se_compose_sans_variable_residuelle(cle):
     variables = {nom: f"valeur_{nom}" for nom in prompts.VARIABLES}
     texte = prompts.compose(cle, variables)
@@ -233,8 +235,9 @@ def test_une_variable_facultative_vide_le_dit_explicitement():
 # --------------------------------------------------------------------------- #
 # Accumulation des fragments
 # --------------------------------------------------------------------------- #
-def test_les_quatre_fragments_sont_declares():
-    assert set(schema.FRAGMENTS) == {"cadrage", "concurrent", "leaders", "controle"}
+def test_les_cinq_fragments_sont_declares():
+    assert set(schema.FRAGMENTS) == {"cadrage", "concurrent", "leaders",
+                                     "controle", "synthese"}
 
 
 # --------------------------------------------------------------------------- #
@@ -280,6 +283,74 @@ def test_le_dossier_normalise_exige_deux_cles():
         "quality_control": {"validated": False},
     })
     assert cle == "controle"
+
+
+def test_la_sortie_du_prompt_5_est_reconnue():
+    """La synthèse porte `analysis_metadata` mais pas `quality_control` : elle
+    ne doit jamais être prise pour un dossier normalisé, qui projette."""
+    cle, _ = schema.detecte_fragment({
+        "analysis_metadata": {"company_analyzed": "adidas"},
+        "scores": {"attractiveness_score": 70},
+        "recommendation_status": {"classification": "monitor"},
+        "quality_gate": {"passed": True},
+    })
+    assert cle == "synthese"
+
+
+def test_la_synthese_remonte_scores_et_porte_de_decision():
+    """La fusion range la synthèse sous sa clé et remonte les raccourcis
+    `scoring` et `decision_gate` que les écrans lisent."""
+    apres = schema.fusionne({}, {
+        "analysis_metadata": {"reference_date": "2026-08-19"},
+        "scores": {"attractiveness_score": 72, "confidence_score": 55,
+                   "alignment_score": 61},
+        "quality_gate": {"passed": False, "blocking_issues": ["x"],
+                         "conclusion_allowed": False},
+        "recommendation_status": {"classification": "monitor"},
+    }, "synthese")
+    assert apres["scoring"]["attractiveness_score"] == 72
+    assert apres["scoring"]["confidence_score"] == 55
+    assert apres["scoring"]["human_review_status"] == "not_reviewed", \
+        "une synthèse importée n'est jamais relue d'office"
+    assert apres["decision_gate"]["blocking_issues_count"] == 1
+    assert apres["decision_gate"]["conclusion_allowed"] is False
+    etape5 = next(e for e in schema.avancement(apres)
+                  if e["etape"].startswith("5"))
+    assert etape5["fait"]
+    assert "Surveillance" in etape5["apporte"]
+
+
+def test_une_nouvelle_synthese_remplace_lancienne():
+    """Exception assumée à « on ajoute, on n'écrase pas » : deux avis datés
+    contradictoires ne s'additionnent pas, ils se neutralisent."""
+    base = schema.fusionne({}, {
+        "scores": {"attractiveness_score": 40},
+        "recommendation_status": {"classification": "avoid_or_wait"},
+        "quality_gate": {},
+    }, "synthese")
+    apres = schema.fusionne(base, {
+        "scores": {"attractiveness_score": 70},
+        "recommendation_status": {"classification": "monitor"},
+        "quality_gate": {},
+    }, "synthese")
+    assert apres["scoring"]["attractiveness_score"] == 70
+    assert apres["synthese"]["recommendation_status"]["classification"] == "monitor"
+
+
+def test_le_prompt_5_separe_les_scores_et_autorise_labstention():
+    """Le score mesure la solidité de l'analyse et l'attractivité du dossier,
+    jamais le cours futur — et s'abstenir est une conclusion valide."""
+    texte = prompts.PROMPTS["synthese"][1]
+    assert "ne predisent pas le cours futur" in texte
+    assert "score d attractivite" in texte.lower()
+    assert "score de confiance" in texte.lower()
+    assert "INSUFFISANT POUR CONCLURE" in texte
+    assert "plafonne le" in texte and "30/100" in texte
+    assert "acquitte" in texte, \
+        "la règle des bloquants doit connaître l'acquittement nominatif"
+    assert "DONNEES QUANTITATIVES DE L OUTIL" in texte
+    assert "DONNEES_QUANTITATIVES" in prompts.VARIABLES, \
+        "les données de l'outil doivent être injectées par composition"
 
 
 def test_un_json_non_reconnu_le_dit():
@@ -333,7 +404,7 @@ def test_lavancement_montre_ce_qui_manque():
     """Sans cet état, l'analyste colle un JSON, lit un succès, et n'a aucun moyen
     de vérifier que la donnée est arrivée."""
     etapes = schema.avancement({})
-    assert len(etapes) == 4
+    assert len(etapes) == 5
     assert not any(e["fait"] for e in etapes)
     assert all(e["manque"] or not e["fait"] for e in etapes)
 
@@ -383,6 +454,77 @@ def test_une_fiche_concurrent_senrichit_sans_ecraser():
     assert len(apres["competitors"]) == 1, "le concurrent n'est pas dupliqué"
     assert len(apres["company_profiles"]) == 1
     assert apres["competitors"][0]["relevance_explanation"] == "Premier mondial."
+
+
+def test_une_fiche_nommee_par_legal_name_se_rattache_au_concurrent():
+    """Constaté sur adidas : la fiche Nike du prompt 2 porte `legal_name`
+    (« NIKE, Inc. ») et aucun `company_name`. Elle doit se rattacher au
+    concurrent « Nike Inc. » du prompt 1, pas rester orpheline."""
+    base = schema.fusionne(
+        schema.gabarit("EQ:DE:ADIDAS", "adidas", date(2026, 8, 19)),
+        {"proposed_competitors": [
+            {"company_name": "Nike Inc.", "country": "US",
+             "competition_type": "direct",
+             "relevance_explanation": "Premier mondial.",
+             "status": "FAIT_VERIFIE"}]},
+        "cadrage")
+    apres = schema.fusionne(
+        base, {"company_identity": {"legal_name": "NIKE, Inc."}}, "concurrent")
+    assert apres["company_profiles"][0]["company_name"] == "Nike Inc."
+    assert apres["competitors"][0]["profile_available"] is True
+    fiches = next(e for e in schema.avancement(apres) if e["etape"].startswith("2"))
+    assert fiches["fait"]
+
+
+def test_le_controle_ne_perd_pas_les_fiches_detaillees():
+    """Le prompt 4 résume les profils ; ses résumés complètent les fiches
+    détaillées du prompt 2, ils ne les écrasent jamais."""
+    base = {"company_profiles": [{"company_name": "Nike Inc.",
+                                  "strengths": [{"category": "Marque"}]}]}
+    apres = schema.fusionne(base, {
+        "analysis_metadata": {"company_analyzed": "adidas",
+                              "reference_date": "2026-08-19"},
+        "company_profiles": [{"company_name": "Nike Inc.",
+                              "revenue_2026": "46,4 Mds USD"}],
+        "quality_control": {"validated": False},
+    }, "controle")
+    profil = apres["company_profiles"][0]
+    assert profil["strengths"], "la fiche détaillée du prompt 2 est conservée"
+    assert profil["revenue_2026"], "le résumé du prompt 4 la complète"
+    assert len(apres["company_profiles"]) == 1
+
+
+def test_des_bloquants_acquittes_nominativement_ne_bloquent_plus():
+    """Le contrôle qualité signale presque toujours des points à vérifier :
+    l'analyste qui les a vérifiés les acquitte **nominativement**, et
+    l'acquittement reste tracé dans le dossier. Sans nom, rien n'est levé."""
+    d = dossier_complet()
+    d["quality_control"]["blocking_issues"] = ["conflit de parts de marché"]
+    assert not schema.valide(d).importable
+    d["quality_control"]["blocking_issues_reviewed"] = {"par": "Analyste",
+                                                       "le": "2026-08-19"}
+    v = schema.valide(d)
+    assert v.importable
+    assert any("acquitte" in p.explication for p in v.problemes), \
+        "l'acquittement reste visible dans le rapport"
+
+
+def test_un_acquittement_sans_nom_ne_leve_rien():
+    d = dossier_complet()
+    d["quality_control"]["blocking_issues"] = ["x"]
+    d["quality_control"]["blocking_issues_reviewed"] = {"par": " ",
+                                                       "le": "2026-08-19"}
+    assert not schema.valide(d).importable
+
+
+def test_le_controle_produit_la_synthese_sur_lentreprise_etudiee():
+    """Sans `strategic_assessment` dans la sortie du prompt 4, aucune évaluation
+    qualitative n'est jamais projetée : le dossier concluait sur les concurrents,
+    jamais sur l'instrument lui-même."""
+    texte = prompts.PROMPTS["controle"][1]
+    assert "strategic_assessment" in texte
+    assert "position_verdict" in texte
+    assert "durability_verdict" in texte
 
 
 def test_une_source_identique_nest_pas_dupliquee():
@@ -437,6 +579,16 @@ def test_le_prompt_cadrage_annonce_la_relecture_humaine():
     au LLM : c'est ce qui l'incite à signaler ses incertitudes."""
     texte = prompts.PROMPTS["cadrage"][1]
     assert "relue et corrigee par un humain" in texte
+
+
+@pytest.mark.parametrize("cle", ["cadrage", "concurrent", "leaders",
+                                 "controle", "synthese"])
+def test_chaque_prompt_exige_une_reponse_en_francais(cle):
+    """Constaté sur adidas : les analyses revenaient en anglais. La règle de
+    langue préserve les clés JSON et les énumérations du contrat."""
+    texte = prompts.PROMPTS[cle][1]
+    assert "integralement en francais" in texte
+    assert "cles du JSON" in texte
 
 
 def test_un_prompt_inconnu_leve_clairement():
