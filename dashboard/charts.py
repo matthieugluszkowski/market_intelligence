@@ -25,6 +25,11 @@ from .theme import Palette
 
 SEUIL_EPISODE = -2.0
 
+# Debordement tolere a droite du graphe pour la marque d'achat : la serie
+# hebdomadaire s'arrete a la derniere barre close, un achat recent lui est
+# posterieur de quelques jours. Voir `couches_position`.
+MARGE_APRES = pd.Timedelta(days=90)
+
 
 def serie_de_regression(barres: pd.DataFrame, fit) -> pd.DataFrame:
     """Reconstruit tendance, bandes et z-score depuis les parametres stockes.
@@ -74,8 +79,85 @@ def episodes_sous_seuil(serie: pd.DataFrame, seuil: float = SEUIL_EPISODE) -> pd
     return pd.DataFrame(intervalles)
 
 
+def couches_position(serie: pd.DataFrame, positions: pd.DataFrame,
+                     p: Palette, devise: str) -> list:
+    """Marque « ma position » sur le graphe : date d'achat et prix de revient.
+
+    Deux traits rouges qui se croisent au point d'entree. La verticale dit
+    *quand*, l'horizontale dit *a combien* - et c'est l'horizontale qui porte
+    l'information utile : lire la distance entre la courbe et son propre prix de
+    revient est immediat, alors qu'un pourcentage dans un tableau demande de
+    reconstituer mentalement le graphe.
+
+    **Ce qui sort du cadre n'est pas dessine.** Un achat anterieur a la fenetre
+    de regression, ou un prix hors de l'echelle affichee, etirerait les axes et
+    ecraserait la courbe : le graphe deviendrait faux a l'oeil pour signaler un
+    fait exact. L'appelant l'ecrit alors en toutes lettres sous le graphe.
+
+    La tolerance est asymetrique, et c'est voulu. **A droite**, la serie s'arrete
+    a la derniere barre hebdomadaire close : un achat de la semaine en cours lui
+    est posterieur de quelques jours, et le refuser masquerait justement la
+    position la plus fraiche - pour un etirement de quelques jours sur une
+    fenetre de vingt ans. **A gauche**, un achat anterieur a la fenetre
+    l'etendrait de plusieurs annees et ecraserait la courbe : on ne le trace pas.
+    """
+    if positions is None or positions.empty or serie.empty:
+        return []
+
+    debut = pd.Timestamp(serie["ts"].min())
+    fin = pd.Timestamp(serie["ts"].max())
+    bas = float(min(serie["bande_basse_2"].min(), serie["close"].min()))
+    haut = float(max(serie["bande_haute_2"].max(), serie["close"].max()))
+
+    marques = positions.copy()
+    # `opened_at` arrive en `datetime.date` : sans conversion explicite, la
+    # serialisation du graphe depend du transformeur de donnees d'Altair.
+    marques["opened_at"] = pd.to_datetime(marques["opened_at"])
+    marques["avg_price"] = marques["avg_price"].astype(float)
+    marques["mode"] = marques["is_paper"].map({True: "fictive", False: "réelle"})
+    marques["etiquette"] = marques.apply(
+        lambda l: (f"{l['quantity']:g} × {l['avg_price']:.2f} {devise} "
+                   f"({l['mode']})"), axis=1)
+
+    dans_le_cadre = marques[(marques["opened_at"] >= debut)
+                            & (marques["opened_at"] <= fin + MARGE_APRES)]
+    prix_visibles = marques[(marques["avg_price"] >= bas)
+                            & (marques["avg_price"] <= haut)]
+
+    couches = []
+    infobulle = [
+        alt.Tooltip("opened_at:T", title="Achat"),
+        alt.Tooltip("etiquette:N", title="Position"),
+    ]
+
+    if not prix_visibles.empty:
+        couches.append(
+            alt.Chart(prix_visibles).mark_rule(
+                size=1.5, color=p.marque_position, opacity=0.75,
+            ).encode(y=alt.Y("avg_price:Q", scale=alt.Scale(type="log")),
+                     tooltip=infobulle))
+
+    if not dans_le_cadre.empty:
+        couches.append(
+            alt.Chart(dans_le_cadre).mark_rule(
+                size=1.5, color=p.marque_position, opacity=0.75,
+            ).encode(x="opened_at:T", tooltip=infobulle))
+
+    croisement = dans_le_cadre[dans_le_cadre["avg_price"].between(bas, haut)]
+    if not croisement.empty:
+        couches.append(
+            alt.Chart(croisement).mark_point(
+                size=130, filled=True, color=p.marque_position,
+                stroke=p.surface, strokeWidth=2,
+            ).encode(x="opened_at:T",
+                     y=alt.Y("avg_price:Q", scale=alt.Scale(type="log")),
+                     tooltip=infobulle))
+    return couches
+
+
 def graphe_regression(serie: pd.DataFrame, p: Palette, devise: str,
-                      hauteur: int = 460) -> alt.Chart:
+                      hauteur: int = 460,
+                      positions: pd.DataFrame | None = None) -> alt.Chart:
     axe_x = alt.Axis(grid=True, gridColor=p.grille, gridDash=[], domainColor=p.encre_attenuee,
                      tickColor=p.encre_attenuee, labelColor=p.encre_secondaire,
                      titleColor=p.encre_secondaire)
@@ -120,6 +202,10 @@ def graphe_regression(serie: pd.DataFrame, p: Palette, devise: str,
     couches.append(base.mark_line(size=2, color=p.serie_cours).encode(
         y=alt.Y("close:Q", scale=alt.Scale(type="log"))
     ))
+
+    # « Ma position » par-dessus la courbe, sous le point courant : c'est un
+    # repere de lecture, pas une serie de donnees.
+    couches.extend(couches_position(serie, positions, p, devise))
 
     # Point courant : marqueur 8px minimum, anneau de la couleur de surface.
     dernier = serie.tail(1)

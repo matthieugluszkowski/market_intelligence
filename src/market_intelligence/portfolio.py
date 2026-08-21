@@ -35,6 +35,16 @@ from datetime import date
 THESE_LONGUEUR_MIN = 30
 REVUE_MOIS = 12
 
+# Motif de correction : court, mais jamais vide. Sans lui, le journal ne
+# distingue plus une erreur de frappe d'un reajustement apres coup.
+MOTIF_LONGUEUR_MIN = 5
+
+# Ce qu'une correction de saisie peut retablir. Tout le reste - `fit_id`,
+# `z_at_entry`, la devise, la date de revue - en decoule et se recalcule : ces
+# colonnes disent ce que le systeme affirmait, elles ne se saisissent pas.
+CHAMPS_CORRIGIBLES = ("instrument_id", "account_id", "opened_at", "quantity",
+                      "avg_price", "fees", "thesis")
+
 SUPPORTS = """
 select id, code, label, kind, currency, is_paper, eligible_countries,
        contribution_cap, broker, notes
@@ -93,7 +103,8 @@ select p.id, i.internal_code, i.name, i.country_iso2, a.code as support,
        p.currency, p.fees, p.thesis, p.z_at_entry, p.review_at,
        p.closed_at, p.closed_price, p.close_reason, p.thesis_verdict,
        f.z_score as z_a_lentree, q.quality_tier as qualite_a_lentree,
-       p.instrument_id, p.price_source
+       p.instrument_id, p.account_id, p.price_source,
+       (select count(*) from transactions t where t.position_id = p.id) as mouvements
   from positions p
   join instruments i on i.id = p.instrument_id
   left join accounts a on a.id = p.account_id
@@ -115,6 +126,30 @@ select coalesce(sum(t.quantity * t.price + t.fees), 0)
   from transactions t
   join positions p on p.id = t.position_id
  where p.account_id = %(account_id)s and t.kind = 'buy';
+"""
+
+LIGNE_A_CORRIGER = """
+select p.id, p.instrument_id, p.account_id, p.opened_at, p.quantity,
+       p.avg_price, p.fees, p.thesis, p.currency, p.price_source, p.is_paper,
+       p.account, p.review_at, p.fit_id, p.quality_score_id, p.watchlist_id,
+       p.z_at_entry, p.closed_at, i.name, i.internal_code
+  from positions p
+  join instruments i on i.id = p.instrument_id
+ where p.id = %(position_id)s;
+"""
+
+INSERT_CORRECTION = """
+insert into position_corrections
+  (position_id, position_ref, kind, field_name, old_value, new_value, reason, summary)
+values (%(position_id)s, %(position_ref)s, %(kind)s, %(field_name)s,
+        %(old_value)s, %(new_value)s, %(reason)s, %(summary)s);
+"""
+
+CORRECTIONS = """
+select c.position_ref, c.corrected_at, c.kind, c.field_name, c.old_value,
+       c.new_value, c.reason, c.summary
+  from position_corrections c
+ order by c.corrected_at desc, c.id desc;
 """
 
 
@@ -321,6 +356,225 @@ def ferme(cur, position_id: int, as_of: date, raison: str,
         "amount": float(quantite) * prix - frais, "fees": frais,
         "price_source": source, "note": raison,
     })
+
+
+# --------------------------------------------------------------------------- #
+# Corriger une saisie - ce qui n'est pas fermer une position
+# --------------------------------------------------------------------------- #
+# Corriger retablit les faits : la position enregistree ne decrivait pas ce qui
+# a ete fait. Fermer est une decision, et elle compte dans la mesure de la
+# methode. Confondre les deux inscrirait une erreur de frappe au bilan.
+#
+# Toute correction est journalisee (`position_corrections`). Ce n'est pas une
+# precaution decorative : un `update` muet ouvrirait la porte de derriere de
+# tout ce projet - reajuster apres coup un prix d'entree ou une these devenue
+# genante, sans que rien ne le montre. Le journal ne l'interdit pas, il le rend
+# visible.
+def _ligne_position(cur, position_id: int) -> dict | None:
+    cur.execute(LIGNE_A_CORRIGER, {"position_id": position_id})
+    ligne = cur.fetchone()
+    if ligne is None:
+        return None
+    return dict(zip([c.name for c in cur.description], ligne))
+
+
+def resume(ligne: dict) -> str:
+    """La position en une ligne, telle qu'elle est a cet instant."""
+    return (f"{ligne['name']} ({ligne['internal_code']}) · "
+            f"{float(ligne['quantity']):g} × {float(ligne['avg_price']):.2f} "
+            f"{ligne['currency']} · frais {float(ligne['fees']):.2f} · "
+            f"ouverte le {ligne['opened_at']} · support {ligne['account']}"
+            + (" · fermee" if ligne["closed_at"] else ""))
+
+
+def _texte(valeur) -> str | None:
+    if valeur is None:
+        return None
+    if isinstance(valeur, float):
+        return f"{valeur:g}"
+    return str(valeur)
+
+
+def _journalise(cur, ligne: dict, kind: str, motif: str, apercu: str,
+                champ: str | None = None, avant=None, apres=None) -> None:
+    cur.execute(INSERT_CORRECTION, {
+        "position_id": ligne["id"], "position_ref": ligne["id"], "kind": kind,
+        "field_name": champ, "old_value": _texte(avant), "new_value": _texte(apres),
+        "reason": motif, "summary": apercu,
+    })
+
+
+def corrige(cur, position_id: int, motif: str, **champs) -> list[tuple]:
+    """Corrige une saisie erronee. Rend la liste (champ, avant, apres).
+
+    Les champs acceptes sont ceux de `CHAMPS_CORRIGIBLES`. Tout ce qui *decoule*
+    d'eux est recalcule et non saisi : changer de titre ou de date rattache la
+    position au `fit_id`, au `quality_score_id` et au suivi de watchlist en
+    vigueur ce jour-la. Sans ce recalcul, la position garderait le signal d'une
+    autre entreprise - exactement l'incoherence qu'on corrige.
+    """
+    motif = (motif or "").strip()
+    if len(motif) < MOTIF_LONGUEUR_MIN:
+        raise ValueError(
+            f"Motif de correction trop court ({len(motif)} caracteres, "
+            f"{MOTIF_LONGUEUR_MIN} exiges). Sans motif, le journal ne distingue "
+            f"plus une erreur de frappe d'un reajustement apres coup.")
+
+    inconnus = set(champs) - set(CHAMPS_CORRIGIBLES)
+    if inconnus:
+        raise ValueError(f"champ non corrigeable : {', '.join(sorted(inconnus))}")
+
+    ligne = _ligne_position(cur, position_id)
+    if ligne is None:
+        raise ValueError("position inconnue")
+    if ligne["closed_at"] is not None:
+        raise ValueError(
+            "Position fermee : la rouvrir pour la corriger reecrirait une "
+            "decision deja prise. Si la saisie etait fausse des le depart, "
+            "supprimer la ligne ; sinon elle reste telle quelle.")
+
+    cur.execute("select count(*) from transactions where position_id = %s",
+                (position_id,))
+    if cur.fetchone()[0] > 1:
+        raise ValueError(
+            "Position deja renforcee : son prix de revient est la moyenne "
+            "ponderee de plusieurs achats, et l'ecraser a la main le rendrait "
+            "faux. Corriger le mouvement fautif demande de reprendre la ligne.")
+
+    apercu = resume(ligne)
+    voulu = {c: champs.get(c, ligne[c]) for c in CHAMPS_CORRIGIBLES}
+
+    voulu["thesis"] = (voulu["thesis"] or "").strip()
+    if len(voulu["thesis"]) < THESE_LONGUEUR_MIN:
+        raise ValueError(
+            f"These trop courte ({len(voulu['thesis'])} caracteres, "
+            f"{THESE_LONGUEUR_MIN} exiges).")
+    voulu["quantity"] = float(voulu["quantity"])
+    voulu["fees"] = float(voulu["fees"])
+    if voulu["quantity"] <= 0:
+        raise ValueError("quantite nulle ou negative")
+    if voulu["fees"] < 0:
+        raise ValueError("frais negatifs")
+
+    cur.execute("select country_iso2, currency from instruments where id = %s",
+                (voulu["instrument_id"],))
+    trouve = cur.fetchone()
+    if trouve is None:
+        raise ValueError("titre inconnu")
+    pays, devise = trouve
+
+    cur.execute("select code, is_paper, eligible_countries from accounts "
+                "where id = %s", (voulu["account_id"],))
+    trouve = cur.fetchone()
+    if trouve is None:
+        raise ValueError("support inconnu")
+    code_support, est_paper, pays_eligibles = trouve
+
+    # L'eligibilite se reverifie : corriger le titre peut le faire sortir des
+    # pays declares du support, et une correction ne doit pas creer une position
+    # que l'ouverture aurait refusee.
+    elig = eligibilite(pays, pays_eligibles)
+    if not elig.autorise:
+        raise ValueError(f"Titre non eligible a ce support — {elig.motif}")
+
+    change_titre = voulu["instrument_id"] != ligne["instrument_id"]
+    change_date = voulu["opened_at"] != ligne["opened_at"]
+
+    # Le prix : saisi a la main, il est marque comme tel. Herite d'une cloture,
+    # il appartenait a l'ancien titre ou a l'ancienne date et n'a plus de sens -
+    # on le reprend a la source plutot que de garder un chiffre orphelin.
+    prix = float(voulu["avg_price"])
+    source = ligne["price_source"]
+    if prix != float(ligne["avg_price"]):
+        source = "manual"
+    elif source == "close" and (change_titre or change_date):
+        _ts, cours, _f = dernier_cours(cur, voulu["instrument_id"], voulu["opened_at"])
+        if cours is None:
+            raise ValueError(
+                "aucun cours connu pour ce titre a cette date : saisir le prix")
+        prix = float(cours)
+
+    cible = dict(voulu)
+    cible["avg_price"] = prix
+    cible["price_source"] = source
+    cible["currency"] = devise
+    cible["account"] = code_support
+    cible["is_paper"] = est_paper
+    cible["fit_id"] = ligne["fit_id"]
+    cible["quality_score_id"] = ligne["quality_score_id"]
+    cible["watchlist_id"] = ligne["watchlist_id"]
+    cible["z_at_entry"] = ligne["z_at_entry"]
+    cible["review_at"] = ligne["review_at"]
+
+    if change_titre or change_date:
+        ouverture = cible["opened_at"]
+        signal = signal_du_jour(cur, cible["instrument_id"], ouverture)
+        cible["fit_id"] = signal.fit_id
+        cible["quality_score_id"] = signal.quality_score_id
+        cible["z_at_entry"] = signal.z_score
+        cur.execute("select id from watchlist where instrument_id = %s "
+                    "and removed_at is null", (cible["instrument_id"],))
+        suivi = cur.fetchone()
+        cible["watchlist_id"] = suivi[0] if suivi else None
+        cible["review_at"] = date(ouverture.year + 1, ouverture.month,
+                                  min(ouverture.day, 28))
+
+    modifies = [(champ, ligne[champ], valeur) for champ, valeur in cible.items()
+                if _texte(ligne[champ]) != _texte(valeur)]
+    if not modifies:
+        return []
+
+    cur.execute("""
+        update positions set instrument_id = %(instrument_id)s,
+               account_id = %(account_id)s, account = %(account)s,
+               is_paper = %(is_paper)s, opened_at = %(opened_at)s,
+               quantity = %(quantity)s, avg_price = %(avg_price)s,
+               fees = %(fees)s, currency = %(currency)s, thesis = %(thesis)s,
+               price_source = %(price_source)s, z_at_entry = %(z_at_entry)s,
+               fit_id = %(fit_id)s, quality_score_id = %(quality_score_id)s,
+               watchlist_id = %(watchlist_id)s, review_at = %(review_at)s
+         where id = %(id)s""", {**cible, "id": position_id})
+
+    # Le mouvement d'achat suit la position, sinon le cumul des versements et le
+    # prix de revient divergent des la premiere correction.
+    cur.execute("""
+        update transactions set executed_at = %s, quantity = %s, price = %s,
+               amount = %s, fees = %s, price_source = %s
+         where position_id = %s and kind = 'buy'""",
+                (cible["opened_at"], cible["quantity"], cible["avg_price"],
+                 -(cible["quantity"] * cible["avg_price"] + cible["fees"]),
+                 cible["fees"], cible["price_source"], position_id))
+
+    for champ, avant, apres in modifies:
+        _journalise(cur, ligne, "update", motif, apercu, champ, avant, apres)
+    return modifies
+
+
+def supprime(cur, position_id: int, motif: str) -> str:
+    """Efface une position saisie par erreur. Rend son resume.
+
+    **Reservee a une ligne qui n'aurait jamais du exister.** Une position
+    reellement detenue puis vendue se *ferme* : elle a produit un resultat, et
+    l'effacer retirerait de la mesure de la methode precisement les cas qu'on
+    aurait interet a oublier.
+
+    La ligne du journal survit a la suppression : `position_id` passe a null,
+    `position_ref` et `summary` gardent de quoi la relire.
+    """
+    motif = (motif or "").strip()
+    if len(motif) < MOTIF_LONGUEUR_MIN:
+        raise ValueError(
+            f"Motif de suppression trop court ({len(motif)} caracteres, "
+            f"{MOTIF_LONGUEUR_MIN} exiges).")
+
+    ligne = _ligne_position(cur, position_id)
+    if ligne is None:
+        raise ValueError("position inconnue")
+
+    apercu = resume(ligne)
+    _journalise(cur, ligne, "delete", motif, apercu)
+    cur.execute("delete from positions where id = %s", (position_id,))
+    return apercu
 
 
 def valorise(cur, position: dict, as_of: date) -> Valorisation:

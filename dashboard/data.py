@@ -160,6 +160,60 @@ def codes_suivis() -> set[str]:
         return _codes(cur)
 
 
+COLONNES_PORTEFEUILLE = [
+    "id", "internal_code", "name", "currency", "is_paper", "support",
+    "quantity", "avg_price", "fees", "opened_at", "review_at", "z_at_entry",
+    "cours", "date_cours", "investi", "valeur", "plus_value", "plus_value_pct",
+    "rendement_total_pct", "jours",
+]
+
+
+def portefeuille() -> pd.DataFrame:
+    """Positions **ouvertes**, valorisees, une ligne par position.
+
+    Sans cache, pour la meme raison que `codes_suivis` : le portefeuille change
+    par action de l'utilisateur, et un resultat servi depuis le cache
+    afficherait encore l'ancienne valeur juste apres une correction - c'est-a-
+    dire au moment precis ou l'on regarde si la correction a pris.
+
+    Le fictif et le reel sortent ensemble, avec `is_paper` : c'est aux ecrans de
+    ne jamais les additionner, pas a la requete de choisir pour eux.
+    """
+    from market_intelligence import portfolio as P
+
+    jour = date.today()
+    lignes = []
+    with connect() as conn, conn.cursor() as cur:
+        cur.execute(P.POSITIONS, {"ouvertes": True})
+        colonnes = [d.name for d in cur.description]
+        positions = [dict(zip(colonnes, row)) for row in cur.fetchall()]
+        for position in positions:
+            v = P.valorise(cur, position, jour)
+            lignes.append({
+                "id": position["id"],
+                "internal_code": position["internal_code"],
+                "name": position["name"],
+                "currency": position["currency"],
+                "is_paper": position["is_paper"],
+                "support": position["support"],
+                "quantity": v.quantite,
+                "avg_price": v.prix_de_revient,
+                "fees": v.frais,
+                "opened_at": position["opened_at"],
+                "review_at": position["review_at"],
+                "z_at_entry": position["z_at_entry"],
+                "cours": v.cours,
+                "date_cours": v.date_cours,
+                "investi": v.montant_investi,
+                "valeur": v.valeur,
+                "plus_value": v.plus_value,
+                "plus_value_pct": v.plus_value_pct,
+                "rendement_total_pct": v.rendement_total_pct,
+                "jours": v.jours,
+            })
+    return pd.DataFrame(lignes, columns=COLONNES_PORTEFEUILLE)
+
+
 @st.cache_data(ttl=TTL)
 def qualite(internal_code: str) -> dict:
     """Dernier score de qualite et son groupe de pairs (doc 04, bloc D)."""

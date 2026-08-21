@@ -23,9 +23,11 @@ from dashboard.rechargement import recharge_si_modifie  # noqa: E402
 
 recharge_si_modifie()
 
-from dashboard import charts, data, definitions, navigation  # noqa: E402
+from dashboard import charts, data, definitions, entete, navigation  # noqa: E402
 from market_intelligence import watchlist  # noqa: E402
-from market_intelligence.analytics.quality import quadrant  # noqa: E402
+from market_intelligence.analytics.quality import (  # noqa: E402
+    groupe_comparable, quadrant,
+)
 from market_intelligence.db import connect_direct  # noqa: E402
 from market_intelligence.intelligence import schema  # noqa: E402
 from dashboard.theme import (  # noqa: E402
@@ -52,14 +54,29 @@ cible = navigation.cible_demandee(codes)
 if cible is not None:
     st.session_state["fiche_instrument_choix"] = cible
 
+# L'univers compte 586 titres, la regression n'en couvre qu'une partie : le
+# premier code par ordre alphabetique n'a aucune raison d'etre calcule, et la
+# fiche s'ouvrait donc sur « Aucune regression pour EQ:DE:ENERGY ». Un ecran qui
+# accueille par une erreur se lit comme un ecran casse. Le defaut va au premier
+# titre calcule, et les autres portent la mention dans la liste plutot que de la
+# reveler une fois choisis.
+calcules = set(data.screener(as_of)["internal_code"])
+noms = univers.set_index("internal_code")["name"]
+defaut = next((i for i, c in enumerate(codes) if c in calcules), 0)
+
 choix = st.sidebar.selectbox(
-    "Instrument", codes, key="fiche_instrument_choix",
-    format_func=lambda c: univers.set_index("internal_code").loc[c, "name"],
+    "Instrument", codes, index=defaut, key="fiche_instrument_choix",
+    format_func=lambda c: (noms.loc[c] if c in calcules
+                           else f"{noms.loc[c]} · non calculé"),
 )
 
 f = data.fit(choix, as_of)
 if f is None:
-    st.error(f"Aucune regression pour {choix} au {as_of}.")
+    st.error(
+        f"**{noms.loc[choix]} n'a pas de regression au {as_of}.** Le titre est "
+        f"dans l'univers mais la regression ne l'a pas retenu — historique trop "
+        f"court, serie trop lacunaire, ou politique de regression non "
+        f"applicable. {len(calcules)} titres sur {len(codes)} sont calcules.")
     st.stop()
 
 barres = data.barres(choix, "1w")
@@ -115,9 +132,17 @@ else:
                 st.session_state.pop("_ajout_watchlist", None)
                 st.rerun()
 
+portefeuille = data.portefeuille()
+entete.bandeau_portefeuille(portefeuille)
+
 st.title(("★ " if suivi else "") + f["name"])
 st.caption(f"{f['isin']} · {choix} · politique {f['policy_code']} · "
            f"calcul du {as_of} · methode v{f['method_version']}")
+
+# Les positions ouvertes sur CE titre : elles marquent le graphe du bloc A et
+# se resument juste en dessous.
+mes_lignes = (portefeuille[portefeuille["internal_code"] == choix]
+              if not portefeuille.empty else portefeuille)
 
 # --------------------------------------------------------------------------- #
 # Bloc A - Le graphe de regression
@@ -127,14 +152,49 @@ st.subheader("A · Cours et tendance")
 if serie.empty:
     st.warning("Aucune barre dans la fenetre de regression.")
 else:
-    st.altair_chart(charts.graphe_regression(serie, p, f["currency"]),
-                    use_container_width=True)
+    st.altair_chart(
+        charts.graphe_regression(serie, p, f["currency"], positions=mes_lignes),
+        use_container_width=True)
     st.caption(
         f"Fenetre {f['window_start']} → {f['window_end']}, {f['n_obs']} barres "
         f"hebdomadaires. Echelle logarithmique : le modele est lineaire en log, "
         f"un axe lineaire courberait la droite. Zones bleutees : episodes passes "
         f"sous −2σ — la decote est un regime, pas un instant."
     )
+
+    # --- Ma position sur ce titre ------------------------------------------
+    # Le graphe porte les deux traits rouges ; cette ligne porte les nombres.
+    # Sans elle, l'ecart entre la courbe et le prix de revient se lit « a peu
+    # pres » — ce qui suffit pour regarder, pas pour decider.
+    if not mes_lignes.empty:
+        for _, ligne in mes_lignes.iterrows():
+            mode = "fictive" if ligne["is_paper"] else "réelle"
+            hors_cadre = []
+            achat = pd.Timestamp(ligne["opened_at"])
+            if achat < pd.Timestamp(serie["ts"].min()):
+                hors_cadre.append("achat anterieur a la fenetre de regression")
+            elif achat > pd.Timestamp(serie["ts"].max()) + charts.MARGE_APRES:
+                hors_cadre.append("achat trop posterieur a la derniere barre "
+                                  "connue — les cours ne sont plus a jour")
+            if not (float(serie["bande_basse_2"].min()) <= ligne["avg_price"]
+                    <= float(serie["bande_haute_2"].max())):
+                hors_cadre.append("prix de revient hors de l'echelle affichee")
+            variation = (f" · {ligne['plus_value']:+,.2f} {ligne['currency']} "
+                         f"({ligne['plus_value_pct']:+.1%})"
+                         if pd.notna(ligne["plus_value"]) else "")
+            st.markdown(
+                f"<div class='avertissement'>"
+                f"<b>Ma position ({mode})</b> — {ligne['quantity']:g} titre(s) "
+                f"a {ligne['avg_price']:.2f} {ligne['currency']} depuis le "
+                f"{ligne['opened_at']:%d/%m/%Y} ({ligne['jours']} jour(s)) · "
+                f"cours {ligne['cours']:.2f}{variation}. "
+                f"Les traits rouges du graphe marquent la date d'achat et le "
+                f"prix de revient."
+                + (f" <b>Non tracé :</b> {', '.join(hors_cadre)}."
+                   if hors_cadre else "")
+                + "</div>", unsafe_allow_html=True)
+    elif not portefeuille.empty:
+        st.caption("Aucune position ouverte sur ce titre.")
 
     with st.expander("Vue tabulaire du graphe (valeurs exactes)"):
         st.caption(
@@ -299,6 +359,24 @@ else:
         f"quadrant <b>{quadrant(tier, float(f['z_score']))}</b>",
         unsafe_allow_html=True,
     )
+
+    # Un decoupage sectoriel a onze cases n'est pas un groupe de pairs : les
+    # indicateurs relatifs ne sont alors pas publies, et l'ecran doit dire que
+    # c'est un refus de publier — pas une donnee manquante.
+    comparable = groupe_comparable(q["groupe_code"], q["groupe_kind"],
+                                   q["groupe_complet"])
+    if not comparable:
+        st.markdown(
+            f"<div class='avertissement'><b>Indicateurs relatifs non publiés</b> — "
+            f"le groupe « {q['groupe_label'] or '—'} » est un découpage sectoriel "
+            f"automatique, pas un groupe de pairs. Comparer le ROIC d'une "
+            f"entreprise à la médiane de sa case sectorielle produit un nombre "
+            f"lisible et faux ; les trois mesures relatives (part relative, rang "
+            f"par chiffre d'affaires, écart à la médiane des pairs) affichent donc "
+            f"« — ». Les mesures <b>absolues</b> ci-dessous restent valables, et "
+            f"ce sont elles qui décident du régime et du verdict. Pour obtenir des "
+            f"comparaisons, constituer un groupe depuis un dossier concurrentiel "
+            f"(onglet Analyses).</div>", unsafe_allow_html=True)
 
     trois = st.columns(3)
     with trois[0]:
@@ -646,11 +724,33 @@ else:
 
     a_revoir = schema.lire(d, "manual_review", defaut=[])
     bloquants_qc = schema.lire(d, "quality_control", "blocking_issues", defaut=[])
-    if a_revoir or bloquants_qc:
+    # Un bloquant requalifié laisse sa trace : sans elle, on ne saurait plus
+    # trois mois plus tard si le point a été traité, mesuré faux, ou oublié.
+    requalifies = schema.lire(d, "quality_control",
+                              "blocking_issues_requalifies", defaut=[])
+    if a_revoir or bloquants_qc or requalifies:
         with st.expander(f"À vérifier à la main ({len(a_revoir)}) · "
                          f"bloquants restants ({len(bloquants_qc)})"):
             for probleme in bloquants_qc:
                 st.markdown(f"- **BLOQUANT** : {probleme}")
+            if requalifies:
+                LIBELLES = {
+                    "leve_par_mesure": "levé par mesure",
+                    "defaut_de_generation": "défaut de génération, pas de dossier",
+                    "corrige": "corrigé",
+                    "maintenu": "maintenu",
+                }
+                st.markdown(f"**Bloquants requalifiés ({len(requalifies)})** — "
+                            "chacun confronté au dossier tel qu'il est en base :")
+                for r in requalifies:
+                    verdict = schema.lire(r, "verdict", defaut="—")
+                    st.markdown(
+                        f"- `{schema.lire(r, 'code', defaut='—')}` "
+                        f"**{LIBELLES.get(verdict, verdict)}** — "
+                        f"{schema.lire(r, 'constat', defaut='')} "
+                        f"*Preuve : {schema.lire(r, 'preuve', defaut='—')}* "
+                        f"({schema.lire(r, 'par', defaut='—')}, "
+                        f"{schema.lire(r, 'le', defaut='—')})")
             for element in a_revoir:
                 if isinstance(element, dict):
                     st.markdown(

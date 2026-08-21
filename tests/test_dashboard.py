@@ -248,3 +248,118 @@ def test_un_episode_en_cours_va_jusqua_la_derniere_barre():
     episodes = charts.episodes_sous_seuil(serie)
     assert len(episodes) == 1
     assert episodes.iloc[0]["fin"] == date(2024, 1, 22)
+
+
+# --------------------------------------------------------------------------- #
+# « Ma position » sur le graphe
+#
+# Un repere personnel au milieu de donnees de marche : il doit se voir, et il ne
+# doit jamais deformer ce qu'il annote.
+# --------------------------------------------------------------------------- #
+def _position(ouverture: date, prix: float, fictive: bool = False) -> pd.DataFrame:
+    return pd.DataFrame([{
+        "opened_at": ouverture, "avg_price": prix, "quantity": 3.0,
+        "is_paper": fictive,
+    }])
+
+
+def _marques(serie: pd.DataFrame, positions: pd.DataFrame) -> list[str]:
+    couches = charts.couches_position(serie, positions, CLAIR, "EUR")
+    return [c.to_dict()["mark"]["type"] for c in couches]
+
+
+def test_la_position_marque_la_date_dachat_et_le_prix_de_revient(fit_et_barres):
+    """Deux traits qui se croisent : la verticale dit quand, l'horizontale dit a
+    combien — et c'est l'horizontale qui porte l'information utile."""
+    fit, barres = fit_et_barres
+    serie = charts.serie_de_regression(barres, fit)
+    milieu = serie.iloc[len(serie) // 2]
+    marques = _marques(serie, _position(milieu["ts"], float(milieu["close"])))
+    assert marques.count("rule") == 2, "une verticale (date) et une horizontale (PRU)"
+    assert "point" in marques, "le croisement des deux est marque"
+
+
+def test_la_marque_de_position_utilise_sa_couleur_reservee(fit_et_barres):
+    """`marque_position` ne code pas un jugement mais un fait personnel : la
+    reutiliser ailleurs la viderait de son sens."""
+    fit, barres = fit_et_barres
+    serie = charts.serie_de_regression(barres, fit)
+    milieu = serie.iloc[len(serie) // 2]
+    couches = charts.couches_position(
+        serie, _position(milieu["ts"], float(milieu["close"])), CLAIR, "EUR")
+    couleurs = {c.to_dict()["mark"]["color"] for c in couches}
+    assert couleurs == {CLAIR.marque_position}
+    assert CLAIR.marque_position not in {CLAIR.serie_cours, CLAIR.serie_pair,
+                                        CLAIR.serie_secteur, CLAIR.encre_attenuee}
+
+
+def test_un_achat_anterieur_a_la_fenetre_ne_trace_pas_de_verticale(fit_et_barres):
+    """Il etendrait l'axe de plusieurs annees et ecraserait la courbe : le graphe
+    deviendrait faux a l'oeil pour signaler un fait exact."""
+    fit, barres = fit_et_barres
+    serie = charts.serie_de_regression(barres, fit)
+    vieux = serie["ts"].min() - timedelta(days=4000)
+    marques = _marques(serie, _position(vieux, float(serie["close"].median())))
+    assert marques.count("rule") == 1, "le prix de revient reste, la date non"
+    assert "point" not in marques
+
+
+def test_un_achat_de_la_semaine_en_cours_est_trace(fit_et_barres):
+    """La serie hebdomadaire s'arrete a la derniere barre close : refuser un
+    achat posterieur de quelques jours masquerait la position la plus fraiche —
+    c'est le cas le plus courant, pas un cas limite."""
+    fit, barres = fit_et_barres
+    serie = charts.serie_de_regression(barres, fit)
+    recent = serie["ts"].max() + timedelta(days=4)
+    marques = _marques(serie, _position(recent, float(serie["close"].iloc[-1])))
+    assert marques.count("rule") == 2
+    assert "point" in marques
+
+
+def test_un_prix_hors_echelle_ne_trace_pas_dhorizontale(fit_et_barres):
+    fit, barres = fit_et_barres
+    serie = charts.serie_de_regression(barres, fit)
+    milieu = serie.iloc[len(serie) // 2]
+    marques = _marques(serie, _position(milieu["ts"], 1e9))
+    assert marques.count("rule") == 1, "la date reste, le prix absurde non"
+
+
+def test_sans_position_le_graphe_est_inchange(fit_et_barres):
+    fit, barres = fit_et_barres
+    serie = charts.serie_de_regression(barres, fit)
+    nu = charts.graphe_regression(serie, CLAIR, "EUR").to_dict()
+    vide = charts.graphe_regression(
+        serie, CLAIR, "EUR", positions=_position(date(2024, 1, 1), 10.0).iloc[0:0]
+    ).to_dict()
+    assert len(nu["layer"]) == len(vide["layer"])
+
+
+# --------------------------------------------------------------------------- #
+# Detentions : ce que le screener et l'en-tete lisent
+# --------------------------------------------------------------------------- #
+def test_deux_lignes_sur_un_meme_titre_cumulent_la_quantite_pas_le_prix():
+    """La somme de deux prix de revient ne veut rien dire ; leur moyenne
+    ponderee, si."""
+    from dashboard import entete
+
+    positions = pd.DataFrame([
+        {"internal_code": "EQ:FR:X", "quantity": 10.0, "avg_price": 100.0,
+         "investi": 1000.0, "valeur": 1200.0, "is_paper": False},
+        {"internal_code": "EQ:FR:X", "quantity": 30.0, "avg_price": 50.0,
+         "investi": 1500.0, "valeur": 3600.0, "is_paper": True},
+    ])
+    resume = entete.detentions(positions)
+    ligne = resume.loc["EQ:FR:X"]
+    assert ligne["quantite"] == 40.0
+    assert ligne["prix_de_revient"] == pytest.approx(62.5), "(10×100 + 30×50) / 40"
+    assert ligne["reel"] and ligne["fictif"], "les deux modes sont signales"
+
+
+def test_un_portefeuille_vide_rend_une_table_vide_mais_utilisable():
+    """Les ecrans testent `.empty` et lisent des colonnes : une table sans
+    colonnes les casserait tous."""
+    from dashboard import entete
+
+    resume = entete.detentions(pd.DataFrame())
+    assert resume.empty
+    assert "quantite" in resume.columns and "reel" in resume.columns

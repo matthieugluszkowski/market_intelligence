@@ -39,7 +39,7 @@ from dashboard.rechargement import recharge_si_modifie  # noqa: E402
 
 recharge_si_modifie()
 
-from dashboard import data  # noqa: E402
+from dashboard import data, entete  # noqa: E402
 from dashboard.theme import css, palette  # noqa: E402
 from market_intelligence.db import connect_direct  # noqa: E402
 from market_intelligence.intelligence import importer, prompts, schema  # noqa: E402
@@ -171,6 +171,8 @@ def dossier_courant(code: str) -> dict:
 
 
 dossier = dossier_courant(choix)
+
+entete.bandeau_portefeuille(data.portefeuille())
 
 st.title("Analyses")
 st.caption(f"{ligne['name']} · {choix} · du cadrage concurrentiel (prompts 1-4) "

@@ -311,6 +311,179 @@ def test_aucun_support_reel_nest_marque_fictif():
 
 
 # --------------------------------------------------------------------------- #
+# Corriger une saisie — ce qui n'est pas fermer une position
+# --------------------------------------------------------------------------- #
+MOTIF = "erreur de titre a la saisie"
+
+
+@pytest.fixture
+def autre_titre(bac):
+    """Un second titre pourvu d'un fit, pour éprouver le changement de titre."""
+    cur, _paper, seb = bac
+    cur.execute("select instrument_id from regression_fits where instrument_id <> %s "
+                "order by as_of_date desc limit 1", (seb,))
+    ligne = cur.fetchone()
+    if ligne is None:
+        pytest.skip("aucun second titre calculé en base")
+    return ligne[0]
+
+
+def test_corriger_le_titre_rattache_le_signal_du_nouveau_titre(bac, autre_titre):
+    """**Le point qui rend la correction non triviale.** Changer le titre sans
+    recalculer le signal laisserait la position rattachée au `fit_id` d'une
+    autre entreprise — et le portefeuille perdrait la seule chose qui justifie
+    qu'il vive ici plutôt que dans un tableur."""
+    cur, paper, seb = bac
+    position_id, _ = P.ouvre(cur, seb, paper, 10, THESE, date.today(), prix=100.0)
+    cur.execute("select fit_id from positions where id = %s", (position_id,))
+    fit_seb = cur.fetchone()[0]
+
+    P.corrige(cur, position_id, MOTIF, instrument_id=autre_titre)
+
+    cur.execute("select instrument_id, fit_id, z_at_entry from positions "
+                "where id = %s", (position_id,))
+    instrument_id, fit_id, z_entree = cur.fetchone()
+    assert instrument_id == autre_titre
+    assert fit_id != fit_seb, "le fit doit suivre le titre, pas rester en place"
+    cur.execute("select instrument_id, z_score from regression_fits where id = %s",
+                (fit_id,))
+    instrument_du_fit, z_du_fit = cur.fetchone()
+    assert instrument_du_fit == autre_titre
+    assert float(z_entree) == pytest.approx(float(z_du_fit))
+
+
+def test_corriger_met_le_mouvement_dachat_en_accord(bac):
+    """Sinon le cumul des versements et le prix de revient divergent dès la
+    première correction."""
+    cur, paper, seb = bac
+    position_id, _ = P.ouvre(cur, seb, paper, 10, THESE, date.today(),
+                             prix=100.0, frais=5.0)
+    P.corrige(cur, position_id, MOTIF, quantity=4, avg_price=50.0, fees=2.0)
+
+    cur.execute("select quantity, price, amount, fees from transactions "
+                "where position_id = %s and kind = 'buy'", (position_id,))
+    quantite, prix, montant, frais = cur.fetchone()
+    assert (float(quantite), float(prix), float(frais)) == (4.0, 50.0, 2.0)
+    assert float(montant) == pytest.approx(-202.0), "4 × 50 + 2 de frais"
+    assert P.versements(cur, paper) == pytest.approx(202.0)
+
+
+def test_une_correction_est_journalisee_avec_son_motif(bac):
+    """Un `update` muet ouvrirait la porte de derrière de tout le projet :
+    réajuster après coup un prix d'entrée sans que rien ne le montre."""
+    cur, paper, seb = bac
+    position_id, _ = P.ouvre(cur, seb, paper, 10, THESE, date.today(), prix=100.0)
+    P.corrige(cur, position_id, MOTIF, quantity=3)
+
+    cur.execute("select kind, field_name, old_value, new_value, reason, summary "
+                "from position_corrections where position_ref = %s", (position_id,))
+    kind, champ, avant, apres, motif, apercu = cur.fetchone()
+    assert (kind, champ, avant, apres) == ("update", "quantity", "10", "3")
+    assert motif == MOTIF
+    assert "SEB" in apercu, "le journal garde l'état d'avant, pas une référence"
+
+
+def test_une_correction_sans_motif_est_refusee(bac):
+    cur, paper, seb = bac
+    position_id, _ = P.ouvre(cur, seb, paper, 10, THESE, date.today(), prix=100.0)
+    with pytest.raises(ValueError, match="Motif"):
+        P.corrige(cur, position_id, "", quantity=3)
+
+
+def test_une_correction_qui_ne_change_rien_ne_journalise_rien(bac):
+    cur, paper, seb = bac
+    position_id, _ = P.ouvre(cur, seb, paper, 10, THESE, date.today(), prix=100.0)
+    assert P.corrige(cur, position_id, MOTIF, quantity=10) == []
+    cur.execute("select count(*) from position_corrections where position_ref = %s",
+                (position_id,))
+    assert cur.fetchone()[0] == 0
+
+
+def test_corriger_une_position_fermee_est_refuse(bac):
+    """Corriger n'est pas fermer : une position fermée est une décision prise,
+    la rouvrir pour la retoucher réécrirait l'histoire."""
+    cur, paper, seb = bac
+    position_id, _ = P.ouvre(cur, seb, paper, 10, THESE, date.today(), prix=100.0)
+    P.ferme(cur, position_id, date.today(), "sortie", "verifiee", prix=120.0)
+    with pytest.raises(ValueError, match="fermee"):
+        P.corrige(cur, position_id, MOTIF, quantity=3)
+
+
+def test_corriger_une_position_renforcee_est_refuse(bac):
+    """Son PRU est la moyenne pondérée de plusieurs achats : l'écraser à la main
+    le rendrait faux."""
+    cur, paper, seb = bac
+    position_id, _ = P.ouvre(cur, seb, paper, 10, THESE, date.today(), prix=100.0)
+    P.renforce(cur, position_id, 5, date.today(), prix=110.0)
+    with pytest.raises(ValueError, match="renforcee"):
+        P.corrige(cur, position_id, MOTIF, quantity=3)
+
+
+def test_un_titre_non_eligible_au_support_est_refuse_en_correction(bac):
+    """Une correction ne doit pas créer une position que l'ouverture aurait
+    refusée."""
+    cur, paper, seb = bac
+    cur.execute("insert into accounts (code, label, kind, eligible_countries) "
+                "values ('TEST_DE', 'Support de test', 'PEA', %s) returning id",
+                (["DE"],))
+    support_allemand = cur.fetchone()[0]
+    position_id, _ = P.ouvre(cur, seb, paper, 10, THESE, date.today(), prix=100.0)
+    with pytest.raises(ValueError, match="non eligible"):
+        P.corrige(cur, position_id, MOTIF, account_id=support_allemand)
+
+
+def test_un_prix_corrige_a_la_main_est_marque_manual(bac):
+    cur, paper, seb = bac
+    position_id, _ = P.ouvre(cur, seb, paper, 10, THESE, date.today())
+    P.corrige(cur, position_id, MOTIF, avg_price=42.0)
+    cur.execute("select price_source from positions where id = %s", (position_id,))
+    assert cur.fetchone()[0] == "manual"
+
+
+def test_un_prix_herite_dune_cloture_est_repris_sur_le_nouveau_titre(bac, autre_titre):
+    """Garder la clôture de l'ancien titre laisserait un chiffre orphelin — le
+    défaut même qu'on corrige."""
+    cur, paper, seb = bac
+    position_id, _ = P.ouvre(cur, seb, paper, 10, THESE, date.today())
+    _ts, cours_attendu, _f = P.dernier_cours(cur, autre_titre, date.today())
+    P.corrige(cur, position_id, MOTIF, instrument_id=autre_titre)
+
+    cur.execute("select avg_price, price_source, currency from positions "
+                "where id = %s", (position_id,))
+    prix, source, devise = cur.fetchone()
+    assert float(prix) == pytest.approx(float(cours_attendu))
+    assert source == "close"
+    cur.execute("select currency from instruments where id = %s", (autre_titre,))
+    assert devise == cur.fetchone()[0], "la devise suit le titre"
+
+
+def test_supprimer_efface_la_position_et_ses_mouvements(bac):
+    cur, paper, seb = bac
+    position_id, _ = P.ouvre(cur, seb, paper, 10, THESE, date.today(), prix=100.0)
+    P.supprime(cur, position_id, "position jamais prise")
+    cur.execute("select count(*) from positions where id = %s", (position_id,))
+    assert cur.fetchone()[0] == 0
+    cur.execute("select count(*) from transactions where position_id = %s",
+                (position_id,))
+    assert cur.fetchone()[0] == 0
+
+
+def test_supprimer_laisse_une_ligne_de_journal(bac):
+    """La suppression est réservée à une saisie erronée, et elle laisse sa
+    trace : `position_id` passe à null, le résumé reste lisible."""
+    cur, paper, seb = bac
+    position_id, _ = P.ouvre(cur, seb, paper, 10, THESE, date.today(), prix=100.0)
+    P.supprime(cur, position_id, "position jamais prise")
+    cur.execute("select position_id, kind, reason, summary from position_corrections "
+                "where position_ref = %s", (position_id,))
+    reference, kind, motif, apercu = cur.fetchone()
+    assert reference is None, "la position n'existe plus, la trace si"
+    assert kind == "delete"
+    assert motif == "position jamais prise"
+    assert "SEB" in apercu
+
+
+# --------------------------------------------------------------------------- #
 # Versements
 # --------------------------------------------------------------------------- #
 def test_les_versements_cumulent_les_achats(bac):

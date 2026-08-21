@@ -312,3 +312,86 @@ def test_les_scores_ne_sont_jamais_reecrits():
         "from quality_scores group by 1,2,3 having count(*) > 1"
     )
     assert doublons == []
+
+
+# --------------------------------------------------------------------------- #
+# Un casier sectoriel n'est pas un groupe de pairs
+#
+# Constat sur EssilorLuxottica (2026-08-21) : son groupe etait `AUTO:20 —
+# Secteur Health Care`, dont les membres sont Sanofi et UCB. Le systeme
+# comparait le ROIC d'un lunetier a celui de deux laboratoires
+# pharmaceutiques, et l'ecart de -2,56 points a servi de preuve dans la
+# synthese. Meme regle que l'indice de reference du doc 11 SS8.1 : afficher un
+# chiffre dont la reference est arbitraire vaut moins que ne rien afficher.
+# --------------------------------------------------------------------------- #
+def test_un_groupe_sectoriel_automatique_nest_pas_comparable():
+    assert not Q.groupe_comparable("AUTO:20", "sector_auto", False)
+
+
+def test_un_groupe_issu_dun_dossier_est_comparable():
+    """Il vient d'une analyse concurrentielle : ses membres sont les concurrents
+    reels, pas les voisins de case."""
+    assert Q.groupe_comparable("DOSSIER:EQ:DE:ADIDAS", "manual", True)
+    assert Q.groupe_comparable("DOSSIER:EQ:FR:X", "sector_auto", False)
+
+
+def test_un_groupe_manuel_ou_marque_complet_est_comparable():
+    assert Q.groupe_comparable("MAN:LUXE", "manual", False)
+    assert Q.groupe_comparable("AUTO:20", "sector_auto", True)
+
+
+def test_labsence_de_groupe_nest_pas_comparable():
+    assert not Q.groupe_comparable(None, None, None)
+
+
+def _entreprise_rentable():
+    return fondamentaux(
+        ebit=[(a, 300) for a in range(2020, 2026)],
+        total_equity=[(a, 1000) for a in range(2020, 2026)],
+        net_debt=[(a, 0) for a in range(2020, 2026)],
+        revenue=[(a, 2000) for a in range(2020, 2026)],
+    )
+
+
+def test_sans_groupe_comparable_aucun_indicateur_relatif_nest_publie():
+    q = Q.evalue(_entreprise_rentable(), roic_median_pairs=0.05,
+                 revenus_pairs=[5000.0], groupe_complet=False,
+                 evaluation_valide=False, groupe_est_comparable=False)
+    assert q.roic_vs_peers is None
+    assert q.relative_share is None
+    assert q.rank_by_revenue is None
+    assert "indicateurs_relatifs_non_publies_groupe_non_comparable" in q.motifs, \
+        "trois cases vides sans motif se lisent comme une donnee manquante"
+
+
+def test_les_mesures_absolues_et_les_verdicts_ne_bougent_pas():
+    """Le regime et le niveau reposent sur des mesures absolues : retirer les
+    comparaisons ne doit rien changer au jugement porte sur le titre."""
+    f = _entreprise_rentable()
+    avec = Q.evalue(f, roic_median_pairs=0.05, revenus_pairs=[5000.0],
+                    groupe_complet=False, evaluation_valide=False,
+                    groupe_est_comparable=True)
+    sans = Q.evalue(f, roic_median_pairs=0.05, revenus_pairs=[5000.0],
+                    groupe_complet=False, evaluation_valide=False,
+                    groupe_est_comparable=False)
+    assert (sans.regime, sans.quality_tier) == (avec.regime, avec.quality_tier)
+    assert sans.roic_mean_5y == avec.roic_mean_5y
+    assert sans.roic_vs_threshold == avec.roic_vs_threshold
+
+
+def test_aucun_indicateur_relatif_en_base_sur_un_groupe_non_comparable():
+    """La regle doit tenir sur les donnees reelles, pas seulement en unitaire."""
+    fautifs = fetch_all(
+        """
+        select i.internal_code, g.code
+          from quality_scores q
+          join instruments i on i.id = q.instrument_id
+          left join peer_groups g on g.id = q.peer_group_id
+         where q.as_of_date = (select max(as_of_date) from quality_scores)
+           and (q.roic_vs_peers is not null or q.relative_share is not null
+                or q.rank_by_revenue is not null)
+           and not (coalesce(g.is_complete, false)
+                    or g.code like 'DOSSIER:%%' or g.kind = 'manual')
+        """
+    )
+    assert fautifs == []

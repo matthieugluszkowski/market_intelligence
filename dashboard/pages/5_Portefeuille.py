@@ -91,9 +91,16 @@ def lignes_valorisees(rows: pd.DataFrame, courant: pd.Series,
                 "Cours": round(v.cours, 2) if v.cours else None,
                 "Investi": round(v.montant_investi, 2),
                 "Valeur": round(v.valeur, 2) if v.valeur else None,
-                "+/- value": round(v.plus_value, 2) if v.plus_value else None,
-                "%": round(v.plus_value_pct, 4) if v.plus_value_pct else None,
-                "Rdt total": (round(v.rendement_total_pct, 4)
+                # `is not None` et pas la verite de la valeur : une plus-value
+                # exactement nulle est un fait, pas une absence de mesure.
+                # Les pourcentages sont portes en points (× 100) : le format
+                # `%+.1f%%` de `column_config` ecrit un signe pourcent, il ne
+                # convertit pas une fraction - 0,0092 s'affichait « +0,0 % ».
+                "+/- value": (round(v.plus_value, 2)
+                              if v.plus_value is not None else None),
+                "%": (round(v.plus_value_pct * 100, 2)
+                      if v.plus_value_pct is not None else None),
+                "Rdt total": (round(v.rendement_total_pct * 100, 2)
                               if v.rendement_total_pct is not None else None),
                 "z entrée": (round(float(position["z_at_entry"]), 2)
                              if pd.notna(position["z_at_entry"]) else None),
@@ -235,6 +242,178 @@ with onglet_lignes:
                         conn.commit()
                     st.rerun()
 
+    # --- Corriger une saisie (écran 8 bis) -----------------------------------
+    # Corriger n'est pas fermer, et l'écran doit le dire : une position fermée
+    # est une décision qui compte dans la mesure de la méthode, une position
+    # corrigée est une saisie qui ne décrivait pas les faits. Sans cette
+    # section, la seule issue à une erreur de saisie était de la fermer — ce qui
+    # inscrivait une faute de frappe au bilan comme s'il s'agissait d'un choix.
+    if not positions.empty:
+        st.subheader("Corriger une saisie")
+        st.caption("Corriger rétablit les faits ; fermer enregistre une "
+                   "décision. Chaque correction est journalisée avec son motif "
+                   "— on ne réajuste pas un prix d'entrée en silence.")
+
+        univers_positions = data.instruments()
+        codes = univers_positions["internal_code"].tolist()
+        noms = univers_positions.set_index("internal_code")["name"]
+        index_positions = positions.set_index("id")
+
+        id_corrige = st.selectbox(
+            "Position", positions["id"], key="position_a_corriger",
+            format_func=lambda i: (
+                f"#{i} · {index_positions.loc[i, 'name']}"
+                + (" · fictive" if index_positions.loc[i, "is_paper"]
+                   else f" · {index_positions.loc[i, 'support'] or '—'}")
+                + (" · fermée" if pd.notna(index_positions.loc[i, "closed_at"])
+                   else "")))
+        courante = index_positions.loc[id_corrige]
+        st.caption(
+            f"Actuellement : **{courante['name']}** · "
+            f"{float(courante['quantity']):g} × {float(courante['avg_price']):.2f} "
+            f"{courante['currency']} · frais {float(courante['fees']):.2f} · "
+            f"ouverte le {courante['opened_at']} · prix « {courante['price_source']} »")
+
+        if pd.notna(courante["closed_at"]):
+            st.info("**Position fermée.** La rouvrir pour la corriger "
+                    "réécrirait une décision déjà prise. Si la ligne était "
+                    "fausse depuis le départ, la supprimer ci-dessous.")
+        elif int(courante["mouvements"]) > 1:
+            st.info("**Position renforcée.** Son prix de revient est la moyenne "
+                    "pondérée de plusieurs achats : l'écraser à la main le "
+                    "rendrait faux. Reprendre la ligne par une suppression et "
+                    "une nouvelle saisie.")
+        else:
+            with st.form("correction"):
+                # Le titre d'abord : c'est l'erreur qui rend tout le reste faux.
+                # Une position valorisée contre le cours d'une autre entreprise
+                # n'affiche pas un chiffre imprécis, elle affiche un chiffre
+                # sans rapport.
+                code_actuel = courante["internal_code"]
+                options = codes if code_actuel in codes else [code_actuel, *codes]
+                nouveau_titre = st.selectbox(
+                    "Titre", options, index=options.index(code_actuel),
+                    format_func=lambda c: f"{noms.get(c, c)} · {c}")
+
+                index_supports = supports.set_index("id")
+                ids_supports = supports["id"].tolist()
+                id_actuel = (int(courante["account_id"])
+                             if pd.notna(courante["account_id"]) else ids_supports[0])
+                nouveau_support = st.selectbox(
+                    "Support (mode)", ids_supports,
+                    index=ids_supports.index(id_actuel),
+                    format_func=lambda i: (
+                        f"{index_supports.loc[i, 'label']}"
+                        + (" — fictif" if index_supports.loc[i, "is_paper"]
+                           else " — réel")),
+                    help="Basculer vers le compte PAPER rend la position "
+                         "fictive, et l'exclut de tous les totaux réels.")
+
+                g, m, d = st.columns(3)
+                nouvelle_date = g.date_input(
+                    "Date d'ouverture",
+                    value=pd.Timestamp(courante["opened_at"]).date())
+                nouvelle_quantite = m.number_input(
+                    "Quantité", min_value=0.0, step=1.0,
+                    value=float(courante["quantity"]))
+                nouveaux_frais = d.number_input(
+                    "Frais", min_value=0.0, step=0.01,
+                    value=float(courante["fees"]))
+                nouveau_prix = st.number_input(
+                    "Prix de revient unitaire", min_value=0.0, step=0.01,
+                    value=float(courante["avg_price"]),
+                    help="Le modifier marque la position `manual`. Inchangé sur "
+                         "une position exécutée à la clôture, le prix est repris "
+                         "à la source si le titre ou la date changent — sinon il "
+                         "resterait celui d'une autre entreprise.")
+                nouvelle_these = st.text_area(
+                    "Thèse", value=courante["thesis"] or "", height=110)
+                motif = st.text_input(
+                    "Motif de la correction",
+                    placeholder="erreur de titre à la saisie, quantité mal reportée…",
+                    help=f"Obligatoire, {P.MOTIF_LONGUEUR_MIN} caractères "
+                         f"minimum. Sans motif, le journal ne distingue plus "
+                         f"une erreur de frappe d'un réajustement après coup.")
+
+                if st.form_submit_button("Enregistrer la correction",
+                                         type="primary"):
+                    try:
+                        with connect_direct() as conn, conn.cursor() as cur:
+                            cur.execute("select id from instruments where "
+                                        "internal_code = %s", (nouveau_titre,))
+                            modifies = P.corrige(
+                                cur, int(id_corrige), motif,
+                                instrument_id=cur.fetchone()[0],
+                                account_id=int(nouveau_support),
+                                opened_at=nouvelle_date,
+                                quantity=nouvelle_quantite,
+                                avg_price=nouveau_prix,
+                                fees=nouveaux_frais,
+                                thesis=nouvelle_these)
+                            conn.commit()
+                        if modifies:
+                            st.success("Corrigé : " + ", ".join(
+                                champ for champ, _a, _n in modifies))
+                            st.rerun()
+                        else:
+                            st.info("Rien à corriger : aucune valeur ne change.")
+                    except ValueError as exc:
+                        st.error(str(exc))
+
+        # La suppression reste possible dans tous les cas, mais elle est
+        # réservée à une ligne qui n'aurait jamais dû exister : une position
+        # réellement détenue puis vendue se **ferme**, sinon on retire de la
+        # mesure de la méthode précisément les cas qu'on aurait intérêt à
+        # oublier.
+        with st.expander("Supprimer cette position"):
+            st.markdown(
+                "<div class='avertissement'>À réserver à une ligne <b>saisie "
+                "par erreur</b>. Une position réellement détenue puis vendue se "
+                "<b>ferme</b> : la supprimer retirerait de la mesure de la "
+                "méthode les cas qu'on aurait justement intérêt à oublier. La "
+                "suppression est définitive — seule une ligne du journal "
+                "subsiste.</div>", unsafe_allow_html=True)
+            with st.form("suppression"):
+                motif_suppression = st.text_input(
+                    "Motif de la suppression",
+                    placeholder="position jamais prise, doublon de saisie…")
+                confirme = st.checkbox(
+                    f"Je confirme la suppression définitive de la position "
+                    f"#{id_corrige} — {courante['name']}")
+                if st.form_submit_button("Supprimer"):
+                    if not confirme:
+                        st.error("Cocher la confirmation pour supprimer.")
+                    else:
+                        try:
+                            with connect_direct() as conn, conn.cursor() as cur:
+                                efface = P.supprime(cur, int(id_corrige),
+                                                    motif_suppression)
+                                conn.commit()
+                            st.success(f"Supprimée : {efface}")
+                            st.rerun()
+                        except ValueError as exc:
+                            st.error(str(exc))
+
+    # --- Journal des corrections ---------------------------------------------
+    journal = charge(P.CORRECTIONS)
+    if not journal.empty:
+        with st.expander(f"Journal des corrections ({len(journal)})"):
+            st.caption("Ce que le journal rend possible : relire plus tard "
+                       "qu'une ligne a été retouchée, quand, et pourquoi.")
+            st.dataframe(
+                pd.DataFrame({
+                    "Position": journal["position_ref"].map("#{}".format),
+                    "Le": pd.to_datetime(journal["corrected_at"])
+                            .dt.strftime("%d/%m/%Y %H:%M"),
+                    "Action": journal["kind"].map({"update": "correction",
+                                                   "delete": "suppression"}),
+                    "Champ": journal["field_name"].fillna("—"),
+                    "Avant": journal["old_value"].fillna("—"),
+                    "Après": journal["new_value"].fillna("—"),
+                    "Motif": journal["reason"],
+                    "État avant": journal["summary"],
+                }), use_container_width=True, hide_index=True)
+
     # --- Positions fermées ---------------------------------------------------
     if not fermees.empty:
         with st.expander(f"Positions fermées ({len(fermees)})"):
@@ -318,10 +497,22 @@ with onglet_ouvrir:
                      "déclarés de ce support.")
             support = index_reels.loc[code_support]
 
+    titre = None
     if support is not None:
+        # **Aucun titre par défaut, délibérément.** La liste est triée par nom :
+        # « 2G Energy AG » y arrive en tête et se retrouvait présélectionnée. Un
+        # défaut silencieux sur ce champ ne produit pas une position imprécise,
+        # il produit une position sur une autre entreprise — valorisée contre un
+        # cours sans rapport. Le titre se choisit, il ne s'hérite pas.
         titre = st.selectbox(
-            "Titre", univers["internal_code"],
-            format_func=lambda c: univers.set_index("internal_code").loc[c, "name"])
+            "Titre", univers["internal_code"], index=None,
+            placeholder="Chercher un titre…",
+            format_func=lambda c: (
+                f"{univers.set_index('internal_code').loc[c, 'name']} · {c}"))
+        if titre is None:
+            st.caption("Choisir le titre pour continuer.")
+
+    if support is not None and titre is not None:
         instrument = univers.set_index("internal_code").loc[titre]
 
         with connect_direct() as conn, conn.cursor() as cur:
@@ -338,7 +529,8 @@ with onglet_ouvrir:
 
         # Ce que le système affirme aujourd'hui, affiché À CÔTÉ de la thèse pour
         # qu'elle s'écrive en regard de ces chiffres, et non à leur place.
-        st.markdown("**Ce que le système affirme aujourd'hui**")
+        st.markdown(f"**Ce que le système affirme aujourd'hui sur "
+                    f"{instrument['name']}**")
         vignettes = st.columns(5)
         vignettes[0].metric("z-score", f"{signal.z_score:+.2f}"
                             if signal.z_score is not None else "—",
@@ -391,11 +583,16 @@ with onglet_ouvrir:
 
             if cours:
                 montant = quantite * (prix_saisi or float(cours)) + frais
-                st.caption(f"Montant : {montant:,.2f} {instrument['currency']}"
+                st.caption(f"Montant : {montant:,.2f} {instrument['currency']} "
+                           f"sur **{instrument['name']}**"
                            + (" — fictif" if mode == "paper" else ""))
 
-            libelle_bouton = ("Ouvrir la position fictive" if mode == "paper"
-                              else "Enregistrer la position réelle")
+            # Le nom de l'entreprise jusque dans le bouton : c'est la dernière
+            # occasion de voir qu'on n'enregistre pas le titre qu'on croit.
+            libelle_bouton = (
+                f"Ouvrir la position fictive sur {instrument['name']}"
+                if mode == "paper"
+                else f"Enregistrer la position réelle sur {instrument['name']}")
             if st.form_submit_button(libelle_bouton, type="primary",
                                      disabled=not elig.autorise):
                 try:

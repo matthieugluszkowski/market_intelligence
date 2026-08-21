@@ -717,7 +717,7 @@ create table positions (
 | `moat_assessments` | 300 | < 1 Mo |
 | `fx_rates` | 60 000 | ~5 Mo |
 | Référentiel et divers | — | ~5 Mo |
-| **Total** | | **~110 Mo estimés · ⚙ ~15 Mo mesurés à 57 titres** |
+| **Total** | | **~110 Mo estimés · ⚙ ~15 Mo mesurés à 57 titres, 303 Mo à 586 titres** |
 
 *La couche qualité ne pèse quasiment rien : elle est trimestrielle et porte sur 57 lignes. C'est le prix le plus bas du système pour la moitié de sa valeur.*
 

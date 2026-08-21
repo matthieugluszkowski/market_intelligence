@@ -166,7 +166,9 @@ Une ligne qui échoue à la validation n'est pas jetée : elle est écrite avec 
 >
 > *Reste de L7 : le rapport hebdomadaire et l'alerte sur échec de job. Le code de sortie du cycle vaut 1 en cas d'échec, mais rien ne le relaie encore ailleurs que dans le log.*
 
-**Durées réelles mesurées sur 57 titres :** backfill des cours ~6 min (122 000 barres) · corporate actions et facteurs ~7 min · fondamentaux ~7 min (7 044 faits) · contrôles qualité ~10 s · 57 régressions ~2 min · 57 scores qualité ~30 s · archive Parquet ~20 s. *Le temps est dominé par le débit ménagé vers yfinance, pas par le calcul.*
+**Durées réelles mesurées sur 57 titres :** backfill des cours ~6 min (122 000 barres) · corporate actions et facteurs ~7 min · fondamentaux ~7 min (7 044 faits) · contrôles qualité ~10 s · 57 régressions ~2 min · 57 scores qualité ~30 s · archive Parquet ~20 s.
+
+**Sur 586 titres (2026-08-21), cycle complet forcé en 104 min :** cours 44 min (1 080 000 barres) · opérations sur titre 25 min · fondamentaux 33 min (70 393 faits) · contrôles qualité 50 s · **586 régressions 73 s** · scores qualité 6 s. *Le temps est dominé par le débit ménagé vers yfinance, pas par le calcul — multiplier l'univers par dix multiplie le calcul par dix, mais les régressions restent sous la minute et demie.*
 
 | Job | Fréquence | Durée estimée | Rôle |
 |---|---|---|---|

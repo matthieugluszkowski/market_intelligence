@@ -94,20 +94,23 @@ des dividendes, les régressions ont besoin des barres et des anomalies, la
 qualité a besoin des fondamentaux. Cet ordre est le seul qui fonctionne.
 
 ```bash
-python scripts/migrate.py                    # schéma + seeds       instantané
-python scripts/verify_universe.py            # vérifie les 57       ~3 min
-python scripts/load_universe.py              # charge le vérifié    instantané
-python scripts/backfill_prices.py            # 122 000 barres       ~6 min
-python scripts/ingest_corporate_actions.py   # + facteurs           ~7 min
-python scripts/ingest_fundamentals.py        # 7 000 faits          ~7 min
-python scripts/quality_checks.py             # 9 contrôles          ~10 s
-python scripts/compute_fits.py               # 57 régressions       ~2 min
-python scripts/compute_quality.py            # 57 scores qualité    ~30 s
-python scripts/export_cold.py                # archive Parquet      ~20 s
+python scripts/migrate.py                    # schéma + seeds        instantané
+python scripts/propose_universe.py           # candidats (optionnel)  ~20 min
+python scripts/verify_universe.py            # vérifie les 600        ~55 min
+python scripts/load_universe.py              # charge le vérifié      instantané
+python scripts/backfill_prices.py            # 1 080 000 barres       ~44 min
+python scripts/ingest_corporate_actions.py   # + facteurs             ~25 min
+python scripts/ingest_fundamentals.py        # 70 000 faits           ~33 min
+python scripts/quality_checks.py             # 9 contrôles            ~50 s
+python scripts/compute_fits.py               # 586 régressions        ~75 s
+python scripts/compute_quality.py            # 586 scores qualité     ~6 s
+python scripts/export_cold.py                # archive Parquet        ~2 min
 ```
 
 Tous sont **idempotents** : les relancer ne produit ni doublon ni écrasement.
-Le temps est dominé par le débit ménagé vers yfinance, pas par le calcul.
+Le temps est dominé par le débit ménagé vers yfinance, pas par le calcul — les
+586 régressions prennent 73 secondes, leur alimentation deux heures. En pratique
+`scripts/cycle.py` remplace les six derniers, et le cron les lance seul.
 
 ## Cycle courant
 
@@ -126,14 +129,19 @@ Toutes les étapes ne se paient pas le même prix, donc **chacune porte sa
 cadence** ; le cycle relit `ingestion_runs` pour savoir ce qui a vieilli et ne
 relance que ça.
 
-| Étape | Cadence | Durée | Pourquoi cette cadence |
+| Étape | Cadence | Durée sur 586 titres | Pourquoi cette cadence |
 |---|---|---|---|
-| `backfill_prices` | chaque passage | ~6 min | une séance de plus, des barres de plus |
-| `quality_checks` | chaque passage | ~10 s | dix secondes : aucune raison de s'en priver |
-| `compute_fits` | chaque passage | ~2 min | c'est lui, et lui seul, qui fait bouger le screener |
-| `ingest_corporate_actions` | 1 jour | ~7 min | quelques dividendes par an et par titre |
-| `ingest_fundamentals` | 30 jours | ~7 min | des comptes publiés quatre fois par an |
-| `compute_quality` | 30 jours | ~30 s | suit les comptes, pas les cours |
+| `backfill_prices` | chaque passage | ~44 min | une séance de plus, des barres de plus |
+| `quality_checks` | chaque passage | ~50 s | une minute : aucune raison de s'en priver |
+| `compute_fits` | chaque passage | ~75 s | c'est lui, et lui seul, qui fait bouger le screener |
+| `ingest_corporate_actions` | 1 jour | ~25 min | quelques dividendes par an et par titre |
+| `ingest_fundamentals` | 30 jours | ~33 min | des comptes publiés quatre fois par an |
+| `compute_quality` | 30 jours | ~6 s | suit les comptes, pas les cours |
+
+Soit **~47 min** pour un passage ordinaire, ~72 min pour celui qui porte les
+opérations sur titre, et ~105 min une fois par mois. Le cycle de 8 heures a donc
+encore de la marge, mais elle n'est plus illimitée : c'est le débit ménagé vers
+yfinance qui fixe le plafond, pas le calcul.
 
 Deux règles portent le reste du comportement :
 

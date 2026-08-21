@@ -20,8 +20,10 @@ from market_intelligence.config import get_settings  # noqa: E402
 from market_intelligence.db import fetch_all, fetch_one  # noqa: E402
 from market_intelligence.normalizers.bars import normalize  # noqa: E402
 
-COUVERTURE_MIN = 0.95
-ANNEES_MIN = 15
+# Le seuil de couverture du doc 05 - >= 15 ans sur >= 95% de l'univers - a
+# migre dans `test_universe.py`, ou il est mesure separement sur les titres
+# saisis a la main et sur ceux issus du screener : il ne tient plus que sur les
+# premiers depuis l'elargissement du 2026-08-21.
 
 
 # --------------------------------------------------------------------------- #
@@ -67,49 +69,65 @@ def test_normalisation_ne_leve_pas_sur_entree_vide():
 
 # --------------------------------------------------------------------------- #
 # Etat de la base apres backfill
-# --------------------------------------------------------------------------- #
-# Introductions en bourse posterieures a 2010, dont l'historique est court parce
-# que la societe est jeune et non parce que l'ingestion a echoue. Liste close et
-# nominative : un quatrieme titre a historique court fait echouer le test, ce qui
-# est exactement le comportement recherche.
-COTATIONS_RECENTES = {
-    "EQ:NL:PROSUS": 2019,   # scission de Naspers
-    "EQ:IT:FERRARI": 2015,  # scission de FCA
-    "EQ:ES:AENA": 2015,     # privatisation partielle
-}
+ECART_MAX_ANNEES = 2.0
 
 
-def test_couverture_historique_hebdomadaire():
-    """Le critere du doc 05 vise >= 95% de l'univers a >= 15 ans d'hebdomadaire.
+def test_chaque_instrument_a_des_barres_hebdomadaires():
+    """Une ingestion qui saute un titre entier ne se voit nulle part ailleurs.
 
-    Il existe pour attraper une ingestion defaillante ou un mapping faux, pas
-    pour constater qu'une societe est jeune : aucun provider ne fabriquera vingt
-    ans de cotations a Ferrari, introduite en 2015. L'assertion porte donc sur
-    l'univers dont l'historique long est *possible*, et la liste des exceptions
-    est nominative pour qu'un nouveau titre court ne passe pas inapercu.
+    Le titre reste au referentiel, le screener ne l'affiche simplement jamais -
+    et personne ne remarque une absence.
     """
-    courts = fetch_all(
+    orphelins = fetch_all(
+        "select internal_code from instruments i "
+        " where i.is_active and not exists ("
+        "   select 1 from bars b where b.instrument_id = i.id and b.freq = '1w')"
+        " order by 1"
+    )
+    assert orphelins == [], f"instruments sans barre hebdomadaire : {orphelins}"
+
+
+def test_l_historique_en_base_correspond_a_celui_mesure_a_la_verification():
+    """Detecteur d'ingestion defaillante, independant de l'age des societes.
+
+    La version precedente listait **nominativement** les introductions recentes
+    connues - Prosus 2019, Ferrari 2015, Aena 2015 - pour distinguer « societe
+    jeune » de « ingestion cassee ». A 586 titres cette liste en compterait 159,
+    de Siemens Energy (scission 2020) a Puig (2024), et demanderait une mise a
+    jour a chaque elargissement. Elle mesurait l'age des societes ; ce n'est pas
+    ce qu'on veut surveiller.
+
+    **Le bon invariant ne depend pas de l'univers.** `verify_universe` a mesure,
+    titre par titre et par un telechargement reel, la profondeur disponible chez
+    le fournisseur. Ce que la base contient doit s'en approcher. Un ecart de plus
+    de deux ans signe une ingestion partielle ou un symbole qui a change de
+    societe - c'est-a-dire exactement ce que le test d'origine cherchait, et que
+    la liste nominative ne detectait que par accident.
+
+    Le critere du doc 05 - « >= 15 ans sur >= 95% de l'univers » - n'a pas
+    disparu : il est mesure dans `test_universe.py`, separement sur les deux
+    populations, parce qu'il ne tient plus que sur celle saisie a la main.
+    """
+    ecarts = fetch_all(
         """
-        select i.internal_code, round((max(b.ts) - min(b.ts)) / 365.25, 1)
+        select i.internal_code,
+               round((i.attributes->'verification'->>'history_years')::numeric, 1),
+               round(((max(b.ts) - min(b.ts)) / 365.25)::numeric, 1)
           from bars b join instruments i on i.id = b.instrument_id
          where b.freq = '1w'
-         group by i.internal_code
-        having (max(b.ts) - min(b.ts)) / 365.25 < %s
+           and i.attributes->'verification'->>'history_years' is not null
+         group by i.internal_code, i.attributes
+        having (i.attributes->'verification'->>'history_years')::numeric
+               - ((max(b.ts) - min(b.ts)) / 365.25)::numeric > %s
          order by 1
         """,
-        (ANNEES_MIN,),
+        (ECART_MAX_ANNEES,),
     )
-    inattendus = [c for c, _ in courts if c not in COTATIONS_RECENTES]
-    assert inattendus == [], (
-        f"historique court sans introduction recente connue : {inattendus}. "
-        f"Soit le mapping est faux, soit l'ingestion a echoue."
+    assert ecarts == [], (
+        f"historique en base plus court que celui mesure a la verification : "
+        f"{ecarts}. Soit l'ingestion est partielle, soit le symbole a change de "
+        f"societe."
     )
-
-    total = fetch_one("select count(*) from instruments where is_active")[0]
-    eligibles = total - len(COTATIONS_RECENTES)
-    couverts = eligibles - len(inattendus)
-    ratio = couverts / eligibles
-    assert ratio >= COUVERTURE_MIN, f"couverture {ratio:.1%} ({couverts}/{eligibles})"
 
 
 def test_toutes_les_barres_ont_une_cloture_positive():

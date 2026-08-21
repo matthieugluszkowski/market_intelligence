@@ -257,6 +257,18 @@ mesure la méthode.
 
 ## 7. Les écrans
 
+### Écran 0 - Le bandeau de portefeuille, en tête de chaque écran *(ajouté le 2026-08-21)*
+
+Cinq chiffres du portefeuille **réel** au-dessus du titre de chaque page : investi, valeur, +/- value latente, lignes, thèses à relire.
+
+**Le réel seul, et c'est la raison d'être de la règle.** Un en-tête se lit d'un coup d'œil, et un coup d'œil ne tient pas une distinction : y mêler des euros engagés et des euros simulés produirait exactement le chiffre commun que ce document interdit. Le paper trading garde sa section, avec ses totaux, sur l'écran Portefeuille — là où on a le temps de lire l'étiquette. Sans position réelle, le bandeau n'affiche pas des zéros — des zéros se lisent comme une performance nulle alors qu'ils signifient « rien n'est engagé » — mais une ligne qui le dit.
+
+**Ce bandeau est à la limite du principe I1** (*le dashboard se consulte, il n'alerte pas* — Thaler, Tversky, Kahneman et Schwartz 1997 : plus le feedback est fréquent, plus le rendement accumulé baisse). Le garder sobre — pas de couleur, pas de flèche, pas de rafraîchissement — est ce qui le rend acceptable.
+
+**Sur le screener**, la détention devient trois colonnes de ligne — mode (`◧ réel` / `◌ fictif`), quantité, +/- % — et **jamais un total** : le screener classe des titres, il ne totalise pas un portefeuille. Une case « Portefeuille seulement » garde consultable un titre détenu repassé au-dessus du seuil de z-score : c'est même celui qu'on a le plus besoin de revoir.
+
+**Sur la fiche instrument**, deux traits rouges marquent la position : la verticale dit *quand*, l'horizontale dit *à combien*. C'est l'horizontale qui porte l'information utile — lire la distance entre la courbe et son propre prix de revient est immédiat, là où un pourcentage dans un tableau demande de reconstituer mentalement le graphe. Ce qui sortirait du cadre n'est pas dessiné mais écrit en toutes lettres : un achat antérieur à la fenêtre de régression l'étendrait de plusieurs années et écraserait la courbe. La tolérance est **asymétrique** — à droite, la série s'arrête à la dernière barre hebdomadaire close, et refuser un achat de la semaine en cours masquerait justement la position la plus fraîche.
+
 ### Écran 8 - Portefeuille
 
 Une ligne par position ouverte : titre, support, quantité, PRU, cours, plus-value
@@ -303,6 +315,20 @@ pourquoi inverse le raisonnement.
 ce qu'aucune interface ne disait : à quoi sert un support (éligibilité
 géographique vérifiable, plafond par support, comparaison à fiscalité
 identique), et que le fictif n'en demande aucun.
+
+### Écran 8 bis - Corriger une saisie *(ajouté le 2026-08-21)*
+
+**Corriger n'est pas fermer, et l'écran doit le dire.** Une position fermée est une décision : elle a produit un résultat et compte dans la mesure de la méthode. Une position corrigée est une saisie qui ne décrivait pas les faits.
+
+*Défaut constaté à l'usage, le jour du premier achat réel.* La liste des titres est triée par nom, « 2G Energy AG » y arrive donc en tête et le `selectbox` la présélectionnait. Une position EssilorLuxottica — 1 titre à 162,45 €, achat réel — s'est enregistrée sur 2G Energy AG, valorisée contre une clôture de 57,10 € : pas un chiffre imprécis, **un chiffre sans rapport**. Et l'écran n'offrait aucune issue : la seule action possible était de *fermer* la ligne, ce qui inscrivait une faute de frappe au bilan de la méthode comme s'il s'agissait d'un choix.
+
+Trois décisions :
+
+1. **Le titre se choisit, il ne s'hérite pas.** Plus aucun défaut sur ce champ (`index=None`), et le nom de l'entreprise est répété dans le récapitulatif de montant **et dans le libellé du bouton** — la dernière occasion de voir qu'on n'enregistre pas le titre qu'on croit.
+2. **Ce qui découle du titre est recalculé, jamais saisi.** Corriger le titre ou la date rattache la position au `fit_id`, au `quality_score_id` et au suivi de watchlist en vigueur **ce jour-là**, et reprend la devise. Sans ce recalcul, la position garderait le signal d'une autre entreprise — l'incohérence même qu'on corrige. Un prix hérité d'une clôture est repris à la source ; un prix saisi à la main reste marqué `manual`.
+3. **Toute correction est journalisée** (`position_corrections`, migration 015), avec son motif obligatoire et l'état d'avant. Ce n'est pas décoratif : un `update` muet ouvrirait la porte de derrière de tout le projet — réajuster après coup un prix d'entrée ou une thèse devenue gênante, sans que rien ne le montre. Le journal ne l'interdit pas, **il le rend visible**. Même arbitrage que l'acquittement de la migration 010.
+
+**Ce que la correction refuse :** une position fermée (la rouvrir réécrirait une décision prise) et une position renforcée (son prix de revient est la moyenne pondérée de plusieurs achats ; l'écraser à la main le rendrait faux). La suppression reste possible, sous confirmation explicite, et **réservée à une ligne qui n'aurait jamais dû exister** — une position réellement détenue puis vendue se *ferme*, sinon on retire de la mesure de la méthode précisément les cas qu'on aurait intérêt à oublier. La ligne de journal survit à la suppression.
 
 ### Écran 10 - Position fermée, revue
 

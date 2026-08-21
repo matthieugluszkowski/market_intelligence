@@ -218,6 +218,12 @@ def run(as_of: date | None = None, limit: int = 0, only: str = "",
                                                     "as_of": as_of})
                     evaluation_valide = cur.fetchone()[0] > 0
 
+                    # Un decoupage sectoriel a onze cases n'est pas un groupe de
+                    # pairs : sans groupe comparable, aucun indicateur relatif
+                    # n'est publie. Les verdicts, eux, reposent sur des mesures
+                    # absolues et ne bougent pas.
+                    comparable = Q.groupe_comparable(groupe_code, groupe_kind,
+                                                     complet)
                     q = Q.evalue(
                         ctx["f"],
                         roic_median_pairs=Q._mediane(pairs_roic) if pairs_roic else None,
@@ -225,6 +231,7 @@ def run(as_of: date | None = None, limit: int = 0, only: str = "",
                         groupe_complet=bool(complet),
                         evaluation_valide=evaluation_valide,
                         regime_declare=declare,
+                        groupe_est_comparable=comparable,
                     )
 
                     cur.execute(INSERT_SCORE, {

@@ -28,7 +28,7 @@ from dashboard.rechargement import recharge_si_modifie  # noqa: E402
 
 recharge_si_modifie()
 
-from dashboard import data, navigation  # noqa: E402
+from dashboard import data, entete, navigation  # noqa: E402
 from dashboard.theme import css, palette, statut  # noqa: E402
 from market_intelligence import watchlist as W  # noqa: E402
 from market_intelligence.db import connect_direct  # noqa: E402
@@ -38,6 +38,8 @@ st.set_page_config(page_title="Watchlist", page_icon="★", layout="wide")
 sombre = st.sidebar.toggle("Mode sombre", value=False)
 p = palette(sombre)
 st.markdown(css(p), unsafe_allow_html=True)
+
+entete.bandeau_portefeuille(data.portefeuille())
 
 st.title("Watchlist")
 st.caption("Une sélection humaine, pas un filtre calculé. Le screener est une "

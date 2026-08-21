@@ -35,7 +35,7 @@ from dashboard.rechargement import recharge_si_modifie  # noqa: E402
 
 recharge_si_modifie()
 
-from dashboard import data, navigation  # noqa: E402
+from dashboard import data, entete, navigation  # noqa: E402
 from dashboard.theme import css, motif_en_clair, palette, statut  # noqa: E402
 
 st.set_page_config(page_title="Screener - market intelligence",
@@ -92,6 +92,10 @@ if as_of is None:
     st.stop()
 
 frame = data.screener(as_of)
+portefeuille = data.portefeuille()
+detenus = entete.detentions(portefeuille)
+
+entete.bandeau_portefeuille(portefeuille)
 
 st.title("Screener")
 
@@ -179,10 +183,20 @@ with f5:
     persistance = st.number_input("Sem. sous seuil ≥", min_value=0, value=0, step=1)
 
 suivis = data.codes_suivis()
-favoris_seuls = st.checkbox(
+c1, c2 = st.columns(2)
+favoris_seuls = c1.checkbox(
     f"Watchlist seulement ({len(suivis)})", value=False,
     help="La watchlist est une selection humaine, pas un filtre calcule : elle "
          "survit au fait qu'un titre sorte des criteres du jour.",
+)
+# Meme raisonnement que la watchlist, en plus fort : un titre detenu doit rester
+# consultable quoi qu'il arrive a son z-score. C'est meme l'inverse - un titre
+# qu'on possede et qui sort des criteres du jour est precisement celui qu'on a
+# le plus besoin de revoir.
+detenus_seuls = c2.checkbox(
+    f"Portefeuille seulement ({len(detenus)})", value=False,
+    disabled=detenus.empty,
+    help="Les titres detenus, meme repasses au-dessus du seuil de z-score.",
 )
 
 filtre = frame[frame["z_score"] <= seuil_z]
@@ -191,6 +205,8 @@ if favoris_seuls:
     # mais apres dans le code : on veut voir un titre suivi meme s'il est repasse
     # au-dessus du seuil, d'ou le contournement ci-dessous.
     filtre = frame[frame["internal_code"].isin(suivis)]
+if detenus_seuls:
+    filtre = frame[frame["internal_code"].isin(detenus.index)]
 if qualites:
     filtre = filtre[filtre["fit_quality"].isin(qualites)]
 if secteurs:
@@ -243,10 +259,39 @@ ordre_qualite = {"good": 0, "weak": 1, "rejected": 2}
 filtre["_ordre"] = filtre["fit_quality"].map(ordre_qualite).fillna(3)
 filtre = filtre.sort_values(["_ordre", "z_score"])
 
+# --------------------------------------------------------------------------- #
+# Ce que je possede, dans le tableau lui-meme.
+#
+# Trois colonnes seulement, et jamais un total : le screener classe des titres,
+# il ne totalise pas un portefeuille - ce travail a son ecran. « Detenu »
+# distingue le reel du fictif parce qu'une quantite nue ne dit pas si l'argent
+# est engage, et c'est la seule chose qu'on veut savoir en balayant une liste.
+# --------------------------------------------------------------------------- #
+def mode_detention(code: str) -> str:
+    if code not in detenus.index:
+        return ""
+    ligne = detenus.loc[code]
+    if ligne["reel"] and ligne["fictif"]:
+        return "◧ reel + ◌ fictif"
+    return "◧ reel" if ligne["reel"] else "◌ fictif"
+
+
+def colonne_detenue(code: str, champ: str):
+    return detenus.loc[code, champ] if code in detenus.index else None
+
+
 table = pd.DataFrame({
     "★": filtre["internal_code"].map(lambda c: "★" if c in suivis else ""),
     "Nom": filtre["name"],
     "Code": filtre["internal_code"],
+    "Detenu": filtre["internal_code"].map(mode_detention),
+    "Qte": filtre["internal_code"].map(lambda c: colonne_detenue(c, "quantite")),
+    "PRU": filtre["internal_code"].map(
+        lambda c: colonne_detenue(c, "prix_de_revient")),
+    # En points, pas en fraction : `%+.1f%%` ecrit un signe pourcent, il ne
+    # convertit pas — meme convention que « Pente an. » plus bas.
+    "+/- %": filtre["internal_code"].map(
+        lambda c: colonne_detenue(c, "plus_value_pct")) * 100,
     "Quadrant": "unqualified",
     "z": filtre["z_score"].round(2),
     "Fit": filtre["fit_quality"].map(lambda q: f"{statut(q)[1]} {q}"),
@@ -263,14 +308,31 @@ table = pd.DataFrame({
     "Pays": filtre["country_iso2"],
 })
 
-st.caption(f"{len(table)} titre(s) sur {len(frame)}. "
-           f"Tri : qualite du fit, puis z croissant. "
-           f"**Selectionner une ligne ouvre la fiche instrument.**")
+affiches = set(filtre["internal_code"]) & set(detenus.index)
+manquants = len(detenus) - len(affiches)
+st.caption(
+    f"{len(table)} titre(s) sur {len(frame)}. "
+    f"Tri : qualite du fit, puis z croissant. "
+    f"**Selectionner une ligne ouvre la fiche instrument.**"
+    + (f" {len(affiches)} titre(s) detenu(s) dans cette vue"
+       + (f", {manquants} hors filtres — cocher « Portefeuille seulement » "
+          f"pour les voir." if manquants else ".")
+       if len(detenus) else ""))
 
 navigation.tableau_vers_fiche(
     table, list(filtre["internal_code"]), cle="screener_table",
     use_container_width=True, hide_index=True,
     column_config={
+        "Qte": st.column_config.NumberColumn(
+            "Qte", format="%g", help="Quantite detenue, tous supports confondus."),
+        "PRU": st.column_config.NumberColumn(
+            "PRU", format="%.2f",
+            help="Prix de revient unitaire, moyenne ponderee des achats, hors "
+                 "frais."),
+        "+/- %": st.column_config.NumberColumn(
+            "+/- %", format="%+.1f%%",
+            help="Ecart entre la valeur au dernier cours et le montant investi, "
+                 "frais compris. Latente : rien n'est acquis avant la vente."),
         "z": st.column_config.NumberColumn(
             "z", format="%+.2f",
             help="Position en ecarts-types. Un titre qui passe sous -2σ tous les "

@@ -36,7 +36,7 @@ from dashboard.rechargement import recharge_si_modifie  # noqa: E402
 
 recharge_si_modifie()
 
-from dashboard import data, definitions, navigation  # noqa: E402
+from dashboard import data, definitions, entete, navigation  # noqa: E402
 from dashboard.theme import css, palette  # noqa: E402
 from market_intelligence.analytics.quality import quadrant  # noqa: E402
 
@@ -63,6 +63,8 @@ if as_of is None:
     st.stop()
 
 frame = data.screener(as_of)
+entete.bandeau_portefeuille(data.portefeuille())
+
 st.title("Matrice qualite × prix")
 st.caption(f"Calcul du prix au {as_of}. La qualite se recalcule au rythme des "
            f"publications de comptes, pas chaque semaine : recalculer la qualite "

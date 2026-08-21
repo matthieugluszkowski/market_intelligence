@@ -35,6 +35,11 @@ class Palette:
     z_decote: str
     z_neutre: str
     z_surcote: str
+    # Reservee a « ma position » : le prix de revient et la date d'achat sur le
+    # graphe. Elle ne code pas un jugement - ni bon, ni mauvais, ni alerte - mais
+    # un fait personnel au milieu de donnees de marche. Une seule couleur pour un
+    # seul usage : la reutiliser ailleurs la viderait de son sens.
+    marque_position: str
 
 
 CLAIR = Palette(
@@ -42,6 +47,7 @@ CLAIR = Palette(
     encre_attenuee="#898781", grille="#e1e0d9",
     serie_cours="#2a78d6", serie_pair="#eb6834", serie_secteur="#1baf7a",
     z_decote="#2a78d6", z_neutre="#f0efec", z_surcote="#e34948",
+    marque_position="#c62828",
 )
 
 SOMBRE = Palette(
@@ -49,6 +55,7 @@ SOMBRE = Palette(
     encre_attenuee="#898781", grille="#2c2c2a",
     serie_cours="#3987e5", serie_pair="#d95926", serie_secteur="#199e70",
     z_decote="#3987e5", z_neutre="#383835", z_surcote="#e66767",
+    marque_position="#ff6b6b",
 )
 
 # Palette reservee aux statuts de qualite du fit. Jamais reutilisee ailleurs :

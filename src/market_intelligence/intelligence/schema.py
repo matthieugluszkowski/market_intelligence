@@ -27,6 +27,7 @@ qui a l'air complet et ne l'est pas.
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 
@@ -42,6 +43,28 @@ STATUTS = (
     "INTERPRETATION",          # lecture de l'analyste
     "HYPOTHESE",               # affirmation prospective, non demontrable
 )
+
+# --------------------------------------------------------------------------- #
+# Deux especes de bloquants, et les confondre coutait cher
+#
+# Constat sur le dossier EssilorLuxottica (2026-08-21) : sur six bloquants
+# signales par le prompt 4, deux ne parlaient pas de l'entreprise analysee mais
+# de la **sortie du modele** - « JSON incomplet (coupe en deux fois) », « URLs
+# tronquees dans les sources ». Ils pesaient exactement autant qu'une couverture
+# concurrentielle absente : conclusion interdite, confiance plafonnee a 30.
+#
+# Or ce ne sont pas les memes objets. Un JSON tronque se repare en relancant le
+# prompt, et le dossier importe etait complet - 22 blocs, 254 000 caracteres.
+# Plafonner la confiance d'une analyse parce que la generation a bafouille
+# revient a noter l'entreprise sur la qualite de son imprimante.
+#
+# La classification se fait sur le SUJET de la phrase, pas sur un adjectif :
+# « fiches concurrentielles incompletes » contient « incomplet » et reste un
+# defaut de dossier. Il faut que le sujet soit le JSON, la sortie, ou les URLs.
+MOTS_DE_GENERATION = ("json", "url", "reponse", "sortie", "troncature",
+                      "fenetre de contexte", "limite de contexte")
+MOTS_D_ALTERATION = ("tronqu", "coupe", "coupee", "incomplet", "interrompu",
+                     "partiel", "manquant")
 
 TYPES_DE_CONCURRENCE = ("direct", "indirect", "reference", "emerging")
 NIVEAUX = ("low", "medium", "high")
@@ -79,6 +102,21 @@ def normalise_nom(nom: str | None) -> str:
     mots = [m for m in re.split(r"[^a-z0-9]+", nom.lower()) if m]
     utiles = [m for m in mots if m not in _SUFFIXES_JURIDIQUES]
     return " ".join(utiles or mots)
+
+
+def defaut_de_generation(probleme: str | None) -> bool:
+    """Ce bloquant decrit-il la sortie du modele plutot que le dossier ?
+
+    Un JSON tronque ou une URL coupee se reparent en relancant le prompt : ils
+    n'apprennent rien sur l'entreprise et ne doivent pas plafonner la confiance
+    de l'analyse. La condition est double - un mot qui designe la **sortie**
+    (json, url, reponse...) ET un mot qui dit qu'elle est **abimee** - sinon
+    « fiches concurrentielles incompletes » serait classe ici a tort.
+    """
+    texte = unicodedata.normalize("NFKD", (probleme or "").lower())
+    texte = "".join(c for c in texte if not unicodedata.combining(c))
+    return (any(m in texte for m in MOTS_DE_GENERATION)
+            and any(m in texte for m in MOTS_D_ALTERATION))
 
 
 def meme_societe(a: str | None, b: str | None) -> bool:
@@ -166,6 +204,9 @@ class Validation:
     fonctions: int = 0
     sources: int = 0
     statuts_manquants: int = 0
+    # Bloquants qui decrivent la sortie du modele et non le dossier : ils sont
+    # retrogrades en IMPORTANT et n'interdisent pas la conclusion.
+    defauts_de_generation: list = field(default_factory=list)
 
     @property
     def bloquants(self) -> list:
@@ -298,21 +339,39 @@ def valide(dossier: dict) -> Validation:
     # trace dans le dossier, rien n'est complete ni leve en silence.
     bloquants_controle = lire(dossier, "quality_control", "blocking_issues",
                               defaut=[])
-    if bloquants_controle:
+    # Les defauts de generation sont mis de cote AVANT tout le reste : ils ne
+    # decrivent pas l'entreprise, ils decrivent la sortie du modele. Les compter
+    # comme des bloquants de dossier plafonnait la confiance d'une analyse pour
+    # un JSON coupe en deux - voir MOTS_DE_GENERATION.
+    v.defauts_de_generation = [p for p in (bloquants_controle or [])
+                               if defaut_de_generation(p)]
+    bloquants_dossier = [p for p in (bloquants_controle or [])
+                         if not defaut_de_generation(p)]
+
+    if v.defauts_de_generation:
+        _ajoute(v, "IMPORTANT", "quality_control.blocking_issues",
+                f"{len(v.defauts_de_generation)} point(s) portent sur la sortie "
+                f"du modele, pas sur le dossier : "
+                f"{' | '.join(v.defauts_de_generation)}. Ils ne plafonnent pas "
+                f"la confiance de l'analyse.",
+                "relancer le prompt pour obtenir une sortie complete, puis "
+                "reimporter — le contenu deja importe reste valable")
+
+    if bloquants_dossier:
         acquittement = lire(dossier, "quality_control",
                             "blocking_issues_reviewed", defaut=None)
         acquitte_par = (lire(acquittement, "par") or "").strip() \
             if isinstance(acquittement, dict) else ""
         if acquitte_par:
             _ajoute(v, "IMPORTANT", "quality_control.blocking_issues",
-                    f"{len(bloquants_controle)} point(s) bloquant(s) du controle "
+                    f"{len(bloquants_dossier)} point(s) bloquant(s) du controle "
                     f"qualite, acquitte(s) par {acquitte_par} le "
                     f"{lire(acquittement, 'le', defaut='?')}",
                     "verifier que l'acquittement couvre bien chaque point")
         else:
             _ajoute(v, "BLOQUANT", "quality_control.blocking_issues",
-                    "le controle qualite du prompt 4 signale des problemes "
-                    "bloquants non resolus",
+                    f"le controle qualite du prompt 4 signale {len(bloquants_dossier)} "
+                    f"probleme(s) de dossier non resolu(s)",
                     "les traiter, ou les verifier a la main et les acquitter "
                     "nominativement a l'import")
 

@@ -221,10 +221,38 @@ class Qualite:
     motifs: list = field(default_factory=list)
 
 
+def groupe_comparable(code: str | None, kind: str | None,
+                      is_complete: bool | None) -> bool:
+    """Ce groupe autorise-t-il une comparaison, ou est-ce un simple casier ?
+
+    Constat sur EssilorLuxottica (2026-08-21) : son groupe etait
+    `AUTO:20 - Secteur Health Care`, dont les membres sont **Sanofi et UCB**. On
+    comparait le ROIC d'un lunetier a celui de deux laboratoires
+    pharmaceutiques, et l'ecart de -2,56 points a servi de preuve dans la
+    synthese du prompt 5.
+
+    Un decoupage sectoriel a onze cases n'est pas un groupe de pairs : c'est un
+    casier de rangement. Seuls comptent les groupes issus d'un dossier
+    concurrentiel (`DOSSIER:`), les groupes constitues a la main, ou un groupe
+    automatique explicitement marque complet.
+
+    **Sans groupe comparable, les indicateurs relatifs ne sont pas publies.**
+    C'est la meme regle que l'indice de reference du doc 11 SS8.1 : afficher un
+    chiffre dont la reference est arbitraire vaut moins que ne rien afficher -
+    parce qu'un chiffre affiche est lu, cite, et finit dans une conclusion.
+    """
+    if is_complete:
+        return True
+    if (code or "").startswith("DOSSIER:"):
+        return True
+    return kind == "manual"
+
+
 def evalue(f, roic_median_pairs: float | None, revenus_pairs: list[float],
            groupe_complet: bool, evaluation_valide: bool,
            serie_part_relative: list[tuple] | None = None,
-           regime_declare: str | None = None) -> Qualite:
+           regime_declare: str | None = None,
+           groupe_est_comparable: bool = True) -> Qualite:
     """Calcule les trois questions et rend le verdict.
 
     Args:
@@ -239,8 +267,19 @@ def evalue(f, roic_median_pairs: float | None, revenus_pairs: list[float],
             automatique. Le test statistique ne sait pas distinguer la descente
             d un cycle d une erosion tant que la fenetre ne couvre pas un cycle
             complet ; sur quatre exercices, elle ne le couvre jamais.
+        groupe_est_comparable: le groupe est-il un vrai groupe de pairs ou un
+            casier sectoriel. Faux -> aucun indicateur relatif n'est publie.
+            Voir `groupe_comparable`.
     """
     q = Qualite()
+    # Rien de relatif ne sort d'un casier sectoriel. Les indicateurs ABSOLUS -
+    # ROIC, seuil de rente, marges, erosion - restent calcules : ils ne
+    # dependent d'aucune comparaison, et c'est sur eux que reposent `regime` et
+    # `quality_tier`. Ce sont donc les verdicts qui ne bougent pas ; seuls les
+    # trois chiffres relatifs disparaissent.
+    if not groupe_est_comparable:
+        roic_median_pairs, revenus_pairs = None, []
+        serie_part_relative = None
     roic = serie_roic(f)
     marges = serie_marge_brute(f)
     q.n_years_available = len(f.exercices)
@@ -282,6 +321,10 @@ def evalue(f, roic_median_pairs: float | None, revenus_pairs: list[float],
 
     q.regime = _regime(q, pente_roic, regime_declare)
     q.quality_tier, q.motifs = _tier(q, groupe_complet, evaluation_valide)
+    # Le motif est indispensable : sans lui, trois indicateurs vides se lisent
+    # comme une donnee manquante alors que c'est un refus de publier.
+    if not groupe_est_comparable:
+        q.motifs.append("indicateurs_relatifs_non_publies_groupe_non_comparable")
     q.confidence = ("high" if q.n_years_available >= 8
                     else "medium" if q.n_years_available >= 5 else "low")
     return q

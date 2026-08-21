@@ -244,6 +244,12 @@ Les cas du podcast le démontrent tous :
 2. les pairs hors univers portent leurs données en saisie manuelle ou par extraction, sans série de prix
 3. **au moins un concurrent hors Europe est obligatoire** dans tout groupe de pairs qualifié - un groupe purement européen est marqué comme incomplet
 
+> **Révision du 2026-08-21 — un casier sectoriel n'est pas un groupe de pairs, et il ne publie plus rien.** La mitigation ci-dessus marquait le groupe automatique comme *incomplet*, ce qui l'empêchait de produire un `solid` — mais **les indicateurs relatifs continuaient d'être calculés, écrits en base et affichés**. Constaté sur EssilorLuxottica : son groupe était `AUTO:20 — Secteur Health Care`, dont les membres sont **Sanofi et UCB**. Le système comparait le ROIC d'un lunetier à celui de deux laboratoires pharmaceutiques, et l'écart de −2,56 points a servi de preuve dans la synthèse du prompt 5. Sur 57 titres calculés, **43 publiaient ainsi un écart aux pairs mesuré contre une case sectorielle**.
+>
+> Règle posée : `quality.groupe_comparable` — seuls un groupe issu d'un dossier concurrentiel (`DOSSIER:`), un groupe constitué à la main, ou un groupe automatique explicitement marqué complet autorisent la publication de `roic_vs_peers`, `relative_share` et `rank_by_revenue`. Sinon les trois sortent à `null`, avec le motif `indicateurs_relatifs_non_publies_groupe_non_comparable` et une explication à l'écran — jamais une case vide muette.
+>
+> **C'est la règle de l'indice de référence du doc 11 §8.1, appliquée ici :** afficher un chiffre dont la référence est arbitraire vaut moins que ne rien afficher, parce qu'un chiffre affiché est lu, cité, et finit dans une conclusion. Les mesures **absolues** — ROIC, écart au seuil de rente, marges, pentes d'érosion — ne changent pas, et ce sont elles qui décident du `regime` et du `quality_tier` : aucun verdict n'a bougé.
+
 ### Lim2 - Cinq ans de fondamentaux, c'est court pour une notion de durabilité
 
 La persistance mesurée sur 4 à 5 points est faible. La contradiction est réelle : on prétend juger de la durabilité avec une fenêtre courte.
@@ -307,6 +313,12 @@ Trois règles issues du premier dossier réel (adidas, août 2026) :
 - **Les verdicts sont posés par l'analyste, à l'import.** Le prompt 4 *propose* un bloc `strategic_assessment` (position, durabilité, sources de rente, menaces, justification) sur l'entreprise étudiée — c'est ce qui fait du dossier une analyse de l'instrument, pas seulement de ses concurrents. L'écran d'import permet de les confirmer ou de les corriger ; ce sont eux qui se projettent vers `moat_assessments`. Sans verdicts, le titre ne peut pas atteindre `solid`.
 
 L'appariement des sociétés (fiche du prompt 2 ↔ concurrent du prompt 1, profils résumés du prompt 4 ↔ fiches détaillées) tolère casse, ponctuation et suffixes juridiques : « NIKE, Inc. » et « Nike Inc. » sont la même société, et une fiche détaillée n'est jamais écrasée par son résumé.
+
+> **Révision du 2026-08-21 — un défaut de génération n'est pas un défaut de dossier.** Constaté sur EssilorLuxottica : sur six bloquants du prompt 4, deux ne parlaient pas de l'entreprise mais de la **sortie du modèle** — « JSON incomplet (coupé en deux fois) », « URLs tronquées dans les sources ». Ils pesaient exactement autant qu'une couverture concurrentielle absente : conclusion interdite, confiance plafonnée à 30. Or le dossier importé était complet — 22 blocs, 254 000 caractères. **Plafonner la confiance d'une analyse parce que la génération a bafouillé revient à noter l'entreprise sur la qualité de son imprimante.**
+>
+> `schema.defaut_de_generation` sépare les deux espèces. La classification porte sur le **sujet** de la phrase, jamais sur un adjectif seul : il faut un mot qui désigne la sortie (`json`, `url`, `réponse`, `fenêtre de contexte`…) **et** un mot qui la dit abîmée (`tronqué`, `coupé`, `incomplet`…). « Fiches concurrentielles incomplètes » contient « incomplet » et reste un défaut de dossier. Un défaut de génération est rétrogradé en IMPORTANT, reste affiché avec sa correction — *relancer le prompt* — et n'interdit plus l'import ni la conclusion.
+>
+> **Ce que cette révision ne change pas :** un manque de substance bloque toujours, et l'acquittement reste nominatif. La liste de bloquants demeure du **texte figé écrit par le prompt 4**, jamais reconfrontée au dossier — elle peut donc rester vraie alors que le trou a été comblé par un import ultérieur. Requalifier un bloquant périmé se fait à la main, dans `quality_control.blocking_issues_requalifies` (code, verdict, constat, preuve, par, le), la liste d'origine étant conservée dans `blocking_issues_origine`. Remesurer automatiquement à chaque import reste à faire.
 
 ### 8.5 Le prompt 5 : synthèse décisionnelle et scoring
 

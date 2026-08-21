@@ -139,15 +139,18 @@ Ligne de barre en Postgres, index compris : **~100 octets**.
 | Scénario | Lignes | Volume estimé |
 |---|---|---|
 | **57 titres, réel mesuré** | **122 000** | **~15 Mo** |
+| **586 titres, réel mesuré (2026-08-21)** | **1 080 000** | **303 Mo** |
 | 250 titres, quotidien 30 ans | 1.9 M | ~200 Mo |
 | 250 titres, **stratégie deux températures** | 580 k | **~60 Mo** |
 | 1 500 titres, deux températures | 3.5 M | ~350 Mo |
 | 5 000 titres, deux températures | 11.6 M | ~1.2 Go |
 | 60 000 titres, deux températures | 140 M | ~14 Go |
 
-**Verdict : Supabase free tier tient confortablement pour la v1**, et reste viable jusqu'à environ 1 000 titres. Au-delà, bascule sur le VPS.
+**Verdict révisé au 2026-08-21 : le free tier tient, mais il ne tient plus « confortablement ».** À 586 titres la base pèse **303 Mo, soit 61% du quota de 500 Mo**. La marge restante est d'environ 350 titres, et non de 400 comme le laissait croire la ligne ci-dessus. Au-delà de ~900 titres, la bascule sur le VPS devient obligatoire, pas optionnelle.
 
-*Mesuré à 57 titres : 122 000 barres, 7 044 faits financiers, backfill des cours en ~6 min (cycle complet ~23 min). La marge est bien plus large que prévu - l'estimation initiale surévaluait le coût par ligne.*
+**Pourquoi l'estimation était fausse d'un facteur trois.** Le tableau ne comptait que les barres. Or les barres ne font que la moitié du poids : `adjustment_factors` pèse **80 Mo à lui seul** — une ligne par barre hebdomadaire, 639 112 lignes, soit plus que `bars_1d` — et `shares_outstanding` 26 Mo pour 274 621 lignes. Le coût réel est de **0,52 Mo par titre**, contre 0,26 Mo estimé.
+
+*Mesuré à 57 titres : 122 000 barres, 7 044 faits, backfill ~6 min (cycle complet ~23 min). Mesuré à 586 titres : 1 080 000 barres, 70 393 faits, 13 379 opérations sur titre, cycle complet forcé en **104 min** — dont 44 min de cours, 25 min d'opérations sur titre et 33 min de fondamentaux. Le temps reste dominé par le débit ménagé vers yfinance, pas par le calcul : les régressions sur 586 titres prennent 73 secondes.*
 
 **Deux réserves sur Supabase free, à connaître avant de s'engager :**
 

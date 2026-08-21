@@ -509,6 +509,52 @@ def test_des_bloquants_acquittes_nominativement_ne_bloquent_plus():
         "l'acquittement reste visible dans le rapport"
 
 
+# --------------------------------------------------------------------------- #
+# Un defaut de generation n'est pas un defaut de dossier
+#
+# Constat sur EssilorLuxottica (2026-08-21) : « JSON incomplet (coupe en deux
+# fois) » et « URLs tronquees » pesaient autant qu'une couverture concurrentielle
+# absente — conclusion interdite, confiance plafonnee a 30, pour une sortie de
+# modele qui avait bafouille alors que le dossier importe etait complet.
+# --------------------------------------------------------------------------- #
+def test_un_json_tronque_ne_bloque_pas_le_dossier():
+    """Il se repare en relancant le prompt et n'apprend rien sur l'entreprise."""
+    d = dossier_complet()
+    d["quality_control"]["blocking_issues"] = ["QC-08 : JSON incomplet (coupé en deux fois)"]
+    v = schema.valide(d)
+    assert v.importable, "un defaut de generation ne doit pas interdire l'import"
+    assert v.defauts_de_generation == d["quality_control"]["blocking_issues"]
+    assert any("sortie du modele" in p.explication for p in v.problemes),         "il reste signale, en IMPORTANT — il n'est pas efface"
+
+
+def test_une_url_tronquee_ne_bloque_pas_le_dossier():
+    d = dossier_complet()
+    d["quality_control"]["blocking_issues"] = ["URLs tronquées dans les sources"]
+    assert schema.valide(d).importable
+
+
+def test_un_manque_de_substance_bloque_toujours():
+    """Le mot « incomplet » ne suffit pas : c'est le SUJET de la phrase qui
+    tranche. « Fiches concurrentielles incompletes » parle du dossier."""
+    d = dossier_complet()
+    d["quality_control"]["blocking_issues"] = [
+        "QC-01 : Fiches concurrentielles incomplètes (2 sur 14 concurrents)"]
+    v = schema.valide(d)
+    assert not v.importable
+    assert v.defauts_de_generation == []
+
+
+def test_les_deux_especes_se_separent_dans_un_meme_lot():
+    d = dossier_complet()
+    d["quality_control"]["blocking_issues"] = [
+        "QC-08 : JSON incomplet (coupé en deux fois)",
+        "QC-01 : Fiches concurrentielles incomplètes",
+    ]
+    v = schema.valide(d)
+    assert len(v.defauts_de_generation) == 1
+    assert not v.importable, "le bloquant de dossier subsiste seul"
+
+
 def test_un_acquittement_sans_nom_ne_leve_rien():
     d = dossier_complet()
     d["quality_control"]["blocking_issues"] = ["x"]
