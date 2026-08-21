@@ -16,6 +16,11 @@ dependencies = [
     "numpy>=1.26",
     "statsmodels>=0.14",
     "scipy>=1.13",
+    # DF-GLS (Elliott-Rothenberg-Stock), le test qui arbitre le verdict `good`.
+    # Absent de cette liste jusqu'au 2026-08-21 : il n'existait que dans le venv
+    # du poste de travail, et toute installation neuve tombait en
+    # ModuleNotFoundError au premier calcul de regression.
+    "arch>=7.0",
 ]
 
 [project.optional-dependencies]
