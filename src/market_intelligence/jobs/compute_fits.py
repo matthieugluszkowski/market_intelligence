@@ -1,17 +1,24 @@
-"""Calcul hebdomadaire des regressions et ecriture historisee (doc 03 SS5).
+"""Calcul des regressions et ecriture historisee du jour (doc 03 SS5).
 
     1. charger les barres hebdo <= as_of_date              <- aucune donnee future
     2. appliquer les filtres d'eligibilite
     3. estimer le modele sur la fenetre de la politique
     4. calculer les diagnostics
-    5. INSERER une ligne dans regression_fits (jamais de mise a jour)
+    5. ECRIRE la ligne du jour dans regression_fits
 
 Le point 5 est le principe P5. Chaque ligne enregistre ce que le systeme
-affirmait a cette date, avec les seules informations dont il disposait, et n'est
-jamais reecrite. Au bout d'un an : 52 observations reellement hors echantillon.
-Au bout de trois ans : un jeu de donnees que personne ne publie - le comportement
-effectif des titres apres un signal, mesure en temps reel, sans look-ahead
-possible.
+affirmait a cette date, avec les seules informations dont il disposait, et
+**aucune ligne d'un jour revolu n'est jamais reecrite**. Au bout d'un an : une
+observation par jour de cycle, reellement hors echantillon. Au bout de trois
+ans : un jeu de donnees que personne ne publie - le comportement effectif des
+titres apres un signal, mesure en temps reel, sans look-ahead possible.
+
+La cle d'unicite porte sur `as_of_date`, et le conflit se resout en mise a jour :
+dans la journee, un nouveau passage du cycle remplace la ligne du jour - c'est ce
+qui permet au screener de suivre les cours a 8 heures d'intervalle plutot que de
+figer le z-score sur le passage de minuit. **Des que le jour est passe, la ligne
+ne bouge plus jamais** : l'observation historisee est le dernier etat connu de ce
+jour-la, jamais un melange, jamais une reecriture retrospective.
 
 Deux passes, et la seconde n'est pas facultative
 ------------------------------------------------
@@ -97,7 +104,20 @@ insert into regression_fits (
   %(fit_quality)s, %(quality_reasons)s, %(regime_stats)s, %(method_version)s
 )
 on conflict (instrument_id, policy_code, as_of_date, method_version)
-do nothing;
+do update set
+  window_start = excluded.window_start, window_end = excluded.window_end,
+  n_obs = excluded.n_obs,
+  slope_annual = excluded.slope_annual, intercept = excluded.intercept,
+  sigma_resid = excluded.sigma_resid, r_squared = excluded.r_squared,
+  last_close = excluded.last_close, fitted_value = excluded.fitted_value,
+  residual = excluded.residual, z_score = excluded.z_score,
+  adf_stat = excluded.adf_stat, adf_pvalue = excluded.adf_pvalue,
+  dfgls_stat = excluded.dfgls_stat, kpss_stat = excluded.kpss_stat,
+  durbin_watson = excluded.durbin_watson, half_life_days = excluded.half_life_days,
+  ar1_ci_low = excluded.ar1_ci_low, ar1_ci_high = excluded.ar1_ci_high,
+  fit_quality = excluded.fit_quality, quality_reasons = excluded.quality_reasons,
+  regime_stats = excluded.regime_stats, computed_at = now()
+returning (xmax = 0) as creee;
 """
 
 
@@ -109,7 +129,8 @@ def _graine(instrument_id: int, as_of: date) -> int:
 def run(as_of: date | None = None, limit: int = 0, only: str = "") -> dict:
     settings = get_settings()
     as_of = as_of or date.today()
-    resume: dict = {"as_of": as_of.isoformat(), "fits": 0, "par_verdict": {},
+    resume: dict = {"as_of": as_of.isoformat(), "fits": 0, "creations": 0,
+                    "remplacements": 0, "par_verdict": {},
                     "failed_instruments": []}
 
     with connect_direct() as conn:
@@ -166,7 +187,12 @@ def run(as_of: date | None = None, limit: int = 0, only: str = "") -> dict:
             with conn.cursor() as cur:
                 for calcul in calcules:
                     cur.execute(INSERT_FIT, _ligne(calcul))
-                    resume["fits"] += cur.rowcount
+                    # xmax = 0 sur la ligne rendue : c'est une creation, et non
+                    # le remplacement de la ligne du meme jour ecrite au passage
+                    # precedent du cycle.
+                    creee = cur.fetchone()[0]
+                    resume["fits"] += 1
+                    resume["creations" if creee else "remplacements"] += 1
             conn.commit()
 
             for calcul in calcules:
@@ -180,7 +206,8 @@ def run(as_of: date | None = None, limit: int = 0, only: str = "") -> dict:
                     f"{verdict:<9} {','.join(calcul['motifs'])}"
                 )
 
-            counters.inserted = resume["fits"]
+            counters.inserted = resume["creations"]
+            counters.updated = resume["remplacements"]
             counters.details = {
                 **resume,
                 "correction_multiplicite": {
@@ -190,7 +217,9 @@ def run(as_of: date | None = None, limit: int = 0, only: str = "") -> dict:
                 },
             }
 
-    print(f"\n{resume['fits']} fits ecrits. Repartition : "
+    print(f"\n{resume['fits']} fits ecrits "
+          f"({resume['creations']} crees, {resume['remplacements']} remplaces "
+          f"dans la journee). Repartition : "
           + ", ".join(f"{k}={v}" for k, v in sorted(resume["par_verdict"].items())))
     print(f"Correction de multiplicite BHY sur {n_tests} tests, "
           f"seuil divise par {penalite:.2f}")

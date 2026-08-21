@@ -19,7 +19,9 @@ Trois principes portes par cet ecran :
 from __future__ import annotations
 
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import streamlit as st
@@ -33,11 +35,41 @@ from dashboard.rechargement import recharge_si_modifie  # noqa: E402
 
 recharge_si_modifie()
 
-from dashboard import data  # noqa: E402
+from dashboard import data, navigation  # noqa: E402
 from dashboard.theme import css, motif_en_clair, palette, statut  # noqa: E402
 
 st.set_page_config(page_title="Screener - market intelligence",
                    page_icon="◧", layout="wide")
+
+
+PARIS = ZoneInfo("Europe/Paris")
+CYCLE_HEURES = 8
+# Une heure de tolerance au-dela du cycle : un passage dure une dizaine de
+# minutes, donc au-dela de 9 h c'est qu'un passage a ete manque, pas qu'il est
+# en cours.
+SEUIL_RETARD = timedelta(hours=CYCLE_HEURES + 1)
+
+
+def horodate(instant) -> str:
+    return instant.astimezone(PARIS).strftime("%d/%m/%Y a %Hh%M")
+
+
+def age(instant) -> str:
+    """Duree ecoulee, nue : « 2 jours », « 8 h », « 12 min »."""
+    delta = datetime.now(timezone.utc) - instant
+    heures, reste = divmod(int(delta.total_seconds()), 3600)
+    if heures >= 48:
+        return f"{heures // 24} jours"
+    return f"{heures} h" if heures else f"{reste // 60} min"
+
+
+def dernier_passage(etat: pd.DataFrame, job: str):
+    """Ligne du dernier passage d'un job, ou None s'il n'a jamais tourne."""
+    lignes = etat[etat["job_name"] == job]
+    if lignes.empty:
+        return None
+    ligne = lignes.iloc[0]
+    return ligne if pd.notna(ligne["finished_at"]) else None
 
 
 def barre_laterale() -> bool:
@@ -62,8 +94,68 @@ if as_of is None:
 frame = data.screener(as_of)
 
 st.title("Screener")
+
+# --------------------------------------------------------------------------- #
+# Fraicheur des donnees. Deux dates, et elles ne disent pas la meme chose :
+# celle des cours ingeres, celle du calcul qui a produit les z-scores affiches.
+# Un ecran qui n'afficherait que la seconde laisserait un cron arrete depuis
+# trois semaines ressembler a un cron en bonne sante.
+# --------------------------------------------------------------------------- #
+etat = data.fraicheur()
+cours = dernier_passage(etat, "backfill_prices")
+calcul = dernier_passage(etat, "compute_fits")
+
+morceaux = []
+if cours is not None:
+    morceaux.append(f"**Donnees actualisees le {horodate(cours['finished_at'])}** "
+                    f"(il y a {age(cours['finished_at'])})")
+if calcul is not None:
+    morceaux.append(f"z-scores calcules le {horodate(calcul['finished_at'])}")
+morceaux.append(f"cycle automatique toutes les {CYCLE_HEURES} heures")
+st.markdown(" &middot; ".join(morceaux) + ".")
+
+alerte = ""
+if cours is None:
+    alerte = ("<b>Aucune ingestion de cours n'a encore ete journalisee.</b> "
+              "Le cycle n'a jamais tourne, ou il n'a jamais abouti.")
+elif cours["status"] == "failed":
+    alerte = (f"<b>Le dernier passage des cours a echoue</b> "
+              f"({horodate(cours['finished_at'])}) : "
+              f"{cours['error_message'] or 'motif non journalise'}. "
+              f"Les z-scores ci-dessous portent donc sur des cours plus anciens.")
+elif datetime.now(timezone.utc) - cours["finished_at"] > SEUIL_RETARD:
+    alerte = (f"<b>Les cours n'ont pas ete actualises depuis "
+              f"{age(cours['finished_at'])}</b>, "
+              f"alors que le cycle passe toutes les {CYCLE_HEURES} heures. "
+              f"Au moins un passage a ete manque : verifier le cron du VPS "
+              f"(<code>logs/cycle-AAAAMM.log</code>).")
+if alerte:
+    st.markdown(f"<div class='avertissement'>{alerte}</div>", unsafe_allow_html=True)
+
 st.caption(f"Calcul du {as_of}. Le dashboard sert a creuser un titre, "
            f"pas a surveiller : le canal principal est le rapport hebdomadaire.")
+
+with st.expander("Detail de la derniere actualisation"):
+    if etat.empty:
+        st.info("Aucun passage journalise dans `ingestion_runs`.")
+    else:
+        detail = pd.DataFrame({
+            "Etape": etat["job_name"].map(
+                lambda j: data.JOBS_EN_CLAIR.get(j, j)),
+            "Statut": etat["status"],
+            "Termine le": etat["finished_at"].map(
+                lambda t: "en cours" if pd.isna(t) else horodate(t)),
+            "Age": etat["finished_at"].map(
+                lambda t: "-" if pd.isna(t) else f"il y a {age(t)}"),
+            "Lignes creees": etat["rows_inserted"],
+            "Lignes mises a jour": etat["rows_updated"],
+            "Erreur": etat["error_message"].fillna(""),
+        }).sort_values("Etape")
+        st.dataframe(detail, use_container_width=True, hide_index=True)
+        st.caption(
+            "Heures en Europe/Paris. `partial` signale qu'une etape a abouti en "
+            "laissant des titres de cote - le detail est dans `ingestion_runs`."
+        )
 
 # --------------------------------------------------------------------------- #
 # Une seule rangee de filtres, au-dessus de tout ce qu'ils cadrent.
@@ -172,10 +264,12 @@ table = pd.DataFrame({
 })
 
 st.caption(f"{len(table)} titre(s) sur {len(frame)}. "
-           f"Tri : qualite du fit, puis z croissant.")
+           f"Tri : qualite du fit, puis z croissant. "
+           f"**Selectionner une ligne ouvre la fiche instrument.**")
 
-st.dataframe(
-    table, use_container_width=True, hide_index=True,
+navigation.tableau_vers_fiche(
+    table, list(filtre["internal_code"]), cle="screener_table",
+    use_container_width=True, hide_index=True,
     column_config={
         "z": st.column_config.NumberColumn(
             "z", format="%+.2f",

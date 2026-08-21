@@ -162,7 +162,7 @@ Traitement explicite des cinq pools, parce qu'écarter sans dire pourquoi serait
 Ce à quoi on jugera le projet, sur trois horizons. **À fixer maintenant, parce qu'après on s'arrange toujours avec ses critères.**
 
 ### À 3 mois - le système existe
-- [ ] Le cycle hebdomadaire tourne sans intervention manuelle · **⚙ non : lot L7 non fait, un seul cron installé (keepalive)**
+- [x] Le cycle tourne sans intervention manuelle · **⚙ oui depuis le 2026-08-21 : cron de 8 h sur le VPS, `scripts/cycle.py`. Le rapport hebdomadaire, lui, n'existe pas encore**
 - [ ] Un rapport arrive chaque dimanche · **⚙ non : L7**
 - [ ] Le graphe d'un titre est superposable à celui de Hiboo · **⚙ non constaté** - l'export de comparaison existe, l'abonnement à 4€ n'a pas été pris
 - [ ] Au moins une décision d'investissement a été éclairée par l'outil · *à toi de le dire*

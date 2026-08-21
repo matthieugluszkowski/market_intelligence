@@ -210,6 +210,32 @@ def qualite(internal_code: str) -> dict:
 
 
 @st.cache_data(ttl=TTL)
+def dossier_concurrentiel(internal_code: str) -> dict:
+    """Dernier dossier concurrentiel importé pour ce titre (doc 08 §8).
+
+    Rend le dossier brut et ses métadonnées d'import ; l'affichage passe par
+    `schema.lire` / `schema.resume`, jamais par un accès direct aux clés.
+    """
+    frame = _frame(
+        """
+        select a.dossier, a.status, a.analyst, a.reference_date, a.expires_at,
+               a.imported_at::date as importe_le
+          from market_analyses a
+          join instruments i on i.id = a.instrument_id
+         where i.internal_code = %(code)s
+         order by a.reference_date desc, a.imported_at desc limit 1
+        """,
+        {"code": internal_code},
+    )
+    if frame.empty:
+        return {}
+    ligne = frame.iloc[0]
+    return {"dossier": ligne["dossier"] or {}, "status": ligne["status"],
+            "analyst": ligne["analyst"], "reference_date": ligne["reference_date"],
+            "expires_at": ligne["expires_at"], "importe_le": ligne["importe_le"]}
+
+
+@st.cache_data(ttl=TTL)
 def fondamentaux(internal_code: str, as_of: date) -> dict:
     """Ratios point-in-time et verdict de coherence (doc 04, bloc E).
 
@@ -284,4 +310,44 @@ def anomalies(internal_code: str) -> pd.DataFrame:
          order by case d.severity when 'blocking' then 0 else 1 end, d.detected_at
         """,
         {"code": internal_code},
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Fraicheur des donnees (lot L7)
+#
+# Le screener affiche `regression_fits`, pas les barres : sans horodatage, rien
+# a l'ecran ne distingue un cycle passe il y a dix minutes d'un cron arrete
+# depuis trois semaines. Les deux dates comptent, et elles sont differentes :
+# celle des cours ingeres, et celle du calcul qui a produit les z-scores.
+# --------------------------------------------------------------------------- #
+
+JOBS_EN_CLAIR = {
+    "backfill_prices": "Cours",
+    "ingest_corporate_actions": "Operations sur titre",
+    "ingest_fundamentals": "Fondamentaux",
+    "quality_checks": "Controles qualite",
+    "compute_fits": "Regressions (z-scores)",
+    "compute_quality": "Scores de qualite",
+    "export_cold": "Archive Parquet",
+}
+
+
+@st.cache_data(ttl=TTL)
+def fraicheur() -> pd.DataFrame:
+    """Dernier passage de chaque job, quel qu'en soit le statut.
+
+    Volontairement pas « dernier passage reussi » : un pipeline casse depuis
+    huit jours afficherait alors la date de son dernier succes, c'est-a-dire
+    l'apparence exacte d'un pipeline en bonne sante. C'est precisement la
+    situation ou l'horodatage doit parler.
+    """
+    return _frame(
+        """
+        select distinct on (job_name)
+               job_name, status, started_at, finished_at,
+               rows_inserted, rows_updated, rows_rejected, error_message
+          from ingestion_runs
+         order by job_name, started_at desc
+        """
     )

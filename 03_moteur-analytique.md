@@ -246,7 +246,9 @@ Pour chaque instrument, calculées sur l'historique disponible et **explicitemen
 
 ## 5. Le calcul hebdomadaire et l'accumulation hors échantillon
 
-> **⚙ Ce mécanisme n'est pas orchestré, et c'est la dette la plus coûteuse du projet.** Aucun cron n'exécute ce cycle (lot L7, non fait) : il est lancé à la main. Or P5 ne produit sa valeur que par régularité - **chaque semaine sans orchestrateur est une observation hors échantillon définitivement perdue.** Voir doc 09 §7 et doc 06 PO0.
+> **⚙ Orchestré depuis le 2026-08-21, et le pas est passé de la semaine au jour.** Le cron du VPS lance `scripts/cycle.py` toutes les 8 heures ; `compute_fits` y tourne à chaque passage. L'accumulation hors échantillon décrite ci-dessous est donc **quotidienne** et non plus hebdomadaire, et la série hebdomadaire reste extractible telle quelle par filtre sur le jour de la semaine.
+>
+> **Une conséquence à connaître sur l'écriture.** Le conflit sur `as_of_date` se résout maintenant en mise à jour, sans quoi les deuxième et troisième passages du jour calculeraient sans rien écrire : dans la journée, le dernier passage remplace le précédent. **Dès que le jour est passé, la ligne est figée définitivement** - l'observation historisée est le dernier état connu de ce jour-là, jamais un mélange, jamais une réécriture rétrospective. Voir README §*Ce que P5 devient avec un cycle de 8 heures*.
 
 ```
 Chaque dimanche, pour chaque instrument éligible :

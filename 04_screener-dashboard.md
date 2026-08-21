@@ -115,6 +115,12 @@ Quatre choix de conception à noter.
 
 **Aucune colonne de score composite sur 100.** Voir doc 03 §8.
 
+**L'écran date ce qu'il affiche, et se plaint quand il vieillit.** Sous le titre : la date et l'heure du dernier passage d'ingestion des cours, et celle du calcul qui a produit les z-scores affichés - ce sont deux dates différentes et la confusion entre elles est exactement ce qu'un utilisateur ne peut pas deviner. Un dépliant donne le détail par étape. Si le dernier passage a échoué, ou remonte à plus de 9 heures alors que le cycle en fait un toutes les 8, un avertissement le dit **à l'écran** plutôt qu'en SSH.
+
+Ce n'est pas une entorse au principe I1 : le silence porte sur les cours, pas sur l'état du système. Un écran muet qui affiche des chiffres de la semaine dernière avec l'aplomb de chiffres du jour ne se contente pas de ne pas alerter - il trompe.
+
+> **⚙ Réel depuis le 2026-08-21**, lu dans `ingestion_runs` (aucune table ajoutée). Le seuil d'alerte est de 9 heures, soit le cycle plus une heure de tolérance : un passage dure une dizaine de minutes, au-delà c'est qu'il a été manqué.
+
 ### Écran 2 - Fiche instrument
 
 C'est l'écran central. Cinq blocs, dans cet ordre : le prix d'abord parce que c'est ce qui déclenche l'attention, la qualité ensuite parce que c'est ce qui décide.

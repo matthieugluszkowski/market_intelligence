@@ -23,7 +23,7 @@ Spécification complète dans les documents à la racine. **Ordre de lecture :**
 | **L6** | Fondamentaux régime A, ratios, bloc E | **fait** (hors parseur ESEF) |
 | **L6b** | Couche qualité, matrice qualité × prix | **fait** |
 | **Watchlist** | Suivre des titres — doc 10 | **fait** |
-| L7 | Orchestration et rapport hebdomadaire | à faire |
+| **L7** | Orchestration — cycle automatique toutes les 8 h | **fait** (rapport hebdomadaire : à faire) |
 | **L8** | Portefeuille et paper trading — doc 11 | **fait** |
 
 Détail et critères d'acceptation : `05_roadmap-et-lot.md`.
@@ -111,17 +111,51 @@ Le temps est dominé par le débit ménagé vers yfinance, pas par le calcul.
 
 ## Cycle courant
 
+**Il n'y a plus de séquence à lancer à la main.** Le cycle tourne tout seul sur
+le VPS toutes les 8 heures (§ *Déploiement sur le VPS*), derrière un point
+d'entrée unique :
+
 ```bash
-python scripts/backfill_prices.py --freq 1w  # nouvelles barres de la semaine
-python scripts/compute_fits.py               # nouvelle ligne dans regression_fits
-python scripts/quality_checks.py             # anomalies
-python scripts/anomalies.py                  # les traiter
+python scripts/cycle.py                  # ce que le cron lance
+python scripts/cycle.py --plan           # ce qui tournerait maintenant, sans rien lancer
+python scripts/cycle.py --force          # ignorer les cadences, après une panne
+python scripts/cycle.py --only compute_fits
 ```
 
-`compute_quality.py` se relance au rythme des publications de comptes, pas chaque
-semaine. `compute_fits.py` **insère** une ligne par exécution et n'en réécrit
-jamais aucune : c'est le principe P5, et c'est ce qui produira 52 observations
-hors échantillon dans un an.
+Toutes les étapes ne se paient pas le même prix, donc **chacune porte sa
+cadence** ; le cycle relit `ingestion_runs` pour savoir ce qui a vieilli et ne
+relance que ça.
+
+| Étape | Cadence | Durée | Pourquoi cette cadence |
+|---|---|---|---|
+| `backfill_prices` | chaque passage | ~6 min | une séance de plus, des barres de plus |
+| `quality_checks` | chaque passage | ~10 s | dix secondes : aucune raison de s'en priver |
+| `compute_fits` | chaque passage | ~2 min | c'est lui, et lui seul, qui fait bouger le screener |
+| `ingest_corporate_actions` | 1 jour | ~7 min | quelques dividendes par an et par titre |
+| `ingest_fundamentals` | 30 jours | ~7 min | des comptes publiés quatre fois par an |
+| `compute_quality` | 30 jours | ~30 s | suit les comptes, pas les cours |
+
+Deux règles portent le reste du comportement :
+
+- **Une étape qui échoue n'interrompt pas le cycle.** Les suivantes tournent, et
+  le code de sortie vaut 1 pour qu'un cron puisse alerter.
+- **Sauf si elles en dépendent.** `compute_fits` dépend de `backfill_prices` :
+  si l'ingestion des cours échoue, le calcul est *sauté* plutôt qu'historiser
+  une observation du jour sur des cours qu'on sait périmés. `regression_fits` ne
+  se rejoue jamais, une observation fausse y reste fausse.
+
+### Ce que P5 devient avec un cycle de 8 heures
+
+`compute_fits` écrit **une ligne par jour et par titre**, et son conflit sur
+`as_of_date` se résout désormais en mise à jour : dans la journée, le passage de
+16 h remplace celui de 8 h — sans quoi il calculerait deux minutes pour n'écrire
+rien, et le screener afficherait les z-scores du matin en les datant de
+l'après-midi. **Dès que le jour est passé, la ligne est figée pour toujours.**
+
+L'observation historisée est donc le dernier état connu du jour, jamais un
+mélange, et jamais une réécriture rétrospective. La série hebdomadaire du
+principe P5 reste extractible telle quelle (`where extract(dow from as_of_date)
+= 0`), avec cette différence qu'aucune semaine ne peut plus être manquée.
 
 ## Vérifications
 
@@ -146,7 +180,7 @@ src/market_intelligence/
   loaders/         écriture idempotente
   jobs/            orchestration
   analytics/       régression, diagnostics, scores de qualité
-scripts/           migrate.py, keepalive.py
+scripts/           cycle.py (le cron), migrate.py, keepalive.py, et une enveloppe par job
 data/parquet/      couche froide (non versionnée)
 ```
 
@@ -185,16 +219,49 @@ touche une table triviale, **indépendamment du pipeline principal** : si
 l'ingestion casse, le ping doit continuer. Code de sortie 1 en cas d'échec, pour
 qu'un cron puisse alerter.
 
-Déployé sur le VPS Lightsail (`ubuntu@3.249.92.28`), dans
-`/opt/market_intelligence`, crontab de l'utilisateur `ubuntu` :
+Déployé sur le VPS avec le reste (§ *Déploiement sur le VPS*), et
+**volontairement indépendant du cycle** : si l'ingestion casse, le ping doit
+continuer, sinon la base se met en pause et il faut la réactiver à la main.
 
-```cron
-17 6 * * * cd /opt/market_intelligence && .venv/bin/python scripts/keepalive.py >> logs/keepalive.log 2>&1
+## Déploiement sur le VPS
+
+VPS Lightsail, `/opt/market_intelligence`, clone git de ce dépôt. Déployer une
+nouvelle version, c'est un `git pull` :
+
+```bash
+cd /opt/market_intelligence && git pull && .venv/bin/python -m pytest tests/ -q
 ```
 
-Le `.env` du VPS est une copie locale en `chmod 600`, hors dépôt. Après une
-modification de configuration, le redéployer explicitement — il ne suit pas le
+Deux crons pour l'utilisateur `ubuntu`, et ils ne se ressemblent pas :
+
+```cron
+17 6 * * *   cd /opt/market_intelligence && .venv/bin/python scripts/keepalive.py >> logs/keepalive.log 2>&1
+0  */8 * * * cd /opt/market_intelligence && flock -n logs/cycle.lock .venv/bin/python scripts/cycle.py >> logs/cycle-$(date +\%Y\%m).log 2>&1
+```
+
+- L'heure du VPS est en **UTC** : les passages tombent à 00 h, 08 h et 16 h UTC,
+  soit 02 h, 10 h et 18 h à Paris l'été. Celui de 18 h suit la clôture
+  d'Euronext, celui de 02 h suit la clôture américaine.
+- `flock -n` empêche deux cycles de se chevaucher si un passage déborde ; sans
+  lui, deux `backfill_prices` simultanés doubleraient le débit vers yfinance.
+- Le log est **mensuel** (`logs/cycle-202608.log`) : pas de rotation à
+  installer, pas de fichier qui grossit indéfiniment. Le `%` doit être échappé
+  dans une crontab, d'où `\%Y\%m`.
+
+Le `.env` du VPS est une copie locale en `chmod 600`, **hors dépôt** : après une
+modification de configuration, le redéployer explicitement, il ne suit pas le
 `git pull`.
+
+Vérifier que le cycle vit :
+
+```bash
+crontab -l                                   # les deux lignes sont là
+tail -50 logs/cycle-$(date +%Y%m).log        # le dernier passage
+.venv/bin/python scripts/cycle.py --plan     # ce que ferait le prochain
+```
+
+L'écran screener affiche la même information, en clair et sans SSH : date et
+heure du dernier passage, et un avertissement si un passage a été manqué.
 
 ## Référentiel de l'univers (L1)
 

@@ -53,7 +53,13 @@ SOURCES = (RACINE / "src" / "market_intelligence", RACINE / "dashboard")
 PREFIXES = ("market_intelligence", "dashboard")
 JAMAIS_PURGE = ("dashboard.rechargement",)
 
-CLE = "_empreinte_sources"
+# L'empreinte est portee par le **processus**, pas par la session Streamlit.
+# Avec `st.session_state`, un onglet fraichement ouvert la trouvait a None et ne
+# purgeait rien : les modules du serveur, importes avant la modification,
+# restaient servis tels quels, et la page tombait en AttributeError sur une
+# fonction pourtant presente dans le fichier - le symptome meme que ce module
+# existe pour supprimer. Constate sur `data.fraicheur` le 2026-08-21.
+_empreinte_connue: float | None = None
 
 
 def _empreinte() -> float:
@@ -77,10 +83,14 @@ def recharge_si_modifie() -> bool:
 
     A appeler **en tete de page, avant les imports du projet**.
     """
-    courante = _empreinte()
-    precedente = st.session_state.get(CLE)
-    st.session_state[CLE] = courante
+    global _empreinte_connue
 
+    courante = _empreinte()
+    precedente = _empreinte_connue
+    _empreinte_connue = courante
+
+    # Premier passage du processus : les modules viennent d'etre importes, ils
+    # sont donc a jour par construction. Rien a purger.
     if precedente is None or courante <= precedente:
         return False
 

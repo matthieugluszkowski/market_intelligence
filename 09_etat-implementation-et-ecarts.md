@@ -30,7 +30,7 @@ Une dette n'est pas un reproche : plusieurs sont la conséquence directe et pré
 | L5 Screener + fiche | ✅ | 3 écrans Streamlit, 18 tests de conformité graphique |
 | L6 Fondamentaux | ✅ | **7 044 faits, 33 concepts, 100% des titres avec ≥3 exercices** (seuil spec : 80%) |
 | L6b Qualité | ✅ | 57 scores, 6 groupes de pairs manuels, 14 concurrents hors univers |
-| L7 Orchestration | ⬜ | Aucun cron d'ingestion, aucun rapport hebdomadaire |
+| L7 Orchestration | 🟡 | Cycle de 8 h en cron sur le VPS depuis le 2026-08-21 ; rapport hebdomadaire et alerte sur échec : non faits |
 | L8 Sectoriel + portefeuille | ⬜ | — |
 | L9 Extraction PDF | ⬜ | — |
 
@@ -148,7 +148,7 @@ Aucune correction de spec. Ces éléments restent au plan.
 | Régime B - extraction PDF par LLM | 02 §3 | L9 |
 | Écran 4 vue sectorielle, écran 5 portefeuille | 04 | L8 |
 | Écran 6 qualité des données | 04 | L7 |
-| Orchestrateur, crons, rapport hebdomadaire | 02 §4.4, 04 §4 | L7 |
+| ~~Orchestrateur et crons~~ (fait le 2026-08-21) · rapport hebdomadaire, alerte sur échec | 02 §4.4, 04 §4 | L7 |
 | Enveloppes CLI des jobs | 02 §4.1 | L7 |
 | Déflation IPCH pour `real_deflated` | 03 §6 | Phase 3 |
 | Lien ETF → indice répliqué | 03 §6 | Phase 3 |
@@ -250,6 +250,6 @@ Tri sur `fit_quality` puis z, alors que la spec pose quadrant puis z. Le comment
 
 **Avant d'ajouter une source** : T3 (clé primaire de `bars`). Sans cette correction, brancher une seconde source dégraderait les données au lieu de les valider.
 
-**Le plus urgent qui n'est pas un bug : L7.** Le principe P5 - l'historisation hebdomadaire - est la décision la plus importante de tout le projet, et il ne produit sa valeur que par régularité. Sans cron, il ne s'exécute pas. **Chaque semaine sans orchestrateur est une observation hors échantillon définitivement perdue**, et c'est le seul coût de ce registre qui ne se rattrape jamais.
+**~~Le plus urgent qui n'est pas un bug : L7.~~ Traité le 2026-08-21.** Le principe P5 - la décision la plus importante de tout le projet - ne produisait sa valeur que par régularité, et rien ne garantissait cette régularité. Le cycle tourne maintenant toutes les 8 heures sur le VPS : aucune observation ne se perd plus faute d'exécution. Ce qui reste de L7 - rapport hebdomadaire, alerte sur échec - est du confort, pas de la dette irrécupérable.
 
 **À arbitrer, pas à corriger** : la source unique (D-B). Le motif est solide, la conséquence reste ouverte.

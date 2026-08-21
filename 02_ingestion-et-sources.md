@@ -160,11 +160,11 @@ Une ligne qui échoue à la validation n'est pas jetée : elle est écrite avec 
 
 ### 4.4 Ordonnancement
 
-> **⚙ État : aucun orchestrateur.** Ni Makefile, ni CI, ni fichier crontab, ni point d'entrée CLI. Les modules de `jobs/` sont des fonctions `run()` sans `__main__`. **Un seul cron installé sur le VPS : le keepalive.** Le cycle est aujourd'hui une séquence manuelle. Lot L7, non fait.
+> **⚙ État : orchestrateur en place depuis le 2026-08-21 (L7).** Point d'entrée unique `scripts/cycle.py`, lancé par cron **toutes les 8 heures** sur le VPS Lightsail, à côté du keepalive qui reste séparé. Chaque étape porte sa cadence minimale, lue dans `ingestion_runs` : cours, contrôles et régressions à chaque passage ; opérations sur titre une fois par jour ; fondamentaux et scores de qualité une fois par mois.
 >
-> **C'est la dette la plus coûteuse du projet, et la seule qui ne se rattrape pas.** Le principe P5 - l'historisation hebdomadaire de `regression_fits` - ne produit sa valeur que par régularité. Chaque semaine sans cron est une observation hors échantillon définitivement perdue.
+> **La dette la plus coûteuse du projet est donc éteinte** : plus aucun passage ne dépend de quelqu'un qui y pense. `compute_fits` écrit désormais une observation par jour au lieu d'une par semaine, et la ligne d'un jour révolu n'est jamais réécrite (voir doc 03 §5 et README).
 >
-> *Note : six commandes prescrites par le README pointent vers des fichiers `scripts/` inexistants. La logique est dans `jobs/`, les enveloppes CLI manquent (dette T25).*
+> *Reste de L7 : le rapport hebdomadaire et l'alerte sur échec de job. Le code de sortie du cycle vaut 1 en cas d'échec, mais rien ne le relaie encore ailleurs que dans le log.*
 
 **Durées réelles mesurées sur 57 titres :** backfill des cours ~6 min (122 000 barres) · corporate actions et facteurs ~7 min · fondamentaux ~7 min (7 044 faits) · contrôles qualité ~10 s · 57 régressions ~2 min · 57 scores qualité ~30 s · archive Parquet ~20 s. *Le temps est dominé par le débit ménagé vers yfinance, pas par le calcul.*
 

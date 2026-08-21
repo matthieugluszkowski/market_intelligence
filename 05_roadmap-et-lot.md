@@ -136,9 +136,9 @@ Crons, génération du rapport HTML, envoi, archivage, écran de qualité des do
 
 **À ce stade le système est complet et autonome, sur ses deux jambes.** Total : **20 à 25 jours-homme.**
 
-> **⚙ Non fait, et c'est la priorité absolue.** Aucun cron d'ingestion, de régression ni de rapport ; un seul cron installé sur le VPS Lightsail, le keepalive. Le cycle est aujourd'hui une séquence manuelle, et six commandes prescrites par le README pointent vers des fichiers `scripts/` inexistants (la logique est dans `jobs/`, les enveloppes CLI manquent).
+> **⚙ Fait à moitié, et c'est la bonne moitié.** Depuis le 2026-08-21, `scripts/cycle.py` enchaîne les six jobs derrière un cron de 8 heures sur le VPS, chacun avec sa cadence propre. **Le principe P5 s'exécute désormais sans intervention** : plus aucune observation ne se perd faute d'y avoir pensé.
 >
-> **Le principe P5 - l'historisation hebdomadaire - ne produit sa valeur que par régularité.** Un pipeline lancé quand on y pense ne bâtit pas un jeu hors échantillon. **Chaque semaine sans orchestrateur est une observation définitivement perdue** : c'est le seul élément de dette du projet qui ne se rattrape jamais.
+> *Restent à faire : le rapport hebdomadaire HTML, son envoi et son archivage, l'écran de qualité des données, et l'alerte sur échec de job - aujourd'hui le cycle sort en code 1 et l'écrit dans son log, mais personne n'est prévenu.*
 
 ---
 

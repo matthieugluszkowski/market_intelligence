@@ -113,7 +113,7 @@ Format compact : décision, alternative écartée, motif, réversibilité.
 ## 2. Points ouverts - à trancher par toi
 
 ### PO0 - **Nouveau, et le plus urgent : quand installe-t-on l'orchestrateur ?**
-Le principe D5 - l'historisation hebdomadaire - est la décision la plus importante du projet, et il ne produit sa valeur que par régularité. L7 n'est pas fait : aucun cron d'ingestion ni de calcul. **Chaque semaine sans orchestrateur est une observation hors échantillon définitivement perdue**, et c'est le seul coût du projet qui ne se rattrape jamais.
+Le principe D5 - l'historisation - est la décision la plus importante du projet, et il ne produit sa valeur que par régularité. **Point clos le 2026-08-21** : le cycle d'ingestion et de calcul tourne en cron toutes les 8 heures sur le VPS, et `regression_fits` reçoit une observation par jour. Les semaines antérieures au cron, elles, manquent définitivement - c'est le seul coût du projet qui ne se rattrape jamais.
 *Mon avis : deux jours de travail avant toute autre chose, y compris avant de corriger les dettes T1, T2, T5 et T6.*
 
 ### PO1 - Supabase ou VPS dès le départ ?
