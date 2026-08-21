@@ -269,9 +269,55 @@ heure du dernier passage, et un avertissement si un passage a été manqué.
 Y compris les cas de test cités par la spec — Seb, Arkema, BMW.
 
 ```bash
+python scripts/propose_universe.py   # propose des candidats, n'écrit qu'un CSV
 python scripts/verify_universe.py    # vérifie, écrit le rapport
 python scripts/load_universe.py      # charge ce qui est vérifié, et rien d'autre
 ```
+
+### Élargir l'univers, sans le remplir de valeurs américaines
+
+`propose_universe.py` interroge le screener Yahoo place par place et complète
+`db/seeds/universe.csv`. **Il ne charge rien** : les trois contrôles restent le
+seul passage vers la base. Trois filtres lui évitent le piège de fond — *Yahoo
+raisonne en place de cotation, jamais en pays de la société* :
+
+| Filtre | Ce qu'il élimine |
+|---|---|
+| Place principale | Francfort, Stuttgart, Munich au profit de XETRA seul — et les triplons `NVD.DE` / `NVD.F` / `NVDG.F` |
+| Devise de cotation **et** de publication en EUR | Zebra Technologies, qui cote en euros à XETRA et publie en dollars |
+| Pays du siège, lu dans `Ticker.info` | tout ce qui n'est pas UE/EEE, donc hors PEA |
+
+Une requête sur la région `de` rend **9 064 lignes**, NVIDIA et Apple en tête.
+Après filtrage il reste 115 sociétés allemandes. Les multi-cotations sont
+ensuite regroupées par société — 1 350 cotations pour 897 sociétés — et c'est la
+cotation du **pays du siège** qui est retenue : une ligne viennoise de valeur
+allemande cote peu, cote mal, et donnerait une série trouée là où XETRA en donne
+une propre. Si seule une cotation secondaire est trouvée alors que la place du
+siège est couverte, la société est écartée plutôt que mal enregistrée.
+
+**L'ISIN de ces lignes reste vide, délibérément.** `Ticker.isin` fait une
+recherche par nom et rend le premier homonyme mondial : ISIN canadien pour LVMH,
+argentin pour ASML, chilien pour Enel — c'est-à-dire Enel Chile. Un ISIN faux
+passe la clé de contrôle Luhn et associerait pour toujours une courbe à la
+mauvaise société. `verify_universe` traite donc l'absence d'ISIN en
+**avertissement** (`isin_absent`) et un ISIN présent mais faux en **rejet** : un
+ISIN absent se voit, un ISIN faux jamais.
+
+Les lignes ainsi proposées portent `notes = "candidat screener yahoo <date>"`,
+que `load_universe` recopie dans `instruments.attributes` : les titres vérifiés à
+la main et ceux issus du screener restent distinguables en base.
+
+**Et cette distinction n'est pas cosmétique.** Le troisième contrôle L1 —
+concordance entre le nom attendu et le nom rapporté — n'a de valeur que si le
+nom attendu vient d'une source *indépendante* du fournisseur. Pour les 59 titres
+saisis à la main, c'est le cas, et c'est ce contrôle qui attrape Seb contre
+Skandinaviska Enskilda Banken. Pour une ligne issue du screener, le nom attendu
+**est** celui de Yahoo : la similarité vaut 1.00 par construction et le contrôle
+ne prouve plus rien. Ce qui subsiste pour ces lignes, et qui reste solide : la
+cotation existe et sa profondeur est mesurée, la devise est cohérente, le pays du
+siège a été lu, et la place est celle du siège. Ce qui disparaît : la
+confirmation croisée de l'identité par une seconde source. Ces titres se lisent
+donc comme un univers de dépistage, pas comme un référentiel audité.
 
 Trois contrôles indépendants, parce qu'**un mapping faux ne se voit jamais
 ensuite** — il produit une belle courbe pour la mauvaise société :
@@ -291,7 +337,7 @@ qu'il « sert des CSV bruts par simple URL, sans dépendance à une bibliothèqu
 qui casse ». Ce n'est plus vrai : l'endpoint `/q/d/l/` renvoie désormais une page
 de vérification navigateur à preuve de travail JavaScript — constaté depuis le
 poste de travail comme depuis le VPS. Les symboles Stooq sont conservés dans
-`db/seeds/universe_50.csv` et dans `instruments.attributes`, mais **non vérifiés
+`db/seeds/universe.csv` et dans `instruments.attributes`, mais **non vérifiés
 et non chargés dans `instrument_symbols`**. yfinance assure seul la vérification
 L1, et doit être considéré comme source primaire de cours pour L2 tant que
 l'accès Stooq n'est pas rétabli — ce qui contredit le principe « aucune source ne

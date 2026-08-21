@@ -27,7 +27,7 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from market_intelligence.db import connect_direct  # noqa: E402
 
-REPORT_CSV = ROOT / "db" / "seeds" / "universe_50_verification.csv"
+REPORT_CSV = ROOT / "db" / "seeds" / "universe_verification.csv"
 
 UPSERT_INSTRUMENT = """
 insert into instruments
@@ -103,10 +103,17 @@ def main() -> int:
                 if r["notes"]:
                     attributes["notes"] = r["notes"]
 
+                # Une colonne vide du CSV vaut NULL, jamais la chaine vide.
+                # `isin` est en char(12) unique : 500 chaines vides deviendraient
+                # 500 fois douze espaces, et la deuxieme ligne violerait
+                # l'unicite. `sector_code` porte une cle etrangere, qu'aucun
+                # secteur de code '' ne satisfait.
                 cur.execute(UPSERT_INSTRUMENT, {
-                    "isin": r["isin"], "internal_code": r["internal_code"], "name": r["name"],
+                    "isin": r["isin"] or None, "internal_code": r["internal_code"],
+                    "name": r["name"],
                     "exchange_code": r["exchange_code"], "currency": r["currency"],
-                    "sector_code": r["sector_code"], "country_iso2": r["country_iso2"],
+                    "sector_code": r["sector_code"] or None,
+                    "country_iso2": r["country_iso2"] or None,
                     "attributes": json.dumps(attributes, ensure_ascii=False),
                 })
                 instrument_id = cur.fetchone()[0]

@@ -33,8 +33,8 @@ sys.path.insert(0, str(ROOT / "src"))
 
 from market_intelligence.config import get_settings  # noqa: E402
 
-UNIVERSE_CSV = ROOT / "db" / "seeds" / "universe_50.csv"
-REPORT_CSV = ROOT / "db" / "seeds" / "universe_50_verification.csv"
+UNIVERSE_CSV = ROOT / "db" / "seeds" / "universe.csv"
+REPORT_CSV = ROOT / "db" / "seeds" / "universe_verification.csv"
 
 MIN_YEARS = 15          # seuil du lot L2 : >= 15 ans d'historique hebdomadaire
 MIN_NAME_RATIO = 0.55   # en dessous, le nom rapporte ne ressemble plus au nom attendu
@@ -121,7 +121,15 @@ def verdict(row: dict, res: dict) -> tuple[str, str]:
     """
     blocking, warnings = [], []
 
-    if not isin_is_valid(row["isin"]):
+    # Un ISIN absent se voit, un ISIN faux jamais. Les candidats proposes par
+    # le screener n'en portent pas (voir propose_universe.py, qui explique
+    # pourquoi la recherche d'ISIN de yfinance est inutilisable) : c'est un
+    # manque signale, pas un mapping suspect. Un ISIN present mais faux reste
+    # bloquant - il signe une saisie erronee, et c'est ce qu'on ne verra plus
+    # jamais une fois la ligne en base.
+    if not (row["isin"] or "").strip():
+        warnings.append("isin_absent")
+    elif not isin_is_valid(row["isin"]):
         blocking.append("isin_checksum")
 
     if res["error"]:
@@ -189,12 +197,25 @@ def main() -> int:
     print(f"\nok={counts['ok']}  avertissement={counts['avertissement']}  rejete={counts['rejete']}")
     print(f"Rapport : {REPORT_CSV.relative_to(ROOT)}")
 
-    isins = [r["isin"] for r in results if r["status"] != "rejete"]
+    # Les ISIN absents ne sont pas des doublons entre eux : ils valent NULL en
+    # base, et deux NULL ne collisionnent pas. Sans ce filtre, un lot issu du
+    # screener - qui n'en porte aucun - declencherait une fausse alerte.
+    isins = [r["isin"] for r in results if r["status"] != "rejete" and (r["isin"] or "").strip()]
     dupes = {i for i in isins if isins.count(i) > 1}
     if dupes:
         print(f"!!! DOUBLONS D'ISIN : {dupes}")
         return 1
-    print("Zero doublon d'ISIN.")
+    sans_isin = sum(1 for r in results
+                    if r["status"] != "rejete" and not (r["isin"] or "").strip())
+    print(f"Zero doublon d'ISIN sur {len(isins)} renseignes, {sans_isin} sans ISIN.")
+
+    # Le code interne, lui, est la vraie cle : deux lignes qui le partagent
+    # s'ecraseraient l'une l'autre au chargement, en silence.
+    codes = [r["internal_code"] for r in results if r["status"] != "rejete"]
+    doubles_codes = {c for c in codes if codes.count(c) > 1}
+    if doubles_codes:
+        print(f"!!! DOUBLONS DE CODE INTERNE : {doubles_codes}")
+        return 1
     return 0
 
 
