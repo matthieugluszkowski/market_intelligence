@@ -44,6 +44,10 @@ Collecteur Stooq, normalisation, chargement idempotent, backfill hebdomadaire 30
 
 **Acceptation :** ≥ 95% des titres ont ≥ 15 ans d'historique hebdomadaire ; le job relancé deux fois de suite produit un état identique ; l'archive Parquet est relisible.
 
+> **⚙ Ce critère ne tient plus sur l'univers élargi, et c'est assumé.** Il a été écrit pour un univers de grandes capitalisations choisies une par une, où il est toujours vérifié : **5% des 59 titres saisis à la main** ont moins de 15 ans. Sur les **527 titres issus du screener, la proportion est de 30%** (mesure du 2026-08-21) — descendre sous les grandes capitalisations fait mécaniquement entrer des sociétés plus jeunes.
+>
+> **Ce n'est pas une dette, c'est une propriété de l'univers**, et elle est visible : la politique `loglin_20y` exige 15 ans, donc ces titres ressortent en `rejected / short_history` dans le screener plutôt que de produire une régression sur une fenêtre qu'ils ne couvrent pas. Le seuil dur reste l'année : sous un an, `verify_universe` refuse le chargement — c'est un flux tronqué, pas une jeune société. Les deux populations sont mesurées séparément dans `tests/test_universe.py`.
+
 > **⚙ Fait avec yfinance, Stooq étant inaccessible (D-B).** 122 000 barres sur 57 titres, ~6 min, dominé par le débit ménagé. Chargement par `COPY` en table de transit puis un seul `insert … select`, ce qui fait passer le backfill d'heures à secondes par titre.
 >
 > **Dette T8 : l'archive Parquet est un miroir du chaud, pas une couche plus profonde.** `export_cold.py` relit `bars`, et aucun job ne descend sous 3 ans de quotidien. La stratégie deux températures n'en a qu'une.

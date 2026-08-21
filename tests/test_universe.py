@@ -84,19 +84,72 @@ def test_referentiel_coherent():
     assert incoherents == []
 
 
-def test_profondeur_historique_suffisante_pour_la_regression():
+# Deux populations cohabitent depuis l'elargissement du 2026-08-21, et elles
+# n'offrent pas les memes garanties : les titres saisis a la main portent un ISIN
+# et une identite recoupee, ceux du screener portent la mention de leur origine
+# dans `attributes.notes`. Melanger leurs mesures effacerait la difference.
+ISSU_DU_SCREENER = "coalesce(attributes->>'notes','') like 'candidat screener%'"
+
+
+def test_profondeur_historique_du_referentiel_saisi_a_la_main():
     """Le doc 05 vise >= 15 ans sur >= 95% de l'univers (critere du lot L2).
 
-    Les exceptions attendues sont des introductions recentes - Prosus 2019,
-    Ferrari 2015, Aena 2015 - pas des defauts de mapping.
+    Ce critere a ete ecrit pour un univers de grandes capitalisations choisies
+    une par une, et **il tient toujours sur cette population** : c'est ce que ce
+    test protege, sans l'affaiblir. Les exceptions attendues sont des
+    introductions recentes - Prosus 2019, Ferrari 2015, Aena 2015 - pas des
+    defauts de mapping.
     """
-    total = fetch_one("select count(*) from instruments")[0]
+    total = fetch_one(
+        f"select count(*) from instruments where not {ISSU_DU_SCREENER}")[0]
     courts = fetch_all(
         "select internal_code, (attributes -> 'verification' ->> 'history_years')::float "
-        "from instruments "
-        "where (attributes -> 'verification' ->> 'history_years')::float < 15"
+        f"from instruments where not {ISSU_DU_SCREENER} "
+        "and (attributes -> 'verification' ->> 'history_years')::float < 15"
     )
     assert len(courts) / total <= 0.10, f"trop d'historiques courts : {courts}"
+
+
+def test_profondeur_historique_de_l_univers_elargi():
+    """L'univers du screener est moins profond, c'est mesure et c'est visible.
+
+    Descendre sous les grandes capitalisations fait entrer des societes plus
+    jeunes : **30% des titres issus du screener ont moins de 15 ans**
+    d'historique, contre 5% de ceux saisis a la main (mesure du 2026-08-21, sur
+    527 et 59 titres). Ce n'est pas un defaut de mapping, c'est la structure de
+    cet univers-la.
+
+    Et ces titres ne passent pas inapercus : la politique `loglin_20y` exige 15
+    ans, donc `eligibility` les disqualifie en `short_history` et le screener les
+    affiche en `rejected`. Le systeme dit qu'il ne sait pas, ce qui est le
+    comportement voulu (doc 04, principe I2).
+
+    Le seuil de 45% est un **detecteur de regression, pas un objectif** : le
+    franchir signifierait qu'une collecte a ramene des series tronquees, comme
+    les cotations secondaires a 21 barres que la verification rejette deja.
+    """
+    total = fetch_one(
+        f"select count(*) from instruments where {ISSU_DU_SCREENER}")[0]
+    if not total:
+        return  # base sans titres issus du screener : rien a mesurer
+    courts = fetch_one(
+        f"select count(*) from instruments where {ISSU_DU_SCREENER} "
+        "and (attributes -> 'verification' ->> 'history_years')::float < 15")[0]
+    assert courts / total <= 0.45, f"{courts}/{total} sous 15 ans d'historique"
+
+
+def test_aucune_serie_tronquee_n_est_entree_en_base():
+    """Sous un an, ce n'est pas une jeune societe, c'est un flux casse.
+
+    `verify_universe` le bloque au chargement ; ce test verifie que la barriere
+    a tenu, y compris sur les 527 lignes entrees d'un coup le 2026-08-21.
+    """
+    tronquees = fetch_all(
+        "select internal_code, (attributes -> 'verification' ->> 'history_years')::float "
+        "from instruments "
+        "where (attributes -> 'verification' ->> 'history_years')::float < 1.0"
+    )
+    assert tronquees == [], f"series tronquees en base : {tronquees}"
 
 
 def test_symboles_uniques_par_source():
