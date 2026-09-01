@@ -115,8 +115,8 @@ Le temps est dominé par le débit ménagé vers yfinance, pas par le calcul —
 
 ## Cycle courant
 
-**Il n'y a plus de séquence à lancer à la main.** Le cycle tourne tout seul sur
-le VPS toutes les 8 heures (§ *Déploiement sur le VPS*), derrière un point
+**Il n'y a plus de séquence à lancer à la main.** Le cycle tourne tout seul
+toutes les 8 heures sur GitHub Actions (§ *Déploiement*), derrière un point
 d'entrée unique :
 
 ```bash
@@ -249,49 +249,53 @@ touche une table triviale, **indépendamment du pipeline principal** : si
 l'ingestion casse, le ping doit continuer. Code de sortie 1 en cas d'échec, pour
 qu'un cron puisse alerter.
 
-Déployé sur le VPS avec le reste (§ *Déploiement sur le VPS*), et
+Déployé en workflow GitHub Actions séparé (§ *Déploiement*), et
 **volontairement indépendant du cycle** : si l'ingestion casse, le ping doit
 continuer, sinon la base se met en pause et il faut la réactiver à la main.
 
-## Déploiement sur le VPS
+## Déploiement
 
-VPS Lightsail, `/opt/market_intelligence`, clone git de ce dépôt. Déployer une
-nouvelle version, c'est un `git pull` :
+**Le cycle tourne sur GitHub Actions, pas sur un serveur dédié** (migré depuis
+un VPS Lightsail le 2026-09-01 — plus de machine à maintenir ni à payer pour
+un job qui ne fait que parler à Supabase). Déployer une nouvelle version, c'est
+un `git push` sur `main` : `.github/workflows/cycle.yml` et `keepalive.yml`
+lisent le code du commit courant à chaque passage, il n'y a rien à synchroniser
+à la main.
+
+Deux workflows, et ils ne se ressemblent pas :
+
+| Workflow | Cadence (cron, UTC) | Remplace |
+|---|---|---|
+| [`.github/workflows/keepalive.yml`](.github/workflows/keepalive.yml) | `17 6 * * *` | ping quotidien anti-pause Supabase |
+| [`.github/workflows/cycle.yml`](.github/workflows/cycle.yml) | `0 */8 * * *` | cours, opérations sur titre, fondamentaux, qualité, veille |
+
+- Les crons GitHub Actions tournent en **UTC**, comme le crontab qu'ils
+  remplacent : mêmes horaires qu'avant (00 h, 08 h, 16 h UTC, soit 02 h, 10 h et
+  18 h à Paris l'été).
+- Un `concurrency` group remplace `flock -n` : un passage qui déborde ne fait
+  pas chevaucher le suivant, il le met en attente plutôt que de le sauter -
+  jamais deux `backfill_prices` simultanés vers yfinance.
+- **Deux réglages obligatoires**, une fois, dans *Settings → Secrets and
+  variables → Actions* du dépôt GitHub : `DATABASE_URL` et `DIRECT_URL` (les
+  mêmes valeurs que le `.env` local, jamais committées).
+- **Différence assumée avec le VPS** : GitHub peut retarder un cron planifié de
+  quelques minutes en cas de forte charge sur la plateforme, et **désactive
+  automatiquement les schedules d'un dépôt resté 60 jours sans le moindre
+  commit** (un commit suffit à réarmer). Un dépôt qui vit normalement n'y est
+  jamais exposé, mais ça reste une différence réelle avec un cron VPS qui ne
+  s'éteint jamais tout seul.
+
+Vérifier que le cycle vit, sans SSH :
 
 ```bash
-cd /opt/market_intelligence && git pull && .venv/bin/python -m pytest tests/ -q
+gh workflow list                              # les deux workflows, actifs
+gh run list --workflow=cycle.yml --limit 5    # historique des passages
+gh workflow run cycle.yml -f force=true       # relancer à la main
 ```
 
-Deux crons pour l'utilisateur `ubuntu`, et ils ne se ressemblent pas :
-
-```cron
-17 6 * * *   cd /opt/market_intelligence && .venv/bin/python scripts/keepalive.py >> logs/keepalive.log 2>&1
-0  */8 * * * cd /opt/market_intelligence && flock -n logs/cycle.lock .venv/bin/python scripts/cycle.py >> logs/cycle-$(date +\%Y\%m).log 2>&1
-```
-
-- L'heure du VPS est en **UTC** : les passages tombent à 00 h, 08 h et 16 h UTC,
-  soit 02 h, 10 h et 18 h à Paris l'été. Celui de 18 h suit la clôture
-  d'Euronext, celui de 02 h suit la clôture américaine.
-- `flock -n` empêche deux cycles de se chevaucher si un passage déborde ; sans
-  lui, deux `backfill_prices` simultanés doubleraient le débit vers yfinance.
-- Le log est **mensuel** (`logs/cycle-202608.log`) : pas de rotation à
-  installer, pas de fichier qui grossit indéfiniment. Le `%` doit être échappé
-  dans une crontab, d'où `\%Y\%m`.
-
-Le `.env` du VPS est une copie locale en `chmod 600`, **hors dépôt** : après une
-modification de configuration, le redéployer explicitement, il ne suit pas le
-`git pull`.
-
-Vérifier que le cycle vit :
-
-```bash
-crontab -l                                   # les deux lignes sont là
-tail -50 logs/cycle-$(date +%Y%m).log        # le dernier passage
-.venv/bin/python scripts/cycle.py --plan     # ce que ferait le prochain
-```
-
-L'écran screener affiche la même information, en clair et sans SSH : date et
-heure du dernier passage, et un avertissement si un passage a été manqué.
+L'onglet **Actions** du dépôt GitHub donne la même chose sans `gh`. L'écran
+screener affiche aussi l'information en clair : date et heure du dernier
+passage, et un avertissement si un passage a été manqué.
 
 ## Référentiel de l'univers (L1)
 

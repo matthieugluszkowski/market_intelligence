@@ -1,0 +1,32 @@
+name: Keepalive Supabase
+
+# Remplace le cron VPS `17 6 * * *` (doc README, section Deploiement).
+# Deliberement independant du cycle (workflow separe, pas une etape de
+# cycle.yml) : si le cycle casse ou timeout, ce ping continue de tourner -
+# sinon le projet Supabase free tier se met en pause apres 7 jours sans
+# requete et demande une reactivation manuelle (doc 00 SS5, reserve 1).
+
+on:
+  schedule:
+    - cron: '17 6 * * *'
+  workflow_dispatch:
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -e .
+
+      - name: Ping
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+        run: python scripts/keepalive.py

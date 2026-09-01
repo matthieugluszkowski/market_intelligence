@@ -1,0 +1,61 @@
+name: Cycle d'actualisation
+
+# Remplace le cron VPS `0 */8 * * *` (doc README, section Deploiement).
+# Meme point d'entree, meme cadence, meme fuseau : GitHub Actions execute les
+# schedules en UTC, comme le crontab qu'il remplace.
+#
+# Difference assumee avec le VPS : un cron GitHub Actions peut etre retarde de
+# quelques minutes en cas de forte charge sur la plateforme, et une planification
+# est desactivee automatiquement si le depot reste 60 jours sans aucune activite
+# (un commit suffit a la reactiver). Le principe P5 (doc 00) tolere un decalage
+# ponctuel, pas une desactivation silencieuse : surveiller l'onglet Actions, ou
+# le bandeau du screener qui signale deja un passage manque.
+
+on:
+  schedule:
+    - cron: '0 */8 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Ignorer les intervalles minimaux (--force)"
+        type: boolean
+        default: false
+      only:
+        description: "N'executer qu'une etape (--only), vide = toutes"
+        type: string
+        default: ""
+
+# Remplace `flock -n logs/cycle.lock` du VPS : un second passage ne demarre pas
+# en parallele du premier, il attend son tour plutot que d'etre saute - jamais
+# deux `backfill_prices` simultanes vers yfinance.
+concurrency:
+  group: market-intelligence-cycle
+  cancel-in-progress: false
+
+jobs:
+  cycle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -e .
+
+      - name: Lancer le cycle
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
+          # Passes par l'environnement, jamais interpolees dans le script shell -
+          # une entree workflow_dispatch reste une entree utilisateur.
+          FORCE: ${{ github.event.inputs.force }}
+          ONLY: ${{ github.event.inputs.only }}
+        run: |
+          ARGS=()
+          [ "$FORCE" = "true" ] && ARGS+=(--force)
+          [ -n "$ONLY" ] && ARGS+=(--only "$ONLY")
+          python scripts/cycle.py "${ARGS[@]}"

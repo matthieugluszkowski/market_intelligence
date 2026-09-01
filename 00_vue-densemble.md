@@ -79,7 +79,7 @@ Chaque semaine, on calcule et on **historise** les paramètres de régression de
 
 C'est la validation de la méthode obtenue gratuitement, sans faire de backtest.
 
-**⚠ Ce principe est le seul du document qui ne s'auto-répare pas**, et c'est pour cette raison qu'il a été le premier à être mis sous cron. Depuis le 2026-08-21, le cycle tourne toutes les 8 heures sur le VPS (`scripts/cycle.py`) : l'historisation ne dépend plus de quelqu'un qui y pense. Ce qui restait vrai le reste toutefois pour le passé - **une observation non écrite ne se rattrape jamais**, et les semaines antérieures au cron manquent définitivement.
+**⚠ Ce principe est le seul du document qui ne s'auto-répare pas**, et c'est pour cette raison qu'il a été le premier à être mis sous cron. Depuis le 2026-08-21, le cycle tourne toutes les 8 heures (`scripts/cycle.py`, sur GitHub Actions depuis le 2026-09-01) : l'historisation ne dépend plus de quelqu'un qui y pense. Ce qui restait vrai le reste toutefois pour le passé - **une observation non écrite ne se rattrape jamais**, et les semaines antérieures au cron manquent définitivement.
 
 ### P6 - La méthode dépend de la classe d'actif, explicitement
 
