@@ -192,20 +192,38 @@ class Valorisation:
     avertissements: list = field(default_factory=list)
 
 
-def eligibilite(pays: str | None, eligible_countries: list | None) -> Eligibilite:
+def eligibilite(
+    pays: str | None,
+    eligible_countries: list | None,
+    attributes: dict | None = None,
+) -> Eligibilite:
     """Le titre est-il admissible sur ce support ?
 
-    On verifie ce qui est verifiable - le pays - et rien d'autre. Les durees de
-    detention, conditions de retrait et regles fiscales dependent de la situation
-    personnelle et evoluent : les affirmer serait donner un conseil que l'outil
-    n'est pas en position de donner.
+    On verifie ce qui est verifiable - le pays, et pour les supports qui
+    restreignent deja par pays (PEA, PEA-PME) le statut d'un titre au regime
+    fiscal exonere d'IS (SIIC et equivalents europeens) que la loi de finances
+    2012 exclut explicitement du PEA - et rien d'autre. Les durees de
+    detention, conditions de retrait et regles fiscales personnelles dependent
+    de la situation de chacun et evoluent : les affirmer serait donner un
+    conseil que l'outil n'est pas en position de donner. Le statut SIIC n'est
+    pas de cette nature : c'est un fait objectif attache au titre, comme le
+    pays de l'emetteur - mais il n'exclut que du PEA, pas d'un CTO ou d'une
+    assurance-vie, d'ou la verification uniquement quand le support restreint
+    deja par pays.
     """
     if not eligible_countries:
         return Eligibilite(True)
     if not pays:
         return Eligibilite(False, "pays de l'emetteur inconnu")
-    if pays.upper() in {c.upper() for c in eligible_countries}:
-        return Eligibilite(True)
+    if pays.upper() not in {c.upper() for c in eligible_countries}:
+        return Eligibilite(
+            False,
+            f"emetteur {pays} hors des pays declares eligibles pour ce support "
+            f"({', '.join(sorted(eligible_countries))})")
+    if attributes and attributes.get("pea_eligible") is False:
+        motif = attributes.get("pea_motif") or "regime fiscal exonere d'IS incompatible avec le PEA"
+        return Eligibilite(False, motif)
+    return Eligibilite(True)
     return Eligibilite(
         False,
         f"emetteur {pays} hors des pays declares eligibles pour ce support "
@@ -456,12 +474,12 @@ def corrige(cur, position_id: int, motif: str, **champs) -> list[tuple]:
     if voulu["fees"] < 0:
         raise ValueError("frais negatifs")
 
-    cur.execute("select country_iso2, currency from instruments where id = %s",
+    cur.execute("select country_iso2, currency, attributes from instruments where id = %s",
                 (voulu["instrument_id"],))
     trouve = cur.fetchone()
     if trouve is None:
         raise ValueError("titre inconnu")
-    pays, devise = trouve
+    pays, devise, attrs = trouve
 
     cur.execute("select code, is_paper, eligible_countries from accounts "
                 "where id = %s", (voulu["account_id"],))
@@ -473,7 +491,7 @@ def corrige(cur, position_id: int, motif: str, **champs) -> list[tuple]:
     # L'eligibilite se reverifie : corriger le titre peut le faire sortir des
     # pays declares du support, et une correction ne doit pas creer une position
     # que l'ouverture aurait refusee.
-    elig = eligibilite(pays, pays_eligibles)
+    elig = eligibilite(pays, pays_eligibles, attrs)
     if not elig.autorise:
         raise ValueError(f"Titre non eligible a ce support — {elig.motif}")
 

@@ -34,6 +34,7 @@ from . import (
     compute_quality,
     ingest_corporate_actions,
     ingest_fundamentals,
+    ingest_veille,
     quality_checks,
 )
 
@@ -76,6 +77,15 @@ ETAPES: tuple[Etape, ...] = (
     Etape("compute_quality", compute_quality.run,
           30 * JOUR, "scores de qualite, jambe concurrentielle",
           depend_de=("ingest_fundamentals",)),
+    # La veille ferme le cycle, et elle ferme aussi la liste des dependances :
+    # **rien ne depend d'elle**, parce que rien ne la calcule. Elle est ici pour
+    # une seule raison - qu'une depeche de la veille soit deja la quand on
+    # ouvre une fiche le matin, plutot qu'a vingt secondes de collecte de la.
+    # Perimetre : watchlist et portefeuille. Passer l'univers prendrait des
+    # heures pour des pages que personne n'ira lire, et le dirait a deux
+    # serveurs qui nous rendent service.
+    Etape("ingest_veille", ingest_veille.run,
+          JOUR, "consensus, notations, depeches des titres suivis"),
 )
 
 DERNIERS_SUCCES = """

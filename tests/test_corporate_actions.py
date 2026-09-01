@@ -225,13 +225,22 @@ def test_les_controles_sans_anomalie_sont_bien_capables_de_se_declencher(nom, se
 
 def test_les_anomalies_ne_sempilent_pas_dune_execution_a_lautre():
     """Le job purge les anomalies non resolues avant recalcul : sans cela, le
-    tableau de bord devient illisible en trois semaines."""
+    tableau de bord devient illisible en trois semaines.
+
+    Le sujet d'une anomalie n'est pas toujours un instrument : `fx_missing`
+    porte sur une devise et s'inscrit avec `instrument_id` nul. Depuis l'arrivee
+    des matieres premieres, deux devises n'ont pas de taux vers l'euro - USD et
+    USX - et ce sont deux anomalies distinctes, pas un doublon. Leur
+    discriminant est le `cle` de l'empreinte, qui ne vit qu'au fond de
+    `details` : il entre donc dans la cle de regroupement, sans quoi ce test
+    lirait comme un empilement ce qui est un inventaire.
+    """
     doublons = fetch_all(
         """
-        select instrument_id, issue_type, ts_from, count(*)
+        select instrument_id, issue_type, ts_from, details ->> 'devise', count(*)
           from data_quality_issues
          where resolved_at is null and issue_type <> 'split_unadjusted'
-         group by 1, 2, 3 having count(*) > 1
+         group by 1, 2, 3, 4 having count(*) > 1
         """
     )
     assert doublons == []

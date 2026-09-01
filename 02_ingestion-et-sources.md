@@ -72,6 +72,24 @@ L'API de l'AMF est en accès libre, sans clé, plafonnée à 10 000 appels par I
 | FX quotidien | BCE, séries de référence | Gratuit, stable, officiel |
 | Indices de prix (IPCH) | Eurostat | Nécessaire pour la politique `real_deflated` des matières premières |
 
+### 2.5 Veille externe - ce que disent les autres (lot L10)
+
+| Donnée | Source | Adressage | Volume |
+|---|---|---|---|
+| Consensus d'analystes (recommandation, effectif, objectifs) | **Zonebourse** | identifiant interne, **saisi par titre** | 1 page |
+| Notations et constat en une phrase | **Zonebourse** | idem | 1 page |
+| Dépêches, titre + date + texte des plus récentes | **Boursier.com** | déduit de l'ISIN | 1 page + 6 articles |
+
+Trois différences avec tout le reste de ce document, et elles sont structurantes.
+
+**Ces données n'alimentent aucun calcul.** Ni le z-score, ni le score de qualité, ni la solidité concurrentielle ne les regardent. Un consensus d'analystes est structurellement optimiste et révisé après coup : l'intégrer à un score reviendrait à acheter ce que tout le monde recommande déjà, c'est-à-dire l'inverse exact d'un screener de décote. Sa valeur est ailleurs - savoir si la décote est un secret, et repérer les cas où le consensus contredit le modèle. Un test d'architecture (`tests/test_veille.py`) vérifie qu'aucun module de `analytics/` ne lit ces tables.
+
+**Le périmètre par défaut est la watchlist et le portefeuille**, pas l'univers. Chaque titre coûte une dizaine de requêtes espacées d'une seconde ; passer les 586 titres prendrait des heures et martèlerait deux serveurs pour des pages que personne n'ira lire.
+
+**L'adressage n'est pas symétrique.** Boursier.com résout par ISIN et corrige le slug lui-même : rien à tenir à jour. Zonebourse adresse ses fiches par identifiant interne (`ESSILORLUXOTTICA-4641`) sans aucun accès par ISIN, et un identifiant approchant **ne rend pas une erreur : il rend la fiche d'une autre société**. L'URL se colle donc une fois par titre, depuis la fiche instrument, et vit dans `external_sources`.
+
+Détail d'implémentation qui a coûté une demi-heure et mérite d'être écrit : les deux sources filtrent sur l'**empreinte TLS** du client, et pas dans le même sens. Boursier.com refuse `requests` et accepte `curl_cffi` ; Zonebourse fait l'inverse. Le module `collectors/web.py` essaie les deux, le premier qui répond gagne. Le `User-Agent` annonce le projet et n'imite aucun navigateur - testé : un `User-Agent` de Chrome envoyé par `requests` fait passer Zonebourse de 200 à 403, précisément parce qu'il ment sur ce que la poignée de main TLS raconte.
+
 ---
 
 ## 3. Stratégie fondamentaux : le double régime
@@ -248,6 +266,8 @@ Séquence proposée, à exécuter une fois.
 **Stooq.** Conditions plus permissives, mais sans licence explicite pour la redistribution.
 
 **ESEF / XBRL et API AMF.** Données publiques réglementées, réutilisation libre. Ce sont les sources les plus sûres juridiquement.
+
+**Zonebourse et Boursier.com (lot L10).** Deux sites de presse et de données financières, lus sur leurs pages publiques, dans les limites de leur `robots.txt` - les pages de cotation, de notations et d'actualité y sont autorisées. Le contenu appartient à ses éditeurs : il est conservé pour une lecture personnelle et **toujours affiché avec son titre, sa date, sa source et son lien**. La fiche renvoie à l'article, elle ne le republie pas. Une exposition à des tiers, même interne à une entreprise, sortirait de ce cadre et demanderait un accord.
 
 **Recommandation :** faire porter la valeur du système sur le **calcul** - les régressions, les diagnostics, l'historisation - et non sur la donnée brute redistribuée. Le calcul t'appartient sans ambiguïté ; la donnée brute, non.
 

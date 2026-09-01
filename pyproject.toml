@@ -12,6 +12,11 @@ dependencies = [
     "pandas>=2.2",
     "pyarrow>=17.0",
     "yfinance>=0.2.40",
+    # Veille externe (L8). Installee de toute facon par yfinance, mais declaree
+    # ici pour la meme raison que `arch` l a ete : Boursier.com refuse `requests`
+    # au niveau TLS, et une dependance qui n existe que par transitivite
+    # disparait a la premiere installation neuve.
+    "curl-cffi>=0.7",
     # --- moteur analytique (L4) ---
     "numpy>=1.26",
     "statsmodels>=0.14",

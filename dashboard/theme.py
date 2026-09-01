@@ -122,6 +122,35 @@ def css(p: Palette) -> str:
         border-left: 3px solid {p.encre_attenuee}; padding: 0.5rem 0.9rem;
         color: {p.encre_secondaire}; font-size: 0.85rem; margin: 0.4rem 0 1rem 0;
       }}
+      /* Barres de la veille externe. Volontairement en encre neutre : ce sont
+         des rangs et des opinions, pas des verdicts, et une barre verte ou
+         rouge transformerait « mieux note que 24 % du secteur » en jugement.
+         Le nombre est toujours ecrit a cote - la barre seule ne dit rien. */
+      .jauge {{
+        position: relative; height: 8px; border-radius: 4px;
+        background: {p.grille}; overflow: hidden; margin: 0.25rem 0;
+      }}
+      .jauge span {{
+        display: block; height: 100%; background: {p.encre_secondaire};
+      }}
+      .jauge-curseur {{
+        position: relative; height: 10px; border-radius: 5px;
+        background: {p.grille}; margin: 0.35rem 0;
+      }}
+      .jauge-curseur i {{
+        position: absolute; top: -3px; width: 3px; height: 16px;
+        border-radius: 2px; background: {p.encre_primaire};
+      }}
+      .ligne-jauge {{
+        display: grid; grid-template-columns: 9rem 1fr 3.5rem;
+        gap: 0.7rem; align-items: center;
+        color: {p.encre_secondaire}; font-size: 0.82rem; margin: 0.15rem 0;
+      }}
+      .ligne-jauge b {{ color: {p.encre_primaire}; font-weight: 500; }}
+      .source-note {{
+        color: {p.encre_attenuee}; font-size: 0.72rem; margin-top: 0.35rem;
+      }}
+      .depeche-date {{ color: {p.encre_attenuee}; font-size: 0.75rem; }}
     </style>
     """
 

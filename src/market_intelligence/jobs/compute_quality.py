@@ -34,7 +34,11 @@ logger = logging.getLogger(__name__)
 INSTRUMENTS = """
 select i.id, i.internal_code, i.name, i.sector_code,
        i.attributes ->> 'regime_declare' as regime_declare
-  from instruments i where i.is_active order by i.internal_code;
+  from instruments i
+ where i.is_active
+   and (select supports_fundamentals from asset_classes
+         where code = i.asset_class)
+ order by i.internal_code;
 """
 
 # Groupes sectoriels automatiques : un par secteur ICB represente. Grossiers -

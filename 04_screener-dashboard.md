@@ -123,7 +123,7 @@ Ce n'est pas une entorse au principe I1 : le silence porte sur les cours, pas su
 
 ### Écran 2 - Fiche instrument
 
-C'est l'écran central. Cinq blocs, dans cet ordre : le prix d'abord parce que c'est ce qui déclenche l'attention, la qualité ensuite parce que c'est ce qui décide.
+C'est l'écran central. Les blocs sont dans cet ordre parce que **le prix déclenche l'attention et la qualité décide** : A le graphe, B les diagnostics — dont, depuis le 2026-08-25, ce que disent les analystes et la presse —, C les statistiques de régime, D la position concurrentielle.
 
 #### Bloc A - Le graphe de régression
 
@@ -147,19 +147,44 @@ La visualisation principale du produit.
 - **Les bandes ne sont pas des séries catégorielles.** Ce sont des zones de référence : gris neutres, jamais une teinte de la palette de séries.
 - **Aucune valeur écrite sur chaque point.** Étiquetage direct sélectif - le point courant, les extrêmes - et l'infobulle porte le reste.
 - **Zones d'épisodes historiques sous seuil** surlignées en fond très léger, pour rendre visible que la décote est un régime et non un instant.
+- **Deux façons de regarder de plus près, et elles ne font pas la même chose.** Le sélecteur de **période** coupe la série : l'échelle des ordonnées se recalcule sur ce qui reste, et un épisode de six mois cesse d'être un pli dans une courbe de vingt ans. Le **zoom** (molette, glisser pour se déplacer, double-clic pour revenir) garde toute la série et grossit une zone. Ni l'un ni l'autre ne ré-estime la régression : la droite et les bandes restent celles calculées sur la fenêtre complète. *Un graphe qui ré-estimerait sur la période affichée montrerait une pente différente à chaque zoom, et ce serait faux.*
+- **Panneau de z-score sous le graphe**, même axe des temps, avec les filets −2σ, 0 et +2σ. Le même fait lu autrement : le graphe du haut montre un cours qui monte, le panneau montre s'il est cher par rapport à sa propre tendance. Il ne suit **pas** le zoom - il sert de vue d'ensemble quand on est zoomé sur quelques mois.
+- **Hauteur réglable.** Sur un portable, 900 px de graphe font disparaître les diagnostics sous la ligne de flottaison ; sur un écran large, 420 px écrasent vingt ans en une bande.
 
 #### Bloc B - Bandeau de diagnostics
 
 Vignettes de statistiques, chiffres en graisse normale, chiffres proportionnels et non tabulaires.
 
 ```
-   z actuel        Demi-vie      Sous seuil depuis    Pente annuelle    Qualité
-    −2.34           14 mois          9 semaines            +6.2%      ▲ Non concluant
+   z actuel        Demi-vie      Sous seuil depuis    Pente annuelle    Solidité concurrentielle
+    −2.34           14 mois          9 semaines            +6.2%       leader · 78/100 · solide
 ```
 
-Sous le bandeau, en dépliable, le détail technique : ADF, DF-GLS, KPSS, Durbin-Watson, intervalle de confiance sur la racine autorégressive, nombre d'observations, fenêtre effective.
+**La cinquième vignette porte la conclusion du dossier, pas la qualité du fit.** Le verdict statistique de la régression a longtemps occupé cette place ; il y disait quelque chose sur la méthode, jamais sur l'entreprise, et laissait la question qui décide - *qui est leader ?* - à six écrans de là. Le constat se lit en grand (`leader`), le score et sa nuance en petit : 78/100 ne dit rien tant qu'on ignore s'il note un leader ou un suiveur, et *leader depuis dix-huit mois* ne vaut pas *leader depuis vingt ans*. Un dossier non relu porte la mention `brouillon`.
+
+La qualité du fit n'a pas disparu : elle est **dans le dépliable technique, à côté des tests qui la produisent**, et ses motifs de disqualification restent affichés en clair sous le bandeau (« réserves sur la régression »).
+
+Sous le bandeau, en dépliable, le détail technique : verdict de qualité du fit, ADF, DF-GLS, KPSS, Durbin-Watson, intervalle de confiance sur la racine autorégressive, nombre d'observations, fenêtre effective.
 
 *L'intervalle de confiance sur la racine AR s'affiche en clair, par exemple `[0.94 ; 1.02]`, avec la mention « intervalle incluant 1 : le retour à la tendance n'est pas établi ». C'est le principe I2.*
+
+#### Bloc B bis - Ce que disent les autres (lot L10)
+
+Trois encarts côte à côte, collectés chez Zonebourse et Boursier.com. Ils sont **ici**, dans le bloc des diagnostics, parce que c'est au moment où l'on regarde un z-score qu'on se demande ce qui vient d'arriver - et le modèle, qui lit vingt ans de cours, n'en a aucune idée.
+
+| Encart | Contenu | Forme |
+|---|---|---|
+| **Consensus des analystes** | Recommandation moyenne, effectif, objectifs moyen / bas / haut et leurs écarts | Barre **à curseur** de « vendre » à « acheter », placée sur la note publiée |
+| **Notations** | Le constat en une phrase, puis un rang par critère (Trader, Investisseur, Globale, Qualité, ESG) | Une barre de remplissage par ligne, le nombre toujours écrit à côté |
+| **Dépêches** | Titre + date, dépliables sur le texte complet des plus récentes | Un dépliable par dépêche, lien vers l'article |
+
+**Trois règles de forme :**
+
+- **Barres en encre neutre, jamais colorées.** Ce sont des rangs et des opinions, pas des verdicts : une barre verte ou rouge transformerait « mieux noté que 24 % du secteur » en jugement. Et le nombre est toujours écrit à côté - la barre seule ne dit rien.
+- **Curseur pour le consensus, remplissage pour les notations.** Un remplissage dirait « 84 % de quelque chose » ; la recommandation moyenne est un **point entre deux extrêmes**, et le curseur le dit sans ambiguïté.
+- **Chaque encart porte sa date de collecte et sa source.** Une dépêche de trois semaines affichée sans sa date se lit comme une nouvelle du jour.
+
+Ces trois encarts **n'entrent dans aucun calcul** - voir doc 02 §2.5. La collecte se lance depuis un dépliable de ce même bloc, titre par titre, ou en lot par `scripts/ingest_veille.py`.
 
 #### Bloc C - Statistiques de régime
 
@@ -196,6 +221,12 @@ Tableau des ratios sur 5 ans, avec la source et la date de publication de chaque
 Les valeurs issues d'une extraction LLM sont **marquées visuellement** et affichent leur score de confiance, avec un lien vers la page du PDF d'origine. Une valeur extraite d'un PDF n'a pas le statut d'une valeur XBRL, et ça doit rester lisible jusque dans l'écran final.
 
 > **⚙ Dette T17 : instantané mono-période au lieu d'une série 5 ans**, sans source ni date par valeur. Le marquage des extractions LLM est sans objet tant que L9 n'existe pas.
+
+> **↩ Retiré de la fiche le 2026-08-25.** Ce bloc est un **filtre de solvabilité, pas un jugement de qualité** - une entreprise peut cocher les vingt cases et perdre sa position concurrentielle, et c'est cette seconde question que la fiche traite désormais en entier. Il occupait un tiers de la page pour vingt ratios qu'on ne relit pas.
+>
+> **Ce qui part avec lui, et qu'il faut savoir :** le verdict de cohérence prix/fondamentaux - `confirmé` / `suspect` / `indéterminable`, celui qui écrit « value trap potentiel » - n'est plus affiché nulle part dans le dashboard. Ni le screener ni la matrice ne le montrent aujourd'hui. Il reste **calculé** (`analytics/ratios.coherence_prix_fondamentaux`) et `data.fondamentaux()` n'a pas bougé : une pastille d'une ligne dans le bandeau de diagnostics le remettrait sous les yeux sans ramener le bloc. **Décision ouverte.**
+>
+> Deux autres sections de la fiche sont parties le même jour, pour la même raison - elles répondaient à des questions qu'on ne se pose pas devant un titre. **Anomalies qualité ouvertes** : un tableau d'exploitation dans un écran de décision, alors que les anomalies bloquantes disqualifient déjà la régression et que le motif s'affiche sous le bandeau de diagnostics. **Ce que le modèle affirmait, semaine après semaine** : le principe P5 rendu visible sur un historique qui compte un point par titre - un graphe à un point ne montre rien. L'historisation continue dans `regression_fits`, c'est elle qui compte, et le graphe se remet quand il y aura de quoi tracer.
 
 ### Écran 3 - Matrice qualité × prix
 

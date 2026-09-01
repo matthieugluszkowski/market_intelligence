@@ -304,55 +304,38 @@ C'est de la **synthèse documentaire vérifiable**, pas de la prédiction. Chaqu
 
 **Garde-fou : l'agent produit une évaluation, il ne la valide pas.** Le champ `reviewed_by` reste humain, et une évaluation non revue ne fait jamais passer un titre dans le quadrant cible.
 
-### 8.4 L'import du dossier : brouillon, acquittement, verdicts
+### 8.4 Refonte du 2026-08-21 : quatre questions, un prompt, un score calculé
 
-Trois règles issues du premier dossier réel (adidas, août 2026) :
+**Ce qui a déclenché la refonte.** Le dispositif à cinq prompts a rendu, sur EssilorLuxottica, **30/100 de confiance et un refus de conclure** — pour un dossier dont le paragraphe de synthèse disait *« EssilorLuxottica est le leader incontesté du marché de l'eyewear »*. Le détail avait mangé la conclusion. Et à cinq copier-coller de 34 000 caractères par titre, on ne lançait l'analyse presque jamais : c'est le coût d'entrée, pas la qualité du dossier, qui décidait de ce qui était analysé.
 
-- **Un bloquant ne détruit plus le travail.** Le prompt 4 signale presque toujours des points à vérifier — c'est son rôle, pas un accident. Un dossier porteur de `blocking_issues` est donc **conservé en brouillon** au lieu d'être refusé : sans validation, sans projection, mais sans perte. Rien n'est complété automatiquement.
-- **L'acquittement est nominatif et tracé.** L'analyste qui a vérifié les points bloquants les acquitte à l'import ; le dossier conserve `quality_control.blocking_issues_reviewed = {par, le}`. Sans nom, rien n'est levé.
-- **Les verdicts sont posés par l'analyste, à l'import.** Le prompt 4 *propose* un bloc `strategic_assessment` (position, durabilité, sources de rente, menaces, justification) sur l'entreprise étudiée — c'est ce qui fait du dossier une analyse de l'instrument, pas seulement de ses concurrents. L'écran d'import permet de les confirmer ou de les corriger ; ce sont eux qui se projettent vers `moat_assessments`. Sans verdicts, le titre ne peut pas atteindre `solid`.
+**Quatre questions restent, parce qu'elles seules changent la décision :**
 
-L'appariement des sociétés (fiche du prompt 2 ↔ concurrent du prompt 1, profils résumés du prompt 4 ↔ fiches détaillées) tolère casse, ponctuation et suffixes juridiques : « NIKE, Inc. » et « Nike Inc. » sont la même société, et une fiche détaillée n'est jamais écrasée par son résumé.
+1. L'entreprise est-elle **leader** de son marché ?
+2. **Depuis quand** — et si elle l'a perdu, depuis quand ?
+3. Qui sont ses **concurrents**, et en quoi chacun est une menace ?
+4. Quelles **autres menaces** pèsent sur elle, et en quoi c'est dangereux ?
 
-> **Révision du 2026-08-21 — un défaut de génération n'est pas un défaut de dossier.** Constaté sur EssilorLuxottica : sur six bloquants du prompt 4, deux ne parlaient pas de l'entreprise mais de la **sortie du modèle** — « JSON incomplet (coupé en deux fois) », « URLs tronquées dans les sources ». Ils pesaient exactement autant qu'une couverture concurrentielle absente : conclusion interdite, confiance plafonnée à 30. Or le dossier importé était complet — 22 blocs, 254 000 caractères. **Plafonner la confiance d'une analyse parce que la génération a bafouillé revient à noter l'entreprise sur la qualité de son imprimante.**
->
-> `schema.defaut_de_generation` sépare les deux espèces. La classification porte sur le **sujet** de la phrase, jamais sur un adjectif seul : il faut un mot qui désigne la sortie (`json`, `url`, `réponse`, `fenêtre de contexte`…) **et** un mot qui la dit abîmée (`tronqué`, `coupé`, `incomplet`…). « Fiches concurrentielles incomplètes » contient « incomplet » et reste un défaut de dossier. Un défaut de génération est rétrogradé en IMPORTANT, reste affiché avec sa correction — *relancer le prompt* — et n'interdit plus l'import ni la conclusion.
->
-> **Ce que cette révision ne change pas :** un manque de substance bloque toujours, et l'acquittement reste nominatif. La liste de bloquants demeure du **texte figé écrit par le prompt 4**, jamais reconfrontée au dossier — elle peut donc rester vraie alors que le trou a été comblé par un import ultérieur. Requalifier un bloquant périmé se fait à la main, dans `quality_control.blocking_issues_requalifies` (code, verdict, constat, preuve, par, le), la liste d'origine étant conservée dans `blocking_issues_origine`. Remesurer automatiquement à chaque import reste à faire.
+Tout le reste — besoins clients, analyse fonctionnelle, tendances de marché, scénarios prospectifs, sept notes par catégorie, trois scores — a disparu. L'écran s'appelait « dossier concurrentiel » et produisait surtout une analyse fonctionnelle.
 
-### 8.5 Le prompt 5 : synthèse décisionnelle et scoring
+**Le score est calculé, jamais demandé au modèle.** Un LLM à qui l'on demande une note sur 100 en invente une : deux exécutions du même prompt donnent deux nombres, et aucun n'est reconstituable. Le modèle rend des **verdicts** — leader ou non, depuis quelle année, quel danger pour chaque menace — et `intelligence.position` calcule :
 
-Ajouté en août 2026, l'écran passe de « Dossier concurrentiel » à « Analyses ».
-Le prompt 5 produit un avis structuré à partir de **toutes** les données de
-l'outil — pas seulement du dossier concurrentiel — avec une règle centrale :
+| Terme | Barème |
+|---|---|
+| Position | leader 50 · challenger 35 · niche 30 · suiveur 20 |
+| Ancienneté | +2 par année, plafonné à +20 (dix ans) |
+| Durabilité | solid +20 · watch +10 · eroding −10 · none −20 |
+| Menaces | élevé −10 · moyen −5 · **faible 0**, plancher −30 |
+| Position perdue | −15, effacé de 3 points par année écoulée |
 
-> **Les scores mesurent la solidité de l'analyse et l'attractivité relative du
-> dossier, jamais le cours futur.** Un LLM peut produire une réponse très
-> assurée sur des données incomplètes, anciennes ou contradictoires : la
-> séparation des scores existe pour empêcher cela.
+Deux choix méritent d'être défendus. **Une menace `faible` ne retire aucun point** : compter chaque menace recensée punirait le dossier le plus complet, alors qu'un concurrent identifié puis jugé peu dangereux est une information rassurante, pas un risque. **Le malus de perte s'efface en cinq ans** : une position perdue l'an dernier est une trajectoire, une position perdue il y a quinze ans est un état de fait que le marché a déjà digéré.
 
-Quatre décisions de conception :
+**Le barème s'affiche à côté du total, ligne par ligne.** Un score dont on ne voit pas la construction ne se discute pas, il se subit — et les poids sont arbitraires, comme tout barème. Les afficher est ce qui permet de les contester.
 
-- **Trois scores séparés, jamais agrégés.** Attractivité (le dossier),
-  confiance (la robustesse de l'analyse elle-même : fraîcheur, couverture,
-  sources, cohérence), alignement (qualité × risque × prix). Une entreprise
-  attractive avec une confiance faible se surveille, elle ne s'achète pas.
-- **L'abstention est un verdict.** Six conclusions dont « insuffisant pour
-  conclure » — valide et respectable quand les données ne portent pas une
-  opinion. Un bloquant du contrôle qualité non acquitté nominativement
-  interdit toute conclusion et plafonne la confiance à 30/100.
-- **Les données sont injectées, pas ressaisies.** L'outil compose le prompt
-  avec un instantané quantitatif (prix, tendance, régime, ratios, qualité,
-  évaluation) et le dossier complet en JSON. Un bloc `null` se signale, ne
-  s'estime pas — et la synthèse est datée par construction.
-- **La synthèse ne touche pas le moteur.** Elle vit dans le dossier (blocs
-  `synthese`, `scoring`, `decision_gate`), ne projette rien vers
-  `moat_assessments` ni `quality_scores`, et n'efface pas une validation :
-  un dossier signé le reste, la synthèse ajoutée porte son propre état
-  (`human_review_status = not_reviewed`). Une nouvelle synthèse remplace
-  l'ancienne — deux avis datés contradictoires ne s'additionnent pas.
+**L'année d'accession se saisit à la main quand le modèle ne la donne pas.** Elle vaut jusqu'à vingt points, et c'est la seule chose que l'écran demande encore de renseigner. Quand elle manque, le score le dit au lieu de combler : *« année d'accession non renseignée : jusqu'à 20 points d'ancienneté non comptés »*.
 
----
+**Ce qui ne change pas :** sans nom d'analyste, rien n'est projeté. Le dossier reste en brouillon — ni groupe de pairs, ni évaluation qualitative — parce que rien ne distingue un dossier relu d'un dossier produit.
+
+**Migration.** Les dossiers de l'ancien format sont convertis par `scripts/migre_dossiers_v2.py` : verdicts, sources de rente, concurrents avec leur explication, menaces et résumé sont repris ; l'ancien dossier complet est conservé sous `ancien_dossier`, rien n'est réécrit en silence. Les niveaux de danger sont déduits de `relevance_score` — échelle utilisée de façon incohérente d'un dossier à l'autre, Nike à 10 chez adidas quand le concurrent le plus dangereux d'Essilor est à 4 — donc marqués `MIGRE` et à revoir. **L'année d'accession n'existe nulle part dans l'ancien format** : c'est précisément la question que l'ancien dispositif ne posait pas.
 
 ## 9. Conséquence sur l'ordre des opérations
 

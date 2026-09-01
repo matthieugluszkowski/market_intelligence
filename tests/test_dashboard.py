@@ -17,6 +17,7 @@ reference et non des series, et que chaque graphe ait son jumeau tabulaire.
 
 from __future__ import annotations
 
+import os
 import sys
 from datetime import date, timedelta
 from pathlib import Path
@@ -363,3 +364,150 @@ def test_un_portefeuille_vide_rend_une_table_vide_mais_utilisable():
     resume = entete.detentions(pd.DataFrame())
     assert resume.empty
     assert "quantite" in resume.columns and "reel" in resume.columns
+
+
+# --------------------------------------------------------------------------- #
+# Rechargement des modules — le mecanisme qui rend les autres ecrans possibles
+#
+# Streamlit garde les modules importes en cache. Sans purge, une fonction
+# ajoutee reste invisible et la page tombe en ImportError sur un nom pourtant
+# present dans le fichier. Constate trois fois : `data.qualite`,
+# `schema.FRAGMENTS`, puis `quality.groupe_comparable` le 2026-08-21.
+# --------------------------------------------------------------------------- #
+import types  # noqa: E402
+
+from dashboard import rechargement  # noqa: E402
+
+
+@pytest.fixture
+def bac_modules(tmp_path, monkeypatch):
+    """Un faux projet dans un dossier temporaire, et sys.modules restaure."""
+    monkeypatch.setattr(rechargement, "RACINE", tmp_path)
+    monkeypatch.setattr(rechargement, "_horodatages", {})
+    # Le processus est cense avoir demarre avant les sources : c'est le cas
+    # normal, un module charge correspond alors a son fichier.
+    monkeypatch.setattr(rechargement, "_DEBUT", 9e12)
+
+    inscrits = []
+
+    def inscris(nom: str, contenu: str = "x = 1") -> types.ModuleType:
+        fichier = tmp_path / f"{nom.replace('.', '_')}.py"
+        fichier.write_text(contenu, encoding="utf-8")
+        module = types.ModuleType(nom)
+        module.__file__ = str(fichier)
+        sys.modules[nom] = module
+        inscrits.append(nom)
+        return module
+
+    def vieillis(nom: str, decalage: float) -> None:
+        fichier = Path(sys.modules[nom].__file__)
+        horodatage = fichier.stat().st_mtime + decalage
+        os.utime(fichier, (horodatage, horodatage))
+
+    def stabilise() -> None:
+        """Remet en place les modules purges et laisse le mecanisme converger."""
+        for nom in inscrits:
+            if nom not in sys.modules:
+                module = types.ModuleType(nom)
+                module.__file__ = str(tmp_path / f"{nom.replace('.', '_')}.py")
+                sys.modules[nom] = module
+        for _ in range(5):
+            if rechargement.recharge_si_modifie() is False:
+                return
+            for nom in inscrits:
+                if nom not in sys.modules:
+                    module = types.ModuleType(nom)
+                    module.__file__ = str(tmp_path / f"{nom.replace('.', '_')}.py")
+                    sys.modules[nom] = module
+        raise AssertionError("le mecanisme ne converge pas : purge a chaque appel")
+
+    yield inscris, vieillis, stabilise
+    for nom in inscrits:
+        sys.modules.pop(nom, None)
+
+
+def test_rien_ne_bouge_rien_nest_purge(bac_modules):
+    """C'est ce qui rend le mecanisme gratuit : les caches survivent au cas
+    courant, et une purge systematique ferait retourner en base a chaque clic."""
+    inscris, _, _stabilise = bac_modules
+    inscris("market_intelligence.__faux_a__")
+    assert rechargement.recharge_si_modifie() is False
+    assert rechargement.recharge_si_modifie() is False
+    assert "market_intelligence.__faux_a__" in sys.modules
+
+
+def test_une_source_modifiee_purge_le_module(bac_modules):
+    inscris, vieillis, stabilise = bac_modules
+    inscris("market_intelligence.__faux_a__")
+    rechargement.recharge_si_modifie()
+    vieillis("market_intelligence.__faux_a__", +120)
+    assert rechargement.recharge_si_modifie() is True
+    assert "market_intelligence.__faux_a__" not in sys.modules
+
+
+def test_un_horodatage_revenu_en_arriere_purge_aussi(bac_modules):
+    """OneDrive peut ramener un horodatage en arriere. Un fichier revenu en
+    arriere est un fichier different, pas un fichier a jour."""
+    inscris, vieillis, stabilise = bac_modules
+    inscris("market_intelligence.__faux_a__")
+    rechargement.recharge_si_modifie()
+    vieillis("market_intelligence.__faux_a__", -3600)
+    assert rechargement.recharge_si_modifie() is True
+
+
+def test_la_peremption_dun_module_nest_pas_masquee_par_un_autre(bac_modules):
+    """**La regression du 2026-08-21.** L'ancienne version comparait un seul
+    nombre — l'horodatage le plus recent de tout le projet. Un run qui observait
+    la modification d'un fichier consommait le compteur pour tous les autres :
+    `quality.py` est reste charge sans `groupe_comparable` pendant que
+    l'empreinte globale, elle, etait a jour. Page morte jusqu'au redemarrage."""
+    inscris, vieillis, stabilise = bac_modules
+    inscris("market_intelligence.__faux_a__")
+    inscris("market_intelligence.__faux_b__")
+    rechargement.recharge_si_modifie()
+
+    # A bouge et emmene le maximum global tres loin devant.
+    vieillis("market_intelligence.__faux_a__", +10_000)
+    assert rechargement.recharge_si_modifie() is True
+    stabilise()
+
+    # B bouge a peine : son horodatage reste tres en-dessous du maximum deja vu.
+    vieillis("market_intelligence.__faux_b__", +1)
+    assert rechargement.recharge_si_modifie() is True, \
+        "la peremption de B doit se voir, quel que soit l'age de A"
+
+
+def test_un_module_charge_apres_une_modification_est_purge_par_precaution(
+        bac_modules, monkeypatch):
+    """On ne peut rien affirmer d'un module vu pour la premiere fois dont la
+    source a bouge depuis le demarrage du processus : il a pu etre importe
+    avant la modification."""
+    inscris, _, _stabilise = bac_modules
+    monkeypatch.setattr(rechargement, "_DEBUT", 0.0)
+    inscris("market_intelligence.__faux_a__")
+    assert rechargement.recharge_si_modifie() is True
+
+
+def test_un_homonyme_hors_du_projet_nest_jamais_purge(bac_modules):
+    """Un module qui porte le meme prefixe mais vit ailleurs n'est pas le
+    notre : le purger reviendrait a casser une dependance sur la foi d'un nom."""
+    inscris, vieillis, stabilise = bac_modules
+    inscris("market_intelligence.__faux_a__")
+    etranger = types.ModuleType("market_intelligence.__faux_ailleurs__")
+    etranger.__file__ = str(Path(sys.modules["market_intelligence.__faux_a__"]
+                                 .__file__).parent.parent / "ailleurs.py")
+    sys.modules["market_intelligence.__faux_ailleurs__"] = etranger
+    try:
+        rechargement.recharge_si_modifie()
+        vieillis("market_intelligence.__faux_a__", +120)
+        assert rechargement.recharge_si_modifie() is True
+        assert "market_intelligence.__faux_ailleurs__" not in sys.modules, \
+            "il est purge avec les autres, mais il n'a jamais DECLENCHE la purge"
+    finally:
+        sys.modules.pop("market_intelligence.__faux_ailleurs__", None)
+
+
+def test_le_module_de_rechargement_ne_se_purge_jamais_lui_meme():
+    """Se purger en cours d'execution perdrait les horodatages, donc la memoire
+    de ce qui a deja ete vu."""
+    assert "dashboard.rechargement" in rechargement.JAMAIS_PURGE

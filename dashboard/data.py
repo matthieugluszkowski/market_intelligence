@@ -48,25 +48,36 @@ def screener(as_of: date) -> pd.DataFrame:
     n'existe pas. C'est leur statut reel et il doit se voir : afficher un titre
     comme une cible alors que sa position concurrentielle n'a jamais ete evaluee
     serait exactement la moitie manquante de la methode.
+
+    L'univers vise est celui de la zone euro eligible PEA (doc 00) : un titre
+    marque `pea_eligible=false` (foncieres au regime SIIC et equivalents
+    europeens, cf. portfolio.eligibilite) n'a pas sa place dans ce classement,
+    au meme titre qu'un emetteur hors UE/EEE n'entre jamais dans `instruments`
+    via le filtre pays de `propose_universe.py`. Il reste consultable depuis la
+    fiche instrument et achetable hors PEA : seul ce classement l'exclut.
     """
     return _frame(
         """
         select i.internal_code, i.name, i.isin, i.country_iso2, i.exchange_code,
+               i.asset_class, ac.label as classe_actif,
                s.label as secteur, f.z_score, f.slope_annual, f.r_squared,
                f.fit_quality, f.quality_reasons, f.half_life_days, f.n_obs,
-               f.last_close, f.sigma_resid, f.window_start, f.window_end,
+               f.last_close, f.fitted_value, f.sigma_resid,
+               f.window_start, f.window_end,
                f.ar1_ci_low, f.ar1_ci_high, f.regime_stats, i.currency,
                coalesce(q.quality_tier, 'unqualified') as quality_tier,
                coalesce(q.regime, 'unknown') as regime,
                q.erosion_flags, q.roic_vs_threshold
           from regression_fits f
           join instruments i on i.id = f.instrument_id
+          join asset_classes ac on ac.code = i.asset_class
           left join sectors s on s.code = i.sector_code
           left join quality_scores q
             on q.instrument_id = i.id
            and q.as_of_date = (select max(as_of_date) from quality_scores
                                 where instrument_id = i.id)
          where f.as_of_date = %(as_of)s
+           and (i.attributes ->> 'pea_eligible') is distinct from 'false'
          order by f.z_score
         """,
         {"as_of": as_of},
@@ -76,8 +87,14 @@ def screener(as_of: date) -> pd.DataFrame:
 @st.cache_data(ttl=TTL)
 def instruments() -> pd.DataFrame:
     return _frame(
-        "select id, internal_code, name, isin, currency, exchange_code "
-        "from instruments where is_active order by name"
+        """
+        select i.id, i.internal_code, i.name, i.isin, i.currency, i.exchange_code,
+               i.sector_code, i.asset_class, ac.label as classe_actif
+          from instruments i
+          join asset_classes ac on ac.code = i.asset_class
+         where i.is_active
+         order by i.name
+        """
     )
 
 
@@ -85,8 +102,11 @@ def instruments() -> pd.DataFrame:
 def fit(internal_code: str, as_of: date) -> pd.Series | None:
     frame = _frame(
         """
-        select f.*, i.name, i.isin, i.currency, i.internal_code
-          from regression_fits f join instruments i on i.id = f.instrument_id
+        select f.*, i.name, i.isin, i.currency, i.internal_code,
+               i.asset_class, i.attributes, ac.label as classe_actif
+          from regression_fits f
+          join instruments i on i.id = f.instrument_id
+          join asset_classes ac on ac.code = i.asset_class
          where i.internal_code = %(code)s and f.as_of_date = %(as_of)s
          order by f.method_version desc limit 1
         """,
@@ -263,12 +283,27 @@ def qualite(internal_code: str) -> dict:
             "evaluation": None if evaluations.empty else evaluations.iloc[0]}
 
 
+def codes_analyses() -> set[str]:
+    """Les titres qui portent deja une analyse de position.
+
+    Sans cache, comme `codes_suivis` : la liste change par action de
+    l'utilisateur, et un resultat servi depuis le cache laisserait un titre
+    fraichement analyse hors de la liste.
+    """
+    with connect() as conn, conn.cursor() as cur:
+        cur.execute(
+            "select distinct i.internal_code from market_analyses m "
+            "join instruments i on i.id = m.instrument_id")
+        return {ligne[0] for ligne in cur.fetchall()}
+
+
 @st.cache_data(ttl=TTL)
 def dossier_concurrentiel(internal_code: str) -> dict:
-    """Dernier dossier concurrentiel importé pour ce titre (doc 08 §8).
+    """Dernier dossier de position importé pour ce titre (doc 08 §8).
 
     Rend le dossier brut et ses métadonnées d'import ; l'affichage passe par
-    `schema.lire` / `schema.resume`, jamais par un accès direct aux clés.
+    `position.lire`, jamais par un accès direct aux clés — un dossier vient
+    d'un LLM, n'importe quelle clé peut manquer.
     """
     frame = _frame(
         """
@@ -351,6 +386,63 @@ def fondamentaux(internal_code: str, as_of: date) -> dict:
             "capitalisation": capitalisation, "exercices": f.exercices}
 
 
+# --------------------------------------------------------------------------- #
+# Veille externe (lot L10) — consensus, notations, dépêches
+#
+# Ces trois blocs n'entrent dans **aucun calcul** : ni le z-score, ni le score de
+# qualité, ni la solidité concurrentielle ne les regardent. Ce sont des avis de
+# tiers, affichés à côté du signal — parce que quand la régression sort un titre
+# à −2,4 σ, la première question est toujours « qu'est-ce qui vient d'arriver ? »
+# et aucun test statistique n'y répond.
+# --------------------------------------------------------------------------- #
+@st.cache_data(ttl=TTL)
+def veille(internal_code: str) -> dict:
+    """La dernière collecte de chaque nature, avec sa date.
+
+    Une collecte par jour est conservée : on rend la plus récente de chaque
+    nature, et **jamais un mélange** — une actualité d'hier à côté d'un
+    consensus d'il y a trois semaines doit se voir comme tel, chaque bloc
+    portant sa propre date.
+    """
+    frame = _frame(
+        """
+        select distinct on (b.kind)
+               b.kind, b.source_code, b.collected_on, b.collected_at,
+               b.source_url, b.payload
+          from external_briefs b
+          join instruments i on i.id = b.instrument_id
+         where i.internal_code = %(code)s
+         order by b.kind, b.collected_on desc, b.collected_at desc
+        """,
+        {"code": internal_code},
+    )
+    resultat: dict = {"consensus": None, "notations": None, "depeches": None}
+    for _, ligne in frame.iterrows():
+        resultat[ligne["kind"]] = {
+            "payload": ligne["payload"] or {},
+            "source": ligne["source_code"],
+            "collecte_le": ligne["collected_on"],
+            "url": ligne["source_url"],
+        }
+    return resultat
+
+
+def url_de_veille(internal_code: str, source: str = "zonebourse") -> str | None:
+    """Sans cache : l'URL se saisit à l'écran, et un résultat servi depuis le
+    cache afficherait encore « aucune adresse » juste après l'avoir collée."""
+    with connect() as conn, conn.cursor() as cur:
+        cur.execute(
+            """
+            select s.url from external_sources s
+              join instruments i on i.id = s.instrument_id
+             where i.internal_code = %(code)s and s.source_code = %(source)s
+            """,
+            {"code": internal_code, "source": source},
+        )
+        ligne = cur.fetchone()
+        return ligne[0] if ligne else None
+
+
 @st.cache_data(ttl=TTL)
 def anomalies(internal_code: str) -> pd.DataFrame:
     return _frame(
@@ -384,6 +476,7 @@ JOBS_EN_CLAIR = {
     "compute_fits": "Regressions (z-scores)",
     "compute_quality": "Scores de qualite",
     "export_cold": "Archive Parquet",
+    "ingest_veille": "Veille externe (consensus, notations, dépêches)",
 }
 
 
@@ -405,3 +498,59 @@ def fraicheur() -> pd.DataFrame:
          order by job_name, started_at desc
         """
     )
+
+
+# --------------------------------------------------------------------------- #
+# Actions à dividende & Rendements potentiels moyens
+# --------------------------------------------------------------------------- #
+
+
+@st.cache_data(ttl=TTL)
+def screener_dividendes(as_of: date) -> pd.DataFrame:
+    """Panorama complet des actions à dividende pour la date de calcul donnée."""
+    from market_intelligence.analytics.dividends import SQL_SCREENER_DIVIDENDES
+
+    df = _frame(SQL_SCREENER_DIVIDENDES, {"as_of": as_of})
+    if df.empty:
+        return df
+
+    # Calcul du statut de sécurité sur chaque ligne
+    from market_intelligence.analytics.dividends import evalue_securite_dividende
+
+    statuts = []
+    motifs = []
+    for _, row in df.iterrows():
+        fcf = row.get("fcf")
+        fcf_neg = (pd.notna(fcf) and fcf < 0)
+        payout_fcf = (row.get("payout_fcf_pct") / 100.0) if pd.notna(row.get("payout_fcf_pct")) else None
+        payout_rn = (row.get("payout_rn_pct") / 100.0) if pd.notna(row.get("payout_rn_pct")) else None
+        dpa_5a = row.get("dpa_moyen_5a")
+        last_dpa = row.get("dernier_dpa")
+        verdict, motif = evalue_securite_dividende(
+            dernier_dpa=last_dpa,
+            dpa_moyen_5a=dpa_5a,
+            payout_fcf=payout_fcf,
+            payout_rn=payout_rn,
+            nb_baisses_5a=0,
+            fcf_negatif=fcf_neg,
+        )
+        statuts.append(verdict)
+        motifs.append(motif)
+
+    df["securite_dividende"] = statuts
+    df["securite_motif"] = motifs
+    return df
+
+
+@st.cache_data(ttl=TTL)
+def profil_dividende(internal_code: str, as_of: date | None = None):
+    """Profil complet et historique de dividendes d'un instrument."""
+    from market_intelligence.analytics.dividends import analyse_dividendes_instrument
+
+    with connect() as conn, conn.cursor() as cur:
+        cur.execute("select id from instruments where internal_code = %(code)s", {"code": internal_code})
+        row = cur.fetchone()
+        if not row:
+            return None
+        return analyse_dividendes_instrument(cur, row[0], as_of)
+

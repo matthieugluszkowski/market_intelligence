@@ -162,6 +162,16 @@ Collecteur API AMF, stockage des documents, chaîne d'extraction LLM, contrôles
 
 ---
 
+### L10 - Veille externe · 1 j  ✅ *(2026-08-25)*
+
+Consensus d'analystes et notations chez Zonebourse, dépêches chez Boursier.com, affichés dans le bloc de diagnostics de la fiche instrument. Deux collecteurs, une table d'adresses par titre, une table de collectes datées, une commande `scripts/ingest_veille.py`.
+
+**Lot ajouté après coup, et volontairement petit.** Il ne faisait partie d'aucune version de cette feuille de route, pour une raison qui reste valable : *ce que disent les autres* n'a aucune place dans une méthode qui cherche des titres décotés que le marché délaisse. Ce qui l'a fait entrer, c'est une question qu'on se pose à chaque fois devant un z-score à −2,4 et à laquelle le modèle, qui lit vingt ans de cours, est structurellement incapable de répondre : **qu'est-ce qui vient d'arriver ?**
+
+D'où la contrainte qui tient tout le lot : ces données **n'entrent dans aucun calcul**, et un test d'architecture le vérifie. Un consensus d'analystes est optimiste par construction et révisé après coup ; le brancher sur le score reviendrait à acheter ce que tout le monde recommande déjà.
+
+---
+
 ## 2. Séquencement
 
 ```

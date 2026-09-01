@@ -1,113 +1,86 @@
-"""Import d'un dossier concurrentiel depuis un fichier JSON (lot L6b bis).
+"""Import en ligne de commande d'un dossier de position concurrentielle.
 
-Meme chemin que l'ecran, en ligne de commande - pour importer un dossier relu
-hors session, ou pour rejouer un import.
+    python scripts/import_dossier.py --code EQ:FR:ESSILOR --fichier reponse.json
+    python scripts/import_dossier.py --code EQ:FR:ESSILOR --fichier r.json --analyste "Prenom Nom"
+    python scripts/import_dossier.py --prompt --code EQ:FR:ESSILOR
 
-    python scripts/import_dossier.py EQ:FR:SEB dossier.json --analyste "Matthieu"
-    python scripts/import_dossier.py EQ:FR:SEB dossier.json --verifier
-    python scripts/import_dossier.py --gabarit EQ:FR:SEB > dossier.json
-
-Sans `--analyste`, le dossier est conserve mais **ne projette rien** : c'est le
-geste de signature qui distingue un dossier relu d'un dossier produit.
+Meme regle que l'ecran Analyses : **sans nom d'analyste, rien n'est projete**.
+Le dossier est conserve en brouillon - ni groupe de pairs, ni evaluation
+qualitative - parce que rien ne distingue un dossier relu d'un dossier produit.
 """
 
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import sys
 from datetime import date
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8",
+                              errors="replace")
 
 from market_intelligence.db import connect_direct  # noqa: E402
-from market_intelligence.intelligence import importer, schema  # noqa: E402
-
-
-def _instrument(cur, code: str):
-    cur.execute(
-        "select id, name, sector_code from instruments where internal_code = %s",
-        (code,))
-    return cur.fetchone()
+from market_intelligence.intelligence import importer, position, prompts  # noqa: E402
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("code", help="internal_code, par exemple EQ:FR:SEB")
-    parser.add_argument("fichier", nargs="?", help="chemin du JSON")
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--code", required=True, help="internal_code du titre")
+    parser.add_argument("--fichier", help="JSON de reponse du modele")
     parser.add_argument("--analyste", default="",
-                        help="qui a relu le dossier ; sans lui, aucune projection")
-    parser.add_argument("--verifier", action="store_true",
-                        help="valider sans rien ecrire")
-    parser.add_argument("--gabarit", action="store_true",
-                        help="ecrire un dossier vide conforme au contrat")
+                        help="nom de l'analyste ; sans lui, aucune projection")
+    parser.add_argument("--prompt", action="store_true",
+                        help="afficher le prompt compose et sortir")
     args = parser.parse_args()
 
     with connect_direct() as conn, conn.cursor() as cur:
-        ligne = _instrument(cur, args.code)
+        cur.execute("select id, name, sector_code, country_iso2 from instruments "
+                    "where internal_code = %s", (args.code,))
+        ligne = cur.fetchone()
         if ligne is None:
-            print(f"Instrument inconnu : {args.code}")
+            print(f"Titre inconnu : {args.code}")
             return 1
-        instrument_id, nom, sector_code = ligne
+        instrument_id, nom, secteur, pays = ligne
 
-        if args.gabarit:
-            print(json.dumps(schema.gabarit(args.code, nom, date.today()),
-                             ensure_ascii=False, indent=2))
+        if args.prompt:
+            print(prompts.compose("position", {
+                "ENTREPRISE_ANALYSEE": nom,
+                "PAYS_ET_ZONE_GEOGRAPHIQUE": f"{pays} / zone euro",
+                "DATE_DE_REFERENCE": date.today().isoformat(),
+            }))
             return 0
 
         if not args.fichier:
-            print("Fichier JSON attendu.")
-            return 1
+            print("--fichier est requis, ou --prompt pour composer le prompt.")
+            return 2
 
-        try:
-            dossier = json.loads(Path(args.fichier).read_text(encoding="utf-8"))
-        except json.JSONDecodeError as exc:
-            print(f"JSON invalide : {exc}")
-            return 1
-
-        validation = schema.valide(dossier)
-        print(f"{nom}  ({args.code})")
-        print(f"  concurrents      {validation.concurrents}")
-        print(f"  dont hors Europe {validation.concurrents_hors_europe}")
-        print(f"  fonctions        {validation.fonctions}")
-        print(f"  sources          {validation.sources}")
-        if validation.problemes:
-            print("\n  problemes :")
-            for p in validation.problemes:
-                print(f"    [{p.niveau:<9}] {p.element}")
-                print(f"                  {p.explication}")
-                if p.correction:
-                    print(f"                  -> {p.correction}")
-
+        dossier = json.loads(Path(args.fichier).read_text(encoding="utf-8"))
+        validation = position.valide(dossier)
+        for probleme in validation.problemes:
+            print(f"  [{probleme.niveau:9}] {probleme.element} — "
+                  f"{probleme.explication}")
         if not validation.importable:
-            print(f"\nImport refuse : {len(validation.bloquants)} bloquant(s). "
-                  f"Le dossier n'est jamais complete automatiquement.")
+            print("\nImport refuse : le dossier est inexploitable en l'etat.")
             return 1
 
-        if args.verifier:
-            print("\nAucun bloquant : le dossier est importable.")
-            return 0
-
-        resultat = importer.importe(cur, instrument_id, args.code, sector_code,
-                                    dossier, args.analyste)
+        resultat = importer.importe(cur, instrument_id, args.code, secteur,
+                                    dossier, args.analyste.strip() or None)
         conn.commit()
 
-        print()
-        if resultat.projete:
-            print(f"Importe et valide par {args.analyste}.")
-            print(f"  {resultat.concurrents_internes} pair(s) de l'univers, "
-                  f"{resultat.concurrents_externes} hors univers")
-            print(f"  groupe de pairs #{resultat.groupe_id}"
-                  + (f", evaluation #{resultat.moat_id}" if resultat.moat_id else ""))
-            print("\nRelancer `python scripts/compute_quality.py` pour que le "
-                  "verdict en tienne compte.")
-        else:
-            print("Dossier enregistre, sans projection.")
-        for message in resultat.messages:
-            print(f"  {message}")
+    score = resultat.score
+    print(f"\n{nom} — {score.total}/100 ({score.niveau})")
+    for l in score.lignes:
+        print(f"  {l.libelle:16} {l.detail:28} {l.points:+4d}")
+    for reserve in score.reserves:
+        print(f"  reserve : {reserve}")
+    print(f"\nDossier #{resultat.analyse_id}, "
+          f"{resultat.concurrents_internes} concurrent(s) dans l'univers, "
+          f"{resultat.concurrents_externes} hors univers.")
+    for message in resultat.messages:
+        print(f"  {message}")
     return 0
 
 

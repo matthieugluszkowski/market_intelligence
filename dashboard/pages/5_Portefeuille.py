@@ -516,10 +516,10 @@ with onglet_ouvrir:
         instrument = univers.set_index("internal_code").loc[titre]
 
         with connect_direct() as conn, conn.cursor() as cur:
-            cur.execute("select id, country_iso2 from instruments "
+            cur.execute("select id, country_iso2, attributes from instruments "
                         "where internal_code = %s", (titre,))
-            instrument_id, pays = cur.fetchone()
-            elig = P.eligibilite(pays, support["eligible_countries"])
+            instrument_id, pays, attrs = cur.fetchone()
+            elig = P.eligibilite(pays, support["eligible_countries"], attrs)
             signal = P.signal_du_jour(cur, instrument_id, AUJOURDHUI)
             ts, cours, _f = P.dernier_cours(cur, instrument_id, AUJOURDHUI)
             deja_verse = P.versements(cur, int(support["id"]))

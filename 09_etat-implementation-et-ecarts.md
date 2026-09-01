@@ -33,6 +33,7 @@ Une dette n'est pas un reproche : plusieurs sont la conséquence directe et pré
 | L7 Orchestration | 🟡 | Cycle de 8 h en cron sur le VPS depuis le 2026-08-21 ; rapport hebdomadaire et alerte sur échec : non faits |
 | L8 Sectoriel + portefeuille | ⬜ | — |
 | L9 Extraction PDF | ⬜ | — |
+| L10 Veille externe | ✅ | Consensus, notations et dépêches collectés chez Zonebourse et Boursier.com ; 30 tests, dont deux d'architecture qui vérifient qu'aucun calcul ne les lit |
 
 **169 tests.** Effort réel : de l'ordre de 20 jours-homme pour L0 à L6b, cohérent avec la fourchette optimiste de la spec 05.
 
@@ -211,7 +212,7 @@ Tri sur `fit_quality` puis z, alors que la spec pose quadrant puis z. Le comment
 **T14** - `z rel. pairs` n'existe nulle part dans le dépôt, alors que le doc 03 §7.3 en fait « la métrique la plus discriminante et la plus négligée ».
 **T15** - 6 filtres screener sur 11 absents, dont classe d'actif, quadrant, niveau de qualité et régime - trois de ces données sont pourtant déjà ramenées par la requête.
 **T16** - Bloc D : les petits multiples de tendance sur 5 ans sont remplacés par des tableaux. `moat_sources`, `threats` et `rationale` sont chargés puis jetés.
-**T17** - Bloc E : instantané mono-période au lieu d'une série 5 ans, sans source ni date par valeur ; extractions LLM non marquées visuellement.
+**T17** - ~~Bloc E : instantané mono-période au lieu d'une série 5 ans, sans source ni date par valeur ; extractions LLM non marquées visuellement.~~ **Sans objet depuis le 2026-08-25 : le bloc E a été retiré de la fiche.** Un filtre de solvabilité, pas un jugement de qualité — et le verdict de cohérence prix/fondamentaux qu'il portait reste lisible au screener et à la matrice, là où il sert à classer. La dette revient telle quelle si le bloc est remis.
 **T18** - Palette de statuts dupliquée en dur dans la fiche et réutilisée pour `quality_tier` et pour la cohérence prix/fondamentaux, alors que `theme.py` énonce la règle transgressée : *une couleur qui sert à deux choses ne sert plus à rien*. Ces valeurs ne suivent pas la bascule clair/sombre.
 **T19** - Libellé de statut remplacé par le code technique dans le tableau (`● good` au lieu du libellé complet). L'accessibilité daltonienne est sauve, la lisibilité non.
 **T20** - Le jumeau tabulaire de la matrice n'est pas filtré comme le nuage : dès qu'on filtre, il cesse d'être un jumeau.

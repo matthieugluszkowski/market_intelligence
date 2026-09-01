@@ -44,12 +44,20 @@ DIAGNOSTICS = [
      "Part des variations du cours expliquée par la tendance (entre 0 et 1).",
      "Proche de 1 = cours discipliné autour de sa droite ; faible = la "
      "tendance décrit mal ce titre et le z-score perd de son sens."),
+    ("Solidité concurrentielle",
+     "La conclusion du dossier de position : leader, challenger, suiveur ou "
+     "acteur de niche — puis le score sur 100, son ancienneté et sa durabilité.",
+     "C'est le constat qui se lit d'abord, le score ensuite : 78/100 ne dit rien "
+     "tant qu'on ignore s'il note un leader ou un suiveur. « brouillon » = "
+     "dossier non relu, donc rien de projeté et titre non qualifié."),
     ("Qualité du fit",
      "Verdict des tests statistiques (ADF, DF-GLS, KPSS) sur la validité de la "
-     "régression : le retour vers la tendance est-il démontré ?",
+     "régression : le retour vers la tendance est-il démontré ? Affiché dans "
+     "« Detail technique des tests », avec les tests qui le produisent.",
      "« Retour à la tendance soutenu » = les tests confirment. « Test non "
      "concluant » ou « régression invalide » = le z-score ne doit pas fonder "
-     "une décision seul."),
+     "une décision seul. C'est une propriété de la méthode appliquée à ce "
+     "titre, pas un jugement sur l'entreprise."),
 ]
 
 REGIME = [
@@ -234,61 +242,58 @@ FONDAMENTAUX = [
 ]
 
 DOSSIER = [
-    ("Statut du dossier",
-     "draft = brouillon en cours de constitution ; validated = relu et signé "
-     "par un analyste nommé.",
-     "Seul un dossier validé projette ses verdicts vers l'évaluation "
-     "qualitative et peut faire passer le titre en solid."),
-    ("Statut d'une affirmation",
-     "Chaque affirmation du dossier porte son degré de preuve : FAIT_VERIFIE "
-     "(source primaire), DECLARATION_ENTREPRISE (l'entreprise l'affirme), "
-     "DONNEE_SECONDAIRE (agrégateur), SIGNAL, ESTIMATION, INTERPRETATION, "
-     "HYPOTHESE.",
-     "Une phrase sans statut est inexploitable trois mois plus tard : on ne "
-     "sait plus si elle a été vérifiée ou déduite."),
-    ("Type de concurrence",
-     "direct (même besoin, mêmes clients), indirect (recouvrement partiel), "
-     "reference (acteur de référence à connaître), emerging (entrant en "
-     "croissance).",
-     "La menace se juge par type : un emerging minuscule aujourd'hui peut "
-     "peser plus qu'un direct installé."),
-    ("Groupe complet",
-     "Un groupe de pairs est complet s'il contient au moins un concurrent "
-     "hors Europe.",
+    ("Position",
+     "leader, challenger, suiveur ou acteur de niche sur le marché que "
+     "l'analyse a délimité.",
+     "Le périmètre du marché est la décision la plus lourde de l'analyse : un "
+     "périmètre trop étroit fabrique un leader en excluant celui qui le menace."),
+    ("Depuis / perdue en",
+     "L'année où l'entreprise a atteint sa position — ou celle où elle a perdu "
+     "le leadership.",
+     "« Leader » sans « depuis quand » ne dit pas si la position est établie ou "
+     "fraîche, et c'est toute la différence entre une rente et un accident. "
+     "Une perte récente est une trajectoire ; une perte ancienne, un état de "
+     "fait que le marché a déjà digéré."),
+    ("Durabilité",
+     "solide, à surveiller, en érosion, aucune — la résistance attendue de la "
+     "position, pas sa force actuelle.",
+     "Un leader dont la rente s'érode depuis cinq ans est plus dangereux qu'un "
+     "challenger stable : c'est la question que personne n'affiche."),
+    ("Sources de rente",
+     "Ce qui protège la position : brand, patent, switching, network, cost, "
+     "scale, regulatory, distribution.",
+     "Ce qui ne rentre dans aucune de ces cases est en général une qualité "
+     "opérationnelle, pas une barrière."),
+    ("Danger d'une menace",
+     "élevé, moyen ou faible, avec l'explication du mécanisme par lequel la "
+     "menace ferait mal.",
+     "Une menace faible ne retire aucun point : compter chaque menace recensée "
+     "punirait le dossier le plus complet, alors qu'un concurrent identifié "
+     "puis jugé peu dangereux est une information rassurante."),
+    ("Menace directe / indirecte",
+     "Directe = attaque le cœur de marché ; indirecte = substitut, "
+     "réglementation, rupture technologique.",
      "Les menaces réelles viennent presque toujours de l'extérieur de "
-     "l'univers : un groupe purement européen est d'autant plus rassurant "
-     "qu'il ne contient pas le concurrent. Sans lui, le titre plafonne à "
-     "watch."),
-    ("Péremption",
-     "Tout dossier expire 18 mois après sa date de référence.",
-     "Une évaluation de 2026 inspire la même confiance qu'une de 2029, et "
-     "c'est le problème : la péremption force la revue."),
-    ("Score d'attractivité (prompt 5)",
-     "Note sur 100 de la qualité et de l'intérêt potentiel du dossier : "
-     "qualité économique, solidité financière, avantage concurrentiel, "
-     "management, croissance, valorisation, risques.",
-     "Mesure le dossier, **jamais** le cours futur. Une note élevée ne "
-     "compense pas un risque critique."),
-    ("Score de confiance (prompt 5)",
-     "Note sur 100 de la robustesse de l'analyse elle-même : fraîcheur des "
-     "données, couverture, qualité et cohérence des sources, clarté des "
-     "hypothèses.",
-     "C'est le garde-fou contre l'assurance artificielle du LLM : sous 50, "
-     "aucune conclusion forte ; un bloquant non acquitté plafonne à 30. Une "
-     "entreprise attractive avec une confiance faible se surveille, elle ne "
-     "s'achète pas."),
-    ("Score d'alignement (prompt 5)",
-     "Note sur 100 de la cohérence entre qualité fondamentale, risque, "
-     "perspectives et prix actuel.",
-     "Détecte les désaccords : excellente mais chère, médiocre mais décotée, "
-     "attractive uniquement dans le scénario favorable."),
-    ("Avis (prompt 5)",
-     "Une conclusion parmi six : achat à étudier, conservation à étudier, "
-     "surveillance, attendre une meilleure valorisation, éviter ou attendre, "
-     "insuffisant pour conclure.",
-     "Un avis d'analyse produit par LLM et non relu par défaut — jamais un "
-     "conseil d'investissement. S'abstenir est une réponse valide quand les "
-     "données sont incomplètes, anciennes ou contradictoires."),
+     "l'univers européen — un dossier où tous les concurrents sont européens "
+     "est suspect."),
+    ("Solidité concurrentielle",
+     "Un score sur 100 calculé à partir des verdicts : position, ancienneté, "
+     "durabilité, menaces pondérées par leur danger.",
+     "Calculé ici, jamais demandé au modèle : deux exécutions du même prompt "
+     "donneraient deux notes. Le barème s'affiche à côté du total — un score "
+     "dont on ne voit pas la construction ne se discute pas, il se subit."),
+    ("Statut du dossier",
+     "brouillon = importé sans relecture ; validé = relu et signé par un "
+     "analyste nommé.",
+     "Seul un dossier validé projette ses verdicts vers l'évaluation "
+     "qualitative et le groupe de pairs, et peut faire passer le titre en "
+     "solid."),
+    ("Statut d'une affirmation",
+     "FAIT_VERIFIE (source primaire), DECLARATION_ENTREPRISE (l'entreprise "
+     "l'affirme), ESTIMATION, INTERPRETATION, MIGRE (repris d'un ancien "
+     "dossier par conversion).",
+     "« Leader du marché » figure dans le rapport annuel de la moitié des "
+     "sociétés d'un secteur : c'est une déclaration, pas un fait."),
 ]
 
 
@@ -388,6 +393,54 @@ PORTEFEUILLE = [
      "La troisième réponse est la plus importante : une thèse peut être "
      "juste et la position perdante, ou l'inverse. Forcer un verdict binaire "
      "fabrique de l'apprentissage sur du bruit."),
+]
+
+# Les avis de tiers collectés chez Zonebourse et Boursier.com (lot L10). Le
+# glossaire compte ici double : ces chiffres viennent d'ailleurs, avec leurs
+# conventions, et rien à l'écran ne dit spontanément qu'une note de 24 % est un
+# rang sectoriel plutôt qu'une probabilité.
+VEILLE = [
+    ("Recommandation moyenne",
+     "L'avis agrégé des analystes qui suivent le titre, tel que la source le "
+     "publie : de « vendre » à « acheter ».",
+     "Un consensus est **structurellement optimiste** et révisé après coup : il "
+     "n'entre dans aucun calcul de cette application. Il sert à savoir si la "
+     "décote est un secret — et surtout à repérer les cas où il contredit le "
+     "modèle, qui sont les plus intéressants."),
+    ("Nombre d'analystes",
+     "Combien de bureaux couvrent le titre.",
+     "Trois analystes ne font pas un consensus. Sur une petite capitalisation, "
+     "l'avis moyen peut être celui de deux maisons dont l'une est courtier du "
+     "groupe."),
+    ("Objectif de cours",
+     "Prix moyen visé à douze mois par les analystes, et l'écart au cours "
+     "actuel. La fourchette haute et basse encadre la dispersion.",
+     "Un écart haut/bas très large traduit un désaccord, donc une difficulté à "
+     "évaluer la société — pas une opportunité plus grande. L'objectif moyen "
+     "suit le cours plus souvent qu'il ne l'anticipe."),
+    ("Notations (Trader, Investisseur, Qualité…)",
+     "Des **rangs** calculés par la source : « 24 % » signifie mieux noté que "
+     "24 % de son univers de comparaison sur ce critère.",
+     "Ce n'est ni une probabilité, ni une performance, ni une note sur 100. Deux "
+     "titres à 60 % ne sont pas équivalents : les univers de comparaison "
+     "diffèrent."),
+    ("Points forts / points faibles",
+     "Des phrases produites automatiquement par la source à partir de ses "
+     "propres notations.",
+     "Reproduites telles quelles. Ce n'est pas une analyse relue — ni la nôtre : "
+     "la seule analyse relue de cette application est le dossier de position "
+     "concurrentielle, et elle porte le nom de qui l'a validée."),
+    ("Dépêches",
+     "Les actualités du titre chez Boursier.com : titre, date, et texte complet "
+     "pour les plus récentes.",
+     "Le modèle lit vingt ans de cours et ignore la semaine dernière. Une "
+     "démission, un avertissement sur résultats ou une dégradation expliquent "
+     "souvent ce qu'aucun test statistique ne dira — et c'est ce qui sépare une "
+     "décote d'un effondrement justifié."),
+    ("Date de collecte",
+     "Le jour où ces pages ont été lues. Chaque collecte est conservée.",
+     "Une dépêche de trois semaines affichée sans sa date se lit comme une "
+     "nouvelle du jour. Si l'âge indiqué surprend, relancer la collecte."),
 ]
 
 

@@ -19,6 +19,8 @@ select i.id, i.internal_code, i.currency, s.symbol
   join instrument_symbols s
     on s.instrument_id = i.id and s.source_id = %(source_id)s and s.is_primary
  where i.is_active
+   and (select supports_fundamentals from asset_classes
+         where code = i.asset_class)
  order by i.internal_code;
 """
 

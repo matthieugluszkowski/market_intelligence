@@ -9,8 +9,12 @@ insert into regression_policies
   (code, label, model, window_years, min_years, bar_freq, min_observations, notes) values
   ('loglin_20y', 'Log-lineaire 20 ans', 'log_linear', 20, 15, '1w', 500,
    'Defaut actions. Marie de Raismes utilise 20 ans pour les societes.'),
+  ('loglin_15y', 'Log-lineaire 15 ans', 'log_linear', 15, 10, '1w', 400,
+   'Defaut ETF et actifs a historique intermediaire (10 a 15 ans).'),
+  ('loglin_10y', 'Log-lineaire 10 ans', 'log_linear', 10, 7, '1w', 300,
+   'ETF recents et actifs a historique court (7 a 10 ans).'),
   ('loglin_30y', 'Log-lineaire 30 ans', 'log_linear', 30, 20, '1w', 800,
-   'Indices et ETF, depuis un regime monetaire homogene.'),
+   'Indices et ETF historiques, depuis un regime monetaire homogene.'),
   ('real_deflated', 'Tendance reelle deflatee', 'real_deflated', 50, 30, '1mo', 300,
    'Matieres premieres. La tendance nominale est dominee par l inflation.'),
   ('excluded', 'Hors modele', 'none', null, 0, '1d', 0,
@@ -22,10 +26,11 @@ on conflict (code) do update set
 
 -- --- Classes d actifs -------------------------------------------------------
 insert into asset_classes (code, label, supports_fundamentals, default_policy_code) values
-  ('equity',    'Action',            true,  'loglin_20y'),
-  ('etf',       'ETF',               false, 'loglin_30y'),
-  ('index',     'Indice',            false, 'loglin_30y'),
-  ('commodity', 'Matiere premiere',  false, 'real_deflated'),
+  ('equity',         'Action',              true,  'loglin_20y'),
+  ('dividend_stock', 'Action à dividende',   true,  'loglin_20y'),
+  ('etf',            'ETF',                 false, 'loglin_15y'),
+  ('index',          'Indice',              false, 'loglin_30y'),
+  ('commodity',      'Matière première',   false, 'real_deflated'),
   ('crypto',    'Crypto-actif',      false, 'excluded'),
   ('fx',        'Devise',            false, 'excluded'),
   ('bond',      'Obligation',        false, 'excluded')
@@ -34,10 +39,11 @@ on conflict (code) do update set
   supports_fundamentals = excluded.supports_fundamentals,
   default_policy_code = excluded.default_policy_code;
 
--- --- Devises (ISO 4217, + GBX pence pour le LSE) ----------------------------
+-- --- Devises (ISO 4217, + les sous-unites de cotation GBX et USX) -----------
 insert into currencies (code, label) values
   ('EUR', 'Euro'),
   ('USD', 'Dollar americain'),
+  ('USX', 'Cent americain (cotation CBOT, 1/100 USD)'),
   ('GBP', 'Livre sterling'),
   ('GBX', 'Penny sterling (cotation LSE, 1/100 GBP)'),
   ('CHF', 'Franc suisse'),
@@ -102,7 +108,18 @@ insert into data_sources (id, code, label, kind, priority, base_url, license_not
   (6, 'amf',      'AMF - info-financiere',      'fundamental', 30, 'https://api.info-financiere.fr/api/v1',
       'Documents PDF, pas de chiffres structures. 10 000 appels/IP/jour.'),
   (7, 'eurostat', 'Eurostat - IPCH',            'reference',   20, 'https://ec.europa.eu/eurostat/api/dissemination',
-      'Deflateurs pour la politique real_deflated.')
+      'Deflateurs pour la politique real_deflated.'),
+  -- Veille (lot L10). `priority` volontairement au plus haut : ces deux sources
+  -- n arbitrent aucun conflit de donnee, elles n alimentent aucun calcul. Elles
+  -- rapportent ce que des tiers affirment, et c est affiche comme tel.
+  (8, 'zonebourse', 'Zonebourse (Surperformance SAS)', 'sentiment', 90,
+      'https://www.zonebourse.com',
+      'Consensus d analystes et notations. Page publique, adresse par identifiant '
+      'interne : l URL se saisit par titre. Affichage seul, avec source et lien.'),
+  (9, 'boursier',   'Boursier.com',                    'news',      90,
+      'https://www.boursier.com',
+      'Depeches par titre, adressees par ISIN. Contenu sous droits : affiche avec '
+      'sa source et son lien, jamais republie.')
 on conflict (id) do update set
   code = excluded.code, label = excluded.label, kind = excluded.kind,
   priority = excluded.priority, base_url = excluded.base_url,

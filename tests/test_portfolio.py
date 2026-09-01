@@ -256,6 +256,24 @@ def test_la_casse_du_code_pays_est_indifferente():
     assert P.eligibilite("fr", ["FR", "DE"]).autorise
 
 
+def test_une_siic_est_refusee_sur_un_support_restreint_par_pays():
+    """Gecina, Covivio, Altarea SCA : pays FR correct, mais statut SIIC exclu du
+    PEA depuis la loi de finances 2012 malgre le cumul d'exonerations."""
+    resultat = P.eligibilite("FR", ["FR", "DE"], {"pea_eligible": False, "pea_motif": "Statut SIIC"})
+    assert not resultat.autorise
+    assert resultat.motif == "Statut SIIC"
+
+
+def test_une_siic_reste_acceptee_sur_un_support_sans_restriction_pays():
+    """Le meme titre reste tout a fait detenable en CTO ou assurance-vie : seul
+    le PEA (identifiable ici par ses pays eligibles declares) exclut les SIIC."""
+    assert P.eligibilite("FR", None, {"pea_eligible": False, "pea_motif": "Statut SIIC"}).autorise
+
+
+def test_un_titre_pea_eligible_nest_pas_affecte():
+    assert P.eligibilite("FR", ["FR", "DE"], {"pea_eligible": True}).autorise
+
+
 # --------------------------------------------------------------------------- #
 # Fermeture et revue de thèse
 # --------------------------------------------------------------------------- #

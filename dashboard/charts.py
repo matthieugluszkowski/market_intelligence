@@ -155,8 +155,33 @@ def couches_position(serie: pd.DataFrame, positions: pd.DataFrame,
     return couches
 
 
+PERIODES = {
+    "Tout": None, "20 ans": 20 * 365, "10 ans": 10 * 365, "5 ans": 5 * 365,
+    "3 ans": 3 * 365, "1 an": 365,
+}
+
+
+def fenetre(serie: pd.DataFrame, periode: str) -> pd.DataFrame:
+    """Les N dernieres annees de la serie, sans rien recalculer.
+
+    **La tendance et les bandes ne bougent pas** : ce sont des colonnes deja
+    calculees sur la fenetre de regression complete. Couper l'affichage ne
+    re-estime rien - on regarde de plus pres la meme droite, on n'en trace pas
+    une autre. Un graphe qui re-estimerait sur la periode affichee montrerait
+    une pente differente a chaque zoom, et ce serait faux.
+    """
+    jours = PERIODES.get(periode)
+    if not jours or serie.empty:
+        return serie
+    depuis = pd.Timestamp(serie["ts"].max()) - pd.Timedelta(days=jours)
+    coupee = serie[pd.to_datetime(serie["ts"]) >= depuis]
+    # Moins de deux points ne fait pas un graphe : on rend la serie entiere
+    # plutot qu'un ecran vide.
+    return coupee if len(coupee) > 2 else serie
+
+
 def graphe_regression(serie: pd.DataFrame, p: Palette, devise: str,
-                      hauteur: int = 460,
+                      hauteur: int = 620,
                       positions: pd.DataFrame | None = None) -> alt.Chart:
     axe_x = alt.Axis(grid=True, gridColor=p.grille, gridDash=[], domainColor=p.encre_attenuee,
                      tickColor=p.encre_attenuee, labelColor=p.encre_secondaire,
@@ -231,12 +256,62 @@ def graphe_regression(serie: pd.DataFrame, p: Palette, devise: str,
         ).add_params(selection)
     )
 
+    # Zoom et deplacement : molette pour l'echelle, glisser pour se deplacer,
+    # double-clic pour revenir. Lie **aux deux axes** - sur une echelle
+    # logarithmique de vingt ans, zoomer sur le temps sans zoomer sur les prix
+    # laisse la courbe ecrasee au meme endroit et ne montre rien de plus.
+    zoom = alt.selection_interval(bind="scales", encodings=["x", "y"])
+
     return (
         alt.layer(*couches)
+        .add_params(zoom)
         .properties(height=hauteur, background=p.surface)
         .configure_view(stroke=None)
         .configure(font="system-ui")
     )
+
+
+def panneau_z(serie: pd.DataFrame, p: Palette, hauteur: int = 150) -> alt.Chart:
+    """Le z-score sous le graphe des cours, sur toute la fenetre affichee.
+
+    Le meme fait, lu autrement : le graphe du haut montre un cours qui monte, ce
+    panneau montre s'il est cher ou non **par rapport a sa propre tendance**.
+    Sur vingt ans d'echelle logarithmique, un ecart de deux sigma se voit mal en
+    haut et se lit immediatement ici.
+
+    Il ne suit pas le zoom du graphe du dessus, et c'est voulu : il sert de vue
+    d'ensemble - savoir ou l'on se trouve quand on est zoome sur six mois.
+    """
+    if serie.empty:
+        return alt.Chart(pd.DataFrame({"ts": [], "z": []})).mark_line()
+
+    axe = alt.Axis(grid=True, gridColor=p.grille, gridDash=[],
+                   domainColor=p.encre_attenuee, tickColor=p.encre_attenuee,
+                   labelColor=p.encre_secondaire, titleColor=p.encre_secondaire)
+    base = alt.Chart(serie).encode(x=alt.X("ts:T", title=None, axis=axe))
+
+    couches = []
+    episodes = episodes_sous_seuil(serie)
+    if not episodes.empty:
+        couches.append(
+            alt.Chart(episodes).mark_rect(opacity=0.10, color=p.serie_cours)
+            .encode(x="debut:T", x2="fin:T"))
+
+    # Les seuils sont des reperes, pas des series : encre attenuee, filet plein.
+    seuils = pd.DataFrame({"seuil": [-2.0, 0.0, 2.0]})
+    couches.append(
+        alt.Chart(seuils).mark_rule(size=1, color=p.encre_attenuee, opacity=0.55)
+        .encode(y=alt.Y("seuil:Q", title="z-score", axis=axe)))
+    couches.append(
+        base.mark_line(size=1.5, color=p.serie_cours).encode(
+            y=alt.Y("z:Q", axis=axe),
+            tooltip=[alt.Tooltip("ts:T", title="Date"),
+                     alt.Tooltip("z:Q", title="z-score", format="+.2f")]))
+
+    return (alt.layer(*couches)
+            .properties(height=hauteur, background=p.surface)
+            .configure_view(stroke=None)
+            .configure(font="system-ui"))
 
 
 def jumeau_tabulaire(serie: pd.DataFrame) -> pd.DataFrame:
@@ -270,3 +345,33 @@ def graphe_historique_fits(historique: pd.DataFrame, p: Palette) -> alt.Chart:
         .properties(height=200, background=p.surface)
         .configure_view(stroke=None)
     )
+
+
+def graphe_dividendes(historique_annuel: pd.DataFrame, p: Palette, devise: str = "EUR") -> alt.Chart:
+    """Diagramme en barres de l'historique des dividendes annuels par action."""
+    if historique_annuel.empty:
+        return alt.Chart(pd.DataFrame()).mark_text().encode(text=alt.value("Aucun dividende"))
+
+    axe_x = alt.Axis(grid=False, labelColor=p.encre_secondaire, titleColor=p.encre_secondaire,
+                     domainColor=p.encre_attenuee, tickColor=p.encre_attenuee, format="d")
+    axe_y = alt.Axis(grid=True, gridColor=p.grille, gridDash=[],
+                     labelColor=p.encre_secondaire, titleColor=p.encre_secondaire,
+                     domainColor=p.encre_attenuee, tickColor=p.encre_attenuee)
+
+    return (
+        alt.Chart(historique_annuel)
+        .mark_bar(color="#0ca30c", cornerRadiusTopLeft=3, cornerRadiusTopRight=3)
+        .encode(
+            x=alt.X("annee:O", title="Année", axis=axe_x),
+            y=alt.Y("montant_total:Q", title=f"DPA ({devise})", axis=axe_y),
+            tooltip=[
+                alt.Tooltip("annee:O", title="Année"),
+                alt.Tooltip("montant_total:Q", title="Dividende par action", format=".2f"),
+                alt.Tooltip("nb_versements:Q", title="Versements"),
+            ],
+        )
+        .properties(height=220, background=p.surface)
+        .configure_view(stroke=None)
+        .configure(font="system-ui")
+    )
+

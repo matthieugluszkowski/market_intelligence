@@ -105,6 +105,7 @@ python scripts/quality_checks.py             # 9 contrôles            ~50 s
 python scripts/compute_fits.py               # 586 régressions        ~75 s
 python scripts/compute_quality.py            # 586 scores qualité     ~6 s
 python scripts/export_cold.py                # archive Parquet        ~2 min
+python scripts/ingest_veille.py              # consensus, dépêches    ~20 s/titre
 ```
 
 Tous sont **idempotents** : les relancer ne produit ni doublon ni écrasement.
@@ -128,6 +129,27 @@ python scripts/cycle.py --only compute_fits
 Toutes les étapes ne se paient pas le même prix, donc **chacune porte sa
 cadence** ; le cycle relit `ingestion_runs` pour savoir ce qui a vieilli et ne
 relance que ça.
+
+## Veille externe
+
+Consensus d'analystes et notations (Zonebourse), dépêches (Boursier.com),
+affichés dans le bloc de diagnostics de la fiche instrument. **Ces données
+n'entrent dans aucun calcul** — un consensus est optimiste par construction et
+révisé après coup ; le brancher sur le score reviendrait à acheter ce que tout
+le monde recommande déjà. Elles répondent à la seule question que la régression
+ne peut pas traiter : *qu'est-ce qui vient d'arriver ?*
+
+```bash
+python scripts/ingest_veille.py                      # watchlist + portefeuille
+python scripts/ingest_veille.py --code EQ:FR:ESSILOR
+python scripts/ingest_veille.py --url EQ:FR:ESSILOR https://www.zonebourse.com/cours/action/ESSILORLUXOTTICA-4641/
+```
+
+Boursier.com se résout depuis l'ISIN : rien à saisir. Zonebourse adresse ses
+fiches par identifiant interne, et un identifiant approchant **ne rend pas une
+erreur : il rend la fiche d'une autre société** — l'adresse se colle donc une
+fois par titre, depuis la fiche instrument ou avec `--url`. Le cycle reprend la
+collecte une fois par jour pour les titres suivis.
 
 | Étape | Cadence | Durée sur 586 titres | Pourquoi cette cadence |
 |---|---|---|---|
