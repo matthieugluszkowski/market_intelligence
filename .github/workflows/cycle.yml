@@ -35,7 +35,11 @@ concurrency:
 jobs:
   cycle:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # Mesure doc 00 SS5 : cycle complet force a 586 titres = 104 min, dont 44
+    # pour le seul backfill_prices. A 618 titres le premier passage a depasse
+    # 60 min (coupe a 436/618 sur cette seule etape) - marge large ici, pas
+    # ajustee au plus juste : le plafond dur GitHub Actions est 360 min.
+    timeout-minutes: 180
     steps:
       - uses: actions/checkout@v4
 
