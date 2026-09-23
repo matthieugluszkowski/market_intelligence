@@ -962,6 +962,51 @@ if f["asset_class"] in ("equity", "dividend_stock"):
             ]
             st.dataframe(pd.DataFrame(lignes_div), use_container_width=True, hide_index=True)
 
+        # Grille d'audit des 11 règles d'investissement
+        if prof.score_11_regles:
+            st.markdown("#### Stratégie d'Investissement Dividende · Checklist des 11 Règles")
+            s11 = prof.score_11_regles
+
+            if s11.est_investissable:
+                st.success(
+                    f"**🟢 {s11.verdict}** (Capitaux validés : **{s11.total_capitaux_oui}/{s11.total_capitaux}**)\n\n"
+                    f"{s11.synthese_explication}"
+                )
+            else:
+                st.warning(
+                    f"**🔴 {s11.verdict}** (Capitaux validés : **{s11.total_capitaux_oui}/{s11.total_capitaux}**)\n\n"
+                    f"{s11.synthese_explication}"
+                )
+
+            tableau_11 = []
+            for r in s11.regles:
+                tableau_11.append({
+                    "N°": f"R{r.numero}",
+                    "Règle": r.nom,
+                    "Statut": "⭐ CAPITAL" if r.est_capitale else "Standard",
+                    "Valeur observée": r.valeur_observee,
+                    "Seuil requis": r.seuil_requis,
+                    "Verdict": "✅ OUI" if r.passe else "❌ NON",
+                    "Explication": r.explication,
+                    "Source": r.source_info,
+                })
+
+            st.dataframe(
+                pd.DataFrame(tableau_11),
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "N°": st.column_config.TextColumn("N°", width="small"),
+                    "Verdict": st.column_config.TextColumn("Verdict", width="small"),
+                    "Statut": st.column_config.TextColumn("Statut", width="small"),
+                    "Valeur observée": st.column_config.TextColumn("Valeur", width="medium"),
+                    "Explication": st.column_config.TextColumn("Explication", width="large"),
+                },
+            )
+            st.caption(
+                "Règle de décision : investir si ≥ 8 OUI sur 11. Les critères N° 1, 3, 5, 6, 8 et 9 sont CAPITAUX."
+            )
+
 
 # --------------------------------------------------------------------------- #
 # Ce que la fiche ne montre plus, et pourquoi

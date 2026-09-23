@@ -1,0 +1,585 @@
+﻿internal_code;isin;nom;type;type_label;sous_type;place;devise;pays;secteur_code;secteur_label;actif;pea_eligible;politique_regression;symbole_yfinance;emetteur;ter;distribution;replication;indice_reference;unite;premiere_barre;derniere_barre;annees_historique
+CM:ALUMINIUM;;Aluminium;commodity;Matière première;métal industriel;;USD;;;;True;;loglin_20y;ALI=F;;;;;;USD par tonne;2014-05-05;2026-08-24;12.3
+CM:SILVER;;Argent;commodity;Matière première;métal précieux;;USD;;;;True;;loglin_20y;SI=F;;;;;;USD par once troy;2000-08-28;2026-08-24;26.0
+CM:WHEAT;;Blé;commodity;Matière première;agricole;;USX;;;;True;;loglin_20y;ZW=F;;;;;;cents US par boisseau;2000-07-17;2026-08-24;26.1
+CM:COPPER;;Cuivre;commodity;Matière première;métal industriel;;USD;;;;True;;loglin_20y;HG=F;;;;;;USD par livre;2000-08-28;2026-08-24;26.0
+CM:NATGAS;;Gaz naturel;commodity;Matière première;énergie;;USD;;;;True;;loglin_20y;NG=F;;;;;;USD par MMBtu;2000-08-28;2026-08-24;26.0
+CM:CORN;;Maïs;commodity;Matière première;agricole;;USX;;;;True;;loglin_20y;ZC=F;;;;;;cents US par boisseau;2000-07-17;2026-08-24;26.1
+CM:IRONORE;;Minerai de fer;commodity;Matière première;métal industriel;;USD;;;;True;;loglin_20y;TIO=F;;;;;;USD par tonne;2010-10-11;2026-08-17;15.8
+CM:GOLD;;Or;commodity;Matière première;métal précieux;;USD;;;;True;;loglin_20y;GC=F;;;;;;USD par once troy;2000-08-28;2026-08-24;26.0
+CM:PALLADIUM;;Palladium;commodity;Matière première;métal précieux;;USD;;;;True;;loglin_20y;PA=F;;;;;;USD par once troy;1998-09-28;2026-08-24;27.9
+CM:BRENT;;Pétrole Brent;commodity;Matière première;énergie;;USD;;;;True;;loglin_20y;BZ=F;;;;;;USD par baril;2007-07-30;2026-08-24;19.1
+CM:PLATINUM;;Platine;commodity;Matière première;métal précieux;;USD;;;;True;;loglin_20y;PL=F;;;;;;USD par once troy;1997-10-27;2026-08-24;28.8
+CM:SOYBEAN;;Soja;commodity;Matière première;agricole;;USX;;;;True;;loglin_20y;ZS=F;;;;;;cents US par boisseau;2000-09-11;2026-08-24;25.9
+EQ:FR:AIRLIQUIDE;FR0000120073;Air Liquide;dividend_stock;Action à dividende;Aristocrate du dividende & Actions gratuites;XPAR;EUR;FR;55;Basic Materials;True;True;loglin_20y;AI.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:ALLIANZ;DE0008404005;Allianz;dividend_stock;Action à dividende;Assureur leader européen & Dividende croissant;XETR;EUR;DE;30;Financials;True;True;loglin_20y;ALV.DE;;;;;;;1996-12-16;2026-08-17;29.7
+EQ:FR:AXA;FR0000120628;AXA;dividend_stock;Action à dividende;Rendement élevé & Distribution solide;XPAR;EUR;FR;30;Financials;True;True;loglin_20y;CS.PA;;;;;;;1990-08-20;2026-08-17;36.0
+EQ:DE:BMW;DE0005190003;Bayerische Motoren Werke;dividend_stock;Action à dividende;Auto premium & Bilan ultra-solide;XETR;EUR;DE;40;Consumer Discretionary;True;True;loglin_20y;BMW.DE;;;;;;;1996-11-04;2026-08-17;29.8
+EQ:FR:BNP;FR0000131104;BNP Paribas;dividend_stock;Action à dividende;Rendement bancaire élevé;XPAR;EUR;FR;30;Financials;True;True;loglin_20y;BNP.PA;;;;;;;1993-10-18;2026-08-17;32.8
+EQ:FR:BOUYGUES;FR0000120503;Bouygues SA;dividend_stock;Action à dividende;Rendement élevé & Conglomérat résilient;XPAR;EUR;FR;50;Industrials;True;True;loglin_20y;EN.PA;;;;;;;1991-01-07;2026-08-17;35.6
+EQ:FR:DANONE;FR0000120644;Danone;dividend_stock;Action à dividende;Défensif grande consommation;XPAR;EUR;FR;45;Consumer Staples;True;True;loglin_20y;BN.PA;;;;;;;1989-01-16;2026-08-17;37.6
+EQ:FR:EIFFAGE;FR0000130452;Eiffage SA;dividend_stock;Action à dividende;Concessions autoroutières & BTP;XPAR;EUR;FR;50;Industrials;True;True;loglin_20y;FGR.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:ENEL;IT0003128367;Enel;dividend_stock;Action à dividende;Utility intégrée italienne & Haut dividende;XMIL;EUR;IT;65;Utilities;True;True;loglin_20y;ENEL.MI;;;;;;;1999-11-01;2026-08-17;26.8
+EQ:FR:ENGIE;FR0010208488;Engie;dividend_stock;Action à dividende;Rendement utility & Transition énergétique;XPAR;EUR;FR;65;Utilities;True;True;loglin_20y;ENGI.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:FREENET;DE000A0Z2ZZ5;freenet AG;dividend_stock;Action à dividende;Télécom allemand & Rendement récurrent;XETR;EUR;DE;15;Telecommunications;True;True;loglin_20y;FNTN.DE;;;;;;;2000-01-10;2026-08-17;26.6
+EQ:ES:IBERDROLA;ES0144580Y14;Iberdrola;dividend_stock;Action à dividende;Leader mondial éolien/réseaux & Dividende en hausse;XMAD;EUR;ES;65;Utilities;True;True;loglin_20y;IBE.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:OREAL;FR0000120321;L Oreal;dividend_stock;Action à dividende;Aristocrate du dividende & Leader mondial;XPAR;EUR;FR;45;Consumer Staples;True;True;loglin_20y;OR.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:MERCEDES;DE0007100000;Mercedes-Benz Group;dividend_stock;Action à dividende;Auto premium & Dividende massif;XETR;EUR;DE;40;Consumer Discretionary;True;True;loglin_20y;MBG.DE;;;;;;;1996-10-28;2026-08-17;29.8
+EQ:DE:MUNICHRE;DE0008430026;Muenchener Rueckversicherung;dividend_stock;Action à dividende;Leader mondial réassurance & Dividende jamais baissé;XETR;EUR;DE;30;Financials;True;True;loglin_20y;MUV2.DE;;;;;;;1998-06-22;2026-08-17;28.2
+EQ:FR:ORANGE;FR0000133308;Orange;dividend_stock;Action à dividende;Rendement télécom élevé;XPAR;EUR;FR;15;Telecommunications;True;True;loglin_20y;ORA.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:RUBIS;FR0013269123;Rubis;dividend_stock;Action à dividende;Distribution d'énergie & Rendement très élevé;XPAR;EUR;FR;60;Energy;True;True;loglin_20y;RUI.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:SANOFI;FR0000120578;Sanofi;dividend_stock;Action à dividende;Aristocrate du dividende (croissance régulière);XPAR;EUR;FR;20;Health Care;True;True;loglin_20y;SAN.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:SCHNEIDER;FR0000121972;Schneider Electric;dividend_stock;Action à dividende;Croissance du dividende & Électrification;XPAR;EUR;FR;50;Industrials;True;True;loglin_20y;SU.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:TTE;FR0000120271;TotalEnergies;dividend_stock;Action à dividende;Rendement élevé & Rachat d'actions;XPAR;EUR;FR;60;Energy;True;True;loglin_20y;TTE.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:VINCI;FR0000125486;Vinci;dividend_stock;Action à dividende;Rente autoroutière & Dividende croissant;XPAR;EUR;FR;50;Industrials;True;True;loglin_20y;DG.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:ENERGY;;2G Energy AG;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;2GB.DE;;;;;;;2007-07-30;2026-08-17;19.0
+EQ:IT:A2A;;A2A S.p.A.;equity;Action;;XMIL;EUR;IT;65;Utilities;True;;loglin_20y;A2A.MI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:NL:AALBERTS;;Aalberts N.V.;equity;Action;;XAMS;EUR;NL;50;Industrials;True;;loglin_20y;AALB.AS;;;;;;;1998-07-20;2026-08-17;28.1
+EQ:FR:ABIVAXSOCIETE;;ABIVAX Société Anonyme;equity;Action;;XPAR;EUR;FR;20;Health Care;True;;loglin_20y;ABVX.PA;;;;;;;2015-06-22;2026-08-17;11.2
+EQ:NL:ABNAMROBANK;;ABN AMRO Bank N.V.;equity;Action;;XAMS;EUR;NL;30;Financials;True;;loglin_20y;ABN.AS;;;;;;;2015-11-16;2026-08-17;10.7
+EQ:ES:ACCIONA;;Acciona, S.A.;equity;Action;;XMAD;EUR;ES;50;Industrials;True;;loglin_20y;ANA.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:ACCOR;;Accor SA;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;AC.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:ACEA;;ACEA S.p.A.;equity;Action;;XMIL;EUR;IT;65;Utilities;True;;loglin_20y;ACE.MI;;;;;;;1999-07-12;2026-08-17;27.1
+EQ:ES:ACERINOX;;Acerinox;equity;Action;;XMAD;EUR;ES;55;Basic Materials;True;;loglin_20y;ACX.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:BE:ACKERMANSVANHAAR;;Ackermans & Van Haaren NV;equity;Action;;XBRU;EUR;BE;50;Industrials;True;;loglin_20y;ACKB.BR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:ES:ACSACTIVIDADESCO;;ACS, Actividades de Construcción y Servicios, S.A.;equity;Action;;XMAD;EUR;ES;50;Industrials;True;;loglin_20y;ACS.MC;;;;;;;2002-01-01;2026-08-18;24.6
+EQ:DE:ADIDAS;DE000A1EWWW0;adidas;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;ADS.DE;;;;;;;1998-06-22;2026-08-17;28.2
+EQ:DE:ADTRANNETWORKS;;Adtran Networks SE;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;ADV.DE;;;;;;;1999-03-29;2026-08-17;27.4
+EQ:NL:ADYEN;;Adyen N.V.;equity;Action;;XAMS;EUR;NL;10;Technology;True;;loglin_20y;ADYEN.AS;;;;;;;2018-06-11;2026-08-17;8.2
+EQ:ES:AEDASHOMES;;Aedas Homes, S.A.;equity;Action;;XMAD;EUR;ES;35;Real Estate;True;;loglin_20y;AEDAS.MC;;;;;;;2017-10-16;2026-08-17;8.8
+EQ:ES:AENA;ES0105046009;Aena;equity;Action;;XMAD;EUR;ES;50;Industrials;True;;loglin_20y;AENA.MC;;;;;;;2015-02-09;2026-08-17;11.5
+EQ:FR:AEROPORTSPARIS;;Aeroports de Paris SA;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;ADP.PA;;;;;;;2006-06-19;2026-08-17;20.2
+EQ:IE:AIBGROUP;;AIB Group plc;equity;Action;;XDUB;EUR;IE;30;Financials;True;;loglin_20y;A5G.IR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:AIRFRANCEKLM;;Air France-KLM SA;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;AF.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:AIRBUS;NL0000235190;Airbus;equity;Action;;XPAR;EUR;NL;50;Industrials;True;;loglin_20y;AIR.PA;;;;;;;2001-09-03;2026-08-17;25.0
+EQ:DE:AIXTRON;;AIXTRON SE;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;AIXA.DE;;;;;;;1997-11-10;2026-08-17;28.8
+EQ:FI:AKTIAPANKKI;;Aktia Pankki Oyj;equity;Action;;XHEL;EUR;FI;30;Financials;True;;loglin_20y;AKTIA.HE;;;;;;;2009-09-28;2026-08-17;16.9
+EQ:NL:AKZONOBEL;;Akzo Nobel N.V.;equity;Action;;XAMS;EUR;NL;55;Basic Materials;True;;loglin_20y;AKZA.AS;;;;;;;1995-03-27;2026-08-17;31.4
+EQ:IT:ALERIONCLEANPOWE;;Alerion Clean Power S.p.A.;equity;Action;;XMIL;EUR;IT;65;Utilities;True;;loglin_20y;ARN.MI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FI:ALMAMEDIA;;Alma Media Oyj;equity;Action;;XHEL;EUR;FI;15;Telecommunications;True;;loglin_20y;ALMA.HE;;;;;;;2005-04-25;2026-08-17;21.3
+EQ:ES:ALMIRALL;;Almirall, S.A.;equity;Action;;XMAD;EUR;ES;20;Health Care;True;;loglin_20y;ALM.MC;;;;;;;2007-06-18;2026-08-17;19.2
+EQ:FR:ALTEN;;Alten S.A.;equity;Action;;XPAR;EUR;FR;10;Technology;True;;loglin_20y;ATE.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:PT:ALTRISGPS;;Altri, SGPS, S.A.;equity;Action;;XLIS;EUR;PT;55;Basic Materials;True;;loglin_20y;ALTR.LS;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:ALZCHEMGROUP;;AlzChem Group AG;equity;Action;;XETR;EUR;DE;55;Basic Materials;True;;loglin_20y;ACT.DE;;;;;;;2004-08-09;2026-08-17;22.0
+EQ:ES:AMADEUS;ES0109067019;Amadeus IT Group;equity;Action;;XMAD;EUR;ES;10;Technology;True;;loglin_20y;AMS.MC;;;;;;;2010-04-26;2026-08-17;16.3
+EQ:AT:AMAGAUSTRIAMETAL;;AMAG Austria Metall AG;equity;Action;;XWBO;EUR;AT;55;Basic Materials;True;;loglin_20y;AMAG.VI;;;;;;;2011-04-11;2026-08-17;15.4
+EQ:AT:AMSOSRAM;;ams-OSRAM;equity;Action;;XWBO;EUR;AT;10;Technology;True;;loglin_20y;AMS2.VI;;;;;;;2018-06-11;2026-08-17;8.2
+EQ:FR:AMUNDI;;Amundi S.A.;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;AMUN.PA;;;;;;;2015-11-09;2026-08-17;10.8
+EQ:AT:ANDRITZ;;Andritz AG;equity;Action;;XWBO;EUR;AT;50;Industrials;True;;loglin_20y;ANDR.VI;;;;;;;2001-06-25;2026-08-17;25.1
+EQ:BE:ABINBEV;BE0974293251;Anheuser-Busch InBev;equity;Action;;XBRU;EUR;BE;45;Consumer Staples;True;;loglin_20y;ABI.BR;;;;;;;2000-11-27;2026-08-17;25.7
+EQ:IT:ANIMAHOLDING;;Anima Holding SpA;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;ANIM.MI;;;;;;;2014-04-14;2026-08-17;12.3
+EQ:FR:ANTININFRASTRUCT;;Antin Infrastructure Partners S.A.;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;ANTIN.PA;;;;;;;2021-09-20;2026-08-17;4.9
+EQ:LU:APERAM;;Aperam S.A.;equity;Action;;XWBO;EUR;LU;55;Basic Materials;True;;loglin_20y;APAM.VI;;;;;;;2018-02-12;2026-08-17;8.5
+EQ:NL:ARCADIS;;Arcadis NV;equity;Action;;XAMS;EUR;NL;50;Industrials;True;;loglin_20y;ARCAD.AS;;;;;;;1998-07-20;2026-08-17;28.1
+EQ:IT:ARISTONHOLDING;;Ariston Holding N.V.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;ARIS.MI;;;;;;;2021-11-22;2026-08-17;4.7
+EQ:FR:ARKEMA;FR0010313833;Arkema;equity;Action;;XPAR;EUR;FR;55;Basic Materials;True;;loglin_20y;AKE.PA;;;;;;;2006-05-15;2026-08-17;20.3
+EQ:ES:ARTECHELANTEGIEL;;Arteche Lantegi Elkartea, S.A.;equity;Action;;XMAD;EUR;ES;10;Technology;True;;loglin_20y;ART.MC;;;;;;;2021-06-21;2026-08-17;5.2
+EQ:NL:ASMINTERNATIONAL;;ASM International NV;equity;Action;;XAMS;EUR;NL;10;Technology;True;;loglin_20y;ASM.AS;;;;;;;1999-01-04;2026-08-17;27.6
+EQ:NL:ASML;NL0010273215;ASML Holding;equity;Action;;XAMS;EUR;NL;10;Technology;True;;loglin_20y;ASML.AS;;;;;;;1998-07-20;2026-08-17;28.1
+EQ:NL:ASRNEDERLAND;;ASR Nederland N.V.;equity;Action;;XAMS;EUR;NL;30;Financials;True;;loglin_20y;ASRNL.AS;;;;;;;2016-06-06;2026-08-17;10.2
+EQ:IT:ASSICURAZIONIGEN;;Assicurazioni Generali S.p.A.;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;G.MI;;;;;;;1986-07-21;2026-08-17;40.1
+EQ:AT:AUSTRIATECHNOLOG;;AT & S Austria Technologie & Systemtechnik Aktiengesellschaft;equity;Action;;XWBO;EUR;AT;10;Technology;True;;loglin_20y;ATS.VI;;;;;;;2007-10-29;2026-08-17;18.8
+EQ:DE:ATOSSSOFTWARE;;ATOSS Software SE;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;AOF.DE;;;;;;;1999-06-07;2026-08-17;27.2
+EQ:ES:ATRESMEDIACORPOR;;Atresmedia Corporación de Medios de Comunicación, S.A.;equity;Action;;XMAD;EUR;ES;15;Telecommunications;True;;loglin_20y;A3M.MC;;;;;;;2003-10-27;2026-08-17;22.8
+EQ:DE:AURUBIS;;Aurubis AG;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;NDA.DE;;;;;;;1998-11-09;2026-08-17;27.8
+EQ:DE:AUTO1GROUP;;AUTO1 Group SE;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;AG1.DE;;;;;;;2021-02-01;2026-08-17;5.5
+EQ:IT:AVIO;;Avio S.p.A.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;AVIO.MI;;;;;;;2015-07-27;2026-08-17;11.1
+EQ:FR:AYVENS;;AYVENS;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;AYV.PA;;;;;;;2017-06-12;2026-08-17;9.2
+EQ:BE:AZELISGROUP;;Azelis Group NV;equity;Action;;XBRU;EUR;BE;55;Basic Materials;True;;loglin_20y;AZE.BR;;;;;;;2021-09-13;2026-08-17;4.9
+EQ:IT:AZIMUTHOLDING;;Azimut Holding S.p.A.;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;AZM.MI;;;;;;;2004-07-05;2026-08-17;22.1
+EQ:IT:BF;;B.F. S.p.A.;equity;Action;;XMIL;EUR;IT;45;Consumer Staples;True;;loglin_20y;BFG.MI;;;;;;;2017-08-21;2026-08-17;9.0
+EQ:AT:BAJAJMOBILITY;;Bajaj Mobility AG;equity;Action;;XWBO;EUR;AT;40;Consumer Discretionary;True;;loglin_20y;BMAG.VI;;;;;;;2004-03-22;2026-08-17;22.4
+EQ:IT:BANCAGENERALI;;Banca Generali S.p.A.;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;BGN.MI;;;;;;;2006-11-13;2026-08-17;19.8
+EQ:IT:BANCAIFIS;;Banca IFIS S.p.A.;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;IF.MI;;;;;;;1995-06-26;2026-08-17;31.1
+EQ:IT:BANCAMEDIOLANUM;;Banca Mediolanum S.p.A.;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;BMED.MI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:BANCAMONTEDEI;;Banca Monte dei Paschi di Siena S.p.A.;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;BMPS.MI;;;;;;;1999-06-21;2026-08-17;27.2
+EQ:ES:BANCOBILBAOVIZCA;;Banco Bilbao Vizcaya Argentaria, S.A.;equity;Action;;XMAD;EUR;ES;30;Financials;True;;loglin_20y;BBVA.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:BANCOBPM;;Banco BPM S.p.A.;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;BAMI.MI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:PT:BANCOCOMERCIALPO;;Banco Comercial Português, S.A.;equity;Action;;XLIS;EUR;PT;30;Financials;True;;loglin_20y;BCP.LS;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:ES:BANCOSABADELL;;Banco de Sabadell, S.A.;equity;Action;;XMAD;EUR;ES;30;Financials;True;;loglin_20y;SAB.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:BANCODESIODELLA;;Banco di Desio e della Brianza S.p.A.;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;BDB.MI;;;;;;;1995-05-08;2026-08-17;31.3
+EQ:ES:SANTANDER;ES0113900J37;Banco Santander;equity;Action;;XMAD;EUR;ES;30;Financials;True;;loglin_20y;SAN.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IE:BANKIRELANDGROUP;;Bank of Ireland Group plc;equity;Action;;XDUB;EUR;IE;30;Financials;True;;loglin_20y;BIRG.IR;;;;;;;2001-07-09;2026-08-17;25.1
+EQ:ES:BANKINTER;;Bankinter, S.A.;equity;Action;;XMAD;EUR;ES;30;Financials;True;;loglin_20y;BKT.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:BASF;DE000BASF111;BASF;equity;Action;;XETR;EUR;DE;55;Basic Materials;True;;loglin_20y;BAS.DE;;;;;;;1996-12-16;2026-08-17;29.7
+EQ:NL:BASICFIT;;Basic-Fit N.V.;equity;Action;;XAMS;EUR;NL;40;Consumer Discretionary;True;;loglin_20y;BFIT.AS;;;;;;;2016-06-06;2026-08-17;10.2
+EQ:AT:BAWAGGROUP;;BAWAG Group AG;equity;Action;;XWBO;EUR;AT;30;Financials;True;;loglin_20y;BG.VI;;;;;;;2017-10-23;2026-08-17;8.8
+EQ:DE:BAYER;;Bayer Aktiengesellschaft;equity;Action;;XETR;EUR;DE;20;Health Care;True;;loglin_20y;BAYN.DE;;;;;;;1996-12-16;2026-08-17;29.7
+EQ:NL:SEMICONDUCTORIND;;BE Semiconductor Industries N.V.;equity;Action;;XAMS;EUR;NL;10;Technology;True;;loglin_20y;BESI.AS;;;;;;;1998-07-20;2026-08-17;28.1
+EQ:LU:BEFESA;;Befesa S.A.;equity;Action;;XETR;EUR;LU;50;Industrials;True;;loglin_20y;BFSA.DE;;;;;;;2017-12-25;2026-08-17;8.6
+EQ:DE:BEIERSDORF;;Beiersdorf Aktiengesellschaft;equity;Action;;XETR;EUR;DE;45;Consumer Staples;True;;loglin_20y;BEI.DE;;;;;;;1998-07-20;2026-08-17;28.1
+EQ:DE:BILFINGER;;Bilfinger SE;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;GBF.DE;;;;;;;1998-07-20;2026-08-17;28.1
+EQ:FR:BIOMERIEUX;;bioMérieux S.A.;equity;Action;;XPAR;EUR;FR;20;Health Care;True;;loglin_20y;BIM.PA;;;;;;;2004-07-05;2026-08-17;22.1
+EQ:DE:BIONTECH;;BioNTech SE;equity;Action;;XETR;EUR;DE;20;Health Care;True;;loglin_20y;22UA.DE;;;;;;;2020-11-02;2026-08-17;5.8
+EQ:FI:BITTIUM;;Bittium Oyj;equity;Action;;XHEL;EUR;FI;10;Technology;True;;loglin_20y;BITTI.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:AT:BKSBANK;AT0000624705;BKS Bank AG;equity;Action;;XWBO;EUR;AT;30;Financials;True;;loglin_20y;BKS.VI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:BOLLORE;;Bolloré SE;equity;Action;;XPAR;EUR;FR;15;Telecommunications;True;;loglin_20y;BOL.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:BPERBANCA;;BPER Banca SpA;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;BPE.MI;;;;;;;1995-03-20;2026-08-17;31.4
+EQ:LU:BREDERODE;;Brederode SA;equity;Action;;XBRU;EUR;LU;30;Financials;True;;loglin_20y;BREB.BR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:BRENNTAG;;Brenntag SE;equity;Action;;XETR;EUR;DE;55;Basic Materials;True;;loglin_20y;BNR.DE;;;;;;;2010-03-29;2026-08-17;16.4
+EQ:IT:BRUNELLOCUCINELL;;Brunello Cucinelli S.p.A.;equity;Action;;XMIL;EUR;IT;40;Consumer Discretionary;True;;loglin_20y;BC.MI;;;;;;;2012-04-23;2026-08-17;14.3
+EQ:AT:BTVVIERLANDER;;BTV Vier Länder Bank AG;equity;Action;;XWBO;EUR;AT;30;Financials;True;;loglin_20y;BTS.VI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:BUZZI;;Buzzi S.p.A.;equity;Action;;XMIL;EUR;IT;55;Basic Materials;True;;loglin_20y;BZU.MI;;;;;;;1987-06-29;2026-08-17;39.1
+EQ:IE:CAIRNHOMES;;Cairn Homes plc;equity;Action;;XDUB;EUR;IE;40;Consumer Discretionary;True;;loglin_20y;C5H.IR;;;;;;;2017-07-24;2026-08-17;9.1
+EQ:FR:CAISSEREGIONALEC7;;Caisse Régionale de Crédit Agricole Mutuel Alpes Provence Société coopérative;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;CRAP.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:CAISSEREGIONALEC6;;Caisse régionale de Crédit Agricole Mutuel Atlantique Vendée;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;CRAV.PA;;;;;;;2002-07-15;2026-08-17;24.1
+EQ:FR:CAISSEREGIONALEC2;;Caisse Régionale de Crédit Agricole Mutuel Brie Picardie Société coopérative;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;CRBP2.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:CAISSEREGIONALEC9;;Caisse Régionale de Crédit Agricole Mutuel de la Touraine et du Poitou Société Coopérative;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;CRTO.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:CAISSEREGIONALEC8;;Caisse Régionale de Crédit Agricole Mutuel de Normandie-Seine Société coopérative;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;CCN.PA;;;;;;;2001-05-14;2026-08-17;25.3
+EQ:FR:CAISSEREGIONALEC;;Caisse Régionale de Crédit Agricole Mutuel de Paris et d'Ile-de-France;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;CAF.PA;;;;;;;1992-07-13;2026-08-17;34.1
+EQ:FR:CAISSEREGIONALEC3;;Caisse Régionale de Crédit Agricole Mutuel du Languedoc Société coopérative;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;CRLA.PA;;;;;;;2000-12-11;2026-08-17;25.7
+EQ:FR:CAISSEREGIONALEC4;;Caisse Régionale de Crédit Agricole Mutuel Nord de France Société coopérative;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;CNDF.PA;;;;;;;2002-07-15;2026-08-17;24.1
+EQ:FR:CAISSEREGIONALEC5;;Caisse Régionale de Crédit Agricole Mutuel Sud Rhône Alpes;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;CRSU.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:ES:CAIXABANK;;CaixaBank, S.A.;equity;Action;;XMAD;EUR;ES;30;Financials;True;;loglin_20y;CABK.MC;;;;;;;2007-10-08;2026-08-17;18.9
+EQ:IT:CALTAGIRONE;;Caltagirone SpA;equity;Action;;XMIL;EUR;IT;55;Basic Materials;True;;loglin_20y;CALT.MI;;;;;;;1995-03-20;2026-08-17;31.4
+EQ:FR:CAPGEMINI;FR0000125338;Capgemini;equity;Action;;XPAR;EUR;FR;10;Technology;True;;loglin_20y;CAP.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:CARELINDUSTRIES;;Carel Industries S.p.A.;equity;Action;;XMIL;EUR;IT;10;Technology;True;;loglin_20y;CRL.MI;;;;;;;2018-06-11;2026-08-17;8.2
+EQ:DE:CARLZEISSMEDITEC;;Carl Zeiss Meditec AG;equity;Action;;XETR;EUR;DE;20;Health Care;True;;loglin_20y;AFX.DE;;;;;;;2000-03-20;2026-08-17;26.4
+EQ:FR:CARREFOUR;FR0000120172;Carrefour;equity;Action;;XPAR;EUR;FR;45;Consumer Staples;True;;loglin_20y;CA.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:CECONOMY;;Ceconomy AG;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;CEC.DE;;;;;;;1998-02-23;2026-08-17;28.5
+EQ:ES:CELLNEXTELECOM;;Cellnex Telecom, S.A.;equity;Action;;XMAD;EUR;ES;35;Real Estate;True;;loglin_20y;CLNX.MC;;;;;;;2015-05-04;2026-08-17;11.3
+EQ:IT:CEMBRE;;Cembre S.p.A.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;CMB.MI;;;;;;;1998-07-13;2026-08-17;28.1
+EQ:ES:CEMENTOSMOLINS;;CEMENTOS MOLINS, S.A.;equity;Action;;XMAD;EUR;ES;55;Basic Materials;True;;loglin_20y;CMO.MC;;;;;;;2007-12-24;2026-08-17;18.6
+EQ:BE:CENERGYHOLDINGS;;Cenergy Holdings SA;equity;Action;;XBRU;EUR;BE;50;Industrials;True;;loglin_20y;CENER.BR;;;;;;;2016-12-19;2026-08-17;9.7
+EQ:DE:CHAPTERSGROUP;;CHAPTERS Group AG;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;CHG.DE;;;;;;;2005-05-30;2026-08-17;21.2
+EQ:ES:CIEAUTOMOTIVE;;CIE Automotive, S.A.;equity;Action;;XMAD;EUR;ES;40;Consumer Discretionary;True;;loglin_20y;CIE.MC;;;;;;;2002-07-29;2026-08-17;24.1
+EQ:ES:CIRSAENTERPRISES;;Cirsa Enterprises, S.A.;equity;Action;;XMAD;EUR;ES;40;Consumer Discretionary;True;;loglin_20y;CIRSA.MC;;;;;;;2025-07-07;2026-08-17;1.1
+EQ:FR:CLARIANE;;Clariane SE;equity;Action;;XPAR;EUR;FR;20;Health Care;True;;loglin_20y;CLARI.PA;;;;;;;2001-01-01;2026-08-17;25.6
+EQ:ES:CLINICABAVIERA;;Clínica Baviera, S.A.;equity;Action;;XMAD;EUR;ES;20;Health Care;True;;loglin_20y;CBAV.MC;;;;;;;2007-04-02;2026-08-17;19.4
+EQ:FR:COFACE;;COFACE SA;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;COFA.PA;;;;;;;2014-06-23;2026-08-17;12.2
+EQ:BE:COLRUYTGROUP;;Colruyt Group N.V.;equity;Action;;XBRU;EUR;BE;45;Consumer Staples;True;;loglin_20y;COLR.BR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:COMERINDUSTRIES;;Comer Industries S.p.A.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;COM.MI;;;;;;;2019-03-11;2026-08-17;7.4
+EQ:DE:COMMERZBANK;;Commerzbank AG;equity;Action;;XETR;EUR;DE;30;Financials;True;;loglin_20y;CBK.DE;;;;;;;1996-12-16;2026-08-17;29.7
+EQ:FR:COMPAGNIELODET;;Compagnie de l'Odet;equity;Action;;XPAR;EUR;FR;15;Telecommunications;True;;loglin_20y;ODET.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:SAINTGOBAIN;FR0000125007;Compagnie de Saint-Gobain;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;SGO.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:COMPAGNIEDESALPE;;Compagnie des Alpes SA;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;CDA.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:COMPAGNIECAMBODG;;Compagnie du Cambodge;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;CBDG.PA;;;;;;;2001-02-26;2026-08-17;25.5
+EQ:ES:CONSTRUCCIONESAU;;Construcciones y Auxiliar de Ferrocarriles, S.A.;equity;Action;;XMAD;EUR;ES;50;Industrials;True;;loglin_20y;CAF.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:NL:CORBION;;Corbion N.V.;equity;Action;;XAMS;EUR;NL;55;Basic Materials;True;;loglin_20y;CRBN.AS;;;;;;;1995-03-27;2026-08-17;31.4
+EQ:ES:CORPORACIONACCIO;;Corporación Acciona Energías Renovables, S.A.;equity;Action;;XMAD;EUR;ES;65;Utilities;True;;loglin_20y;ANE.MC;;;;;;;2021-06-28;2026-08-17;5.1
+EQ:PT:CORTICEIRAAMORIM;;Corticeira Amorim, S.G.P.S., S.A.;equity;Action;;XLIS;EUR;PT;55;Basic Materials;True;;loglin_20y;COR.LS;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:ES:COXINFRASTRUCTUR;;Cox Infrastructure Group, S.A.;equity;Action;;XMAD;EUR;ES;65;Utilities;True;;loglin_20y;COXG.MC;;;;;;;2024-12-02;2026-08-17;1.7
+EQ:FR:CREDITAGRICOLE;;Crédit Agricole S.A.;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;ACA.PA;;;;;;;2001-12-10;2026-08-17;24.7
+EQ:IT:CREDITOEMILIANO;;Credito Emiliano S.p.A.;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;CE.MI;;;;;;;1995-03-20;2026-08-17;31.4
+EQ:DE:CTSEVENTIM;;CTS Eventim AG & Co. KGaA;equity;Action;;XETR;EUR;DE;15;Telecommunications;True;;loglin_20y;EVD.DE;;;;;;;2000-01-31;2026-08-17;26.5
+EQ:PT:CTTCORREIOSPORTU;;CTT - Correios De Portugal, S.A.;equity;Action;;XLIS;EUR;PT;50;Industrials;True;;loglin_20y;CTT.LS;;;;;;;2013-12-02;2026-08-17;12.7
+EQ:BE:DIETERENGROUP;;D'Ieteren Group SA;equity;Action;;XBRU;EUR;BE;40;Consumer Discretionary;True;;loglin_20y;DIE.BR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:DAIMLERTRUCKHOLD;;Daimler Truck Holding AG;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;DTG.DE;;;;;;;2021-12-06;2026-08-17;4.7
+EQ:IT:DANIELIOFFICINEM;;Danieli & C. Officine Meccaniche S.p.A.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;DAN.MI;;;;;;;1995-03-20;2026-08-17;31.4
+EQ:FR:DASSAULTAVIATION;;Dassault Aviation société anonyme;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;AM.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:DASSAULTSYS;FR0014003TT8;Dassault Systemes;equity;Action;;XPAR;EUR;FR;10;Technology;True;;loglin_20y;DSY.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:DAVIDECAMPARIMIL;;Davide Campari-Milano N.V.;equity;Action;;XMIL;EUR;IT;45;Consumer Staples;True;;loglin_20y;CPR.MI;;;;;;;2001-07-02;2026-08-17;25.1
+EQ:IT:DELONGHI;;De'Longhi S.p.A.;equity;Action;;XMIL;EUR;IT;40;Consumer Discretionary;True;;loglin_20y;DLG.MI;;;;;;;2001-07-23;2026-08-17;25.1
+EQ:DE:DELIVERYHERO;;Delivery Hero SE;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;DHER.DE;;;;;;;2017-06-26;2026-08-17;9.1
+EQ:BE:DEMEGROUP;;DEME Group NV;equity;Action;;XBRU;EUR;BE;50;Industrials;True;;loglin_20y;DEME.BR;;;;;;;2022-06-27;2026-08-17;4.1
+EQ:FR:DERICHEBOURG;;Derichebourg SA;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;DBG.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:DERMAPHARMHOLDIN;;Dermapharm Holding SE;equity;Action;;XETR;EUR;DE;20;Health Care;True;;loglin_20y;DMP.DE;;;;;;;2018-04-09;2026-08-17;8.4
+EQ:DE:DEUTSCHEBANK;;Deutsche Bank Aktiengesellschaft;equity;Action;;XETR;EUR;DE;30;Financials;True;;loglin_20y;DBK.DE;;;;;;;1996-11-18;2026-08-17;29.7
+EQ:DE:DEUTSCHEBORSE;;Deutsche Börse AG;equity;Action;;XETR;EUR;DE;30;Financials;True;;loglin_20y;DB1.DE;;;;;;;2001-02-05;2026-08-17;25.5
+EQ:DE:DEUTSCHELUFTHANS;;Deutsche Lufthansa AG;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;LHA.DE;;;;;;;1996-12-16;2026-08-17;29.7
+EQ:DE:DEUTSCHEPOST;;Deutsche Post AG;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;DHL.DE;;;;;;;2000-11-20;2026-08-17;25.7
+EQ:DE:DTELEKOM;DE0005557508;Deutsche Telekom;equity;Action;;XETR;EUR;DE;15;Telecommunications;True;;loglin_20y;DTE.DE;;;;;;;1996-11-18;2026-08-17;29.7
+EQ:DE:DEUTZ;;DEUTZ Aktiengesellschaft;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;DEZ.DE;;;;;;;1998-07-20;2026-08-17;28.1
+EQ:IT:DIASORIN;;DiaSorin S.p.A.;equity;Action;;XMIL;EUR;IT;20;Health Care;True;;loglin_20y;DIA.MI;;;;;;;2007-07-16;2026-08-17;19.1
+EQ:ES:DISTRIBUIDORAINT;;Distribuidora Internacional de Alimentación, S.A.;equity;Action;;XMAD;EUR;ES;45;Consumer Staples;True;;loglin_20y;DIA.MC;;;;;;;2011-07-04;2026-08-17;15.1
+EQ:DE:DMGMORI;;DMG MORI AKTIENGESELLSCHAFT;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;GIL.DE;;;;;;;1998-11-09;2026-08-17;27.8
+EQ:AT:DOCO;;DO & CO Aktiengesellschaft;equity;Action;;XWBO;EUR;AT;50;Industrials;True;;loglin_20y;DOC.VI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:DOUGLAS;;Douglas AG;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;DOU.DE;;;;;;;2024-03-18;2026-08-17;2.4
+EQ:DE:INGPORSCHE;;Dr. Ing. h.c. F. Porsche AG;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;P911.DE;;;;;;;2022-09-26;2026-08-17;3.9
+EQ:DE:DRAGERWERK;;Drägerwerk AG & Co. KGaA;equity;Action;;XETR;EUR;DE;20;Health Care;True;;loglin_20y;DRW3.DE;;;;;;;1998-11-09;2026-08-17;27.8
+EQ:DE:DURR;;Dürr Aktiengesellschaft;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;DUE.DE;;;;;;;1998-07-20;2026-08-17;28.1
+EQ:DE:DWSGROUP;;DWS Group GmbH & Co. KGaA;equity;Action;;XETR;EUR;DE;30;Financials;True;;loglin_20y;DWS.DE;;;;;;;2018-03-26;2026-08-17;8.4
+EQ:DE:EON;;E.ON SE;equity;Action;;XETR;EUR;DE;65;Utilities;True;;loglin_20y;EOAN.DE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:ES:EBROFOODS;;Ebro Foods, S.A.;equity;Action;;XMAD;EUR;ES;45;Consumer Staples;True;;loglin_20y;EBRO.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:ECKERTZIEGLER;;Eckert & Ziegler SE;equity;Action;;XETR;EUR;DE;20;Health Care;True;;loglin_20y;EUZ.DE;;;;;;;1999-05-24;2026-08-17;27.2
+EQ:FR:EDENRED;;Edenred SE;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;EDEN.PA;;;;;;;2010-06-28;2026-08-17;16.1
+EQ:IT:EDISON;;Edison S.p.A.;equity;Action;;XMIL;EUR;IT;60;Energy;True;;loglin_20y;EDNR.MI;;;;;;;2002-12-02;2026-08-17;23.7
+EQ:PT:EDP;;EDP, S.A.;equity;Action;;XLIS;EUR;PT;65;Utilities;True;;loglin_20y;EDP.LS;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:ELEN;;EL.En. S.p.A.;equity;Action;;XMIL;EUR;IT;20;Health Care;True;;loglin_20y;ELN.MI;;;;;;;2000-12-11;2026-08-17;25.7
+EQ:ES:ELECNOR;;Elecnor, S.A.;equity;Action;;XMAD;EUR;ES;50;Industrials;True;;loglin_20y;ENO.MC;;;;;;;2002-06-10;2026-08-17;24.2
+EQ:FR:ELECTRICITESTRAS;;Électricite de Strasbourg Société Anonyme;equity;Action;;XPAR;EUR;FR;65;Utilities;True;;loglin_20y;ELEC.PA;;;;;;;1991-06-03;2026-08-17;35.2
+EQ:BE:ELIAGROUPSANV;;Elia Group SA/NV;equity;Action;;XBRU;EUR;BE;65;Utilities;True;;loglin_20y;ELI.BR;;;;;;;2005-06-20;2026-08-17;21.2
+EQ:FR:ELIS;;Elis SA;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;ELIS.PA;;;;;;;2015-02-09;2026-08-17;11.5
+EQ:FI:ELISA;;Elisa Oyj;equity;Action;;XHEL;EUR;FI;15;Telecommunications;True;;loglin_20y;ELISA.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:ELMOSSEMICONDUCT;;Elmos Semiconductor SE;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;ELG.DE;;;;;;;1999-10-11;2026-08-17;26.9
+EQ:FR:EMEIS;;EMEIS;equity;Action;;XPAR;EUR;FR;20;Health Care;True;;loglin_20y;EMEIS.PA;;;;;;;2002-04-15;2026-08-17;24.3
+EQ:ES:ENAGAS;;Enagás, S.A.;equity;Action;;XMAD;EUR;ES;65;Utilities;True;;loglin_20y;ENG.MC;;;;;;;2002-06-24;2026-08-17;24.1
+EQ:IT:ENAV;;ENAV S.p.A.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;ENAV.MI;;;;;;;2016-07-25;2026-08-17;10.1
+EQ:DE:ENBWENERGIEBADEN;;EnBW Energie Baden-Württemberg AG;equity;Action;;XETR;EUR;DE;65;Utilities;True;;loglin_20y;EBK.DE;;;;;;;1999-04-12;2026-08-17;27.3
+EQ:ES:ENDESA;;Endesa, S.A.;equity;Action;;XMAD;EUR;ES;65;Utilities;True;;loglin_20y;ELE.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:BE:ENERGYVISION;;ENERGYVISION;equity;Action;;XBRU;EUR;BE;65;Utilities;True;;loglin_20y;ENRGY.BR;;;;;;;2025-07-07;2026-08-17;1.1
+EQ:IT:ENI;IT0003132476;Eni;equity;Action;;XMIL;EUR;IT;60;Energy;True;;loglin_20y;ENI.MI;;;;;;;1995-11-27;2026-08-17;30.7
+EQ:FR:ERAMET;;ERAMET S.A.;equity;Action;;XPAR;EUR;FR;55;Basic Materials;True;;loglin_20y;ERA.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:ERG;;ERG S.p.A.;equity;Action;;XMIL;EUR;IT;65;Utilities;True;;loglin_20y;ERG.MI;;;;;;;1998-07-06;2026-08-17;28.1
+EQ:AT:ERSTEGROUPBANK;;Erste Group Bank AG;equity;Action;;XWBO;EUR;AT;30;Financials;True;;loglin_20y;EBS.VI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:ESSILOR;FR0000121667;EssilorLuxottica;equity;Action;;XPAR;EUR;FR;20;Health Care;True;;loglin_20y;EL.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:EURAZEO;;Eurazeo SE;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;RF.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:LU:EUROFINSSCIENTIF;;Eurofins Scientific SE;equity;Action;;XWBO;EUR;LU;20;Health Care;True;;loglin_20y;ESF.VI;;;;;;;2020-09-21;2026-08-17;5.9
+EQ:FR:EUTELSATCOMMUNIC;;Eutelsat Communications S.A.;equity;Action;;XPAR;EUR;FR;15;Telecommunications;True;;loglin_20y;ETL.PA;;;;;;;2005-11-28;2026-08-17;20.7
+EQ:SE:EVOLUTION;;Evolution AB;equity;Action;;XMIL;EUR;SE;40;Consumer Discretionary;True;;loglin_20y;1EVO.MI;;;;;;;2025-03-24;2026-08-17;1.4
+EQ:DE:EVONIKINDUSTRIES;;Evonik Industries AG;equity;Action;;XETR;EUR;DE;55;Basic Materials;True;;loglin_20y;EVK.DE;;;;;;;2013-07-08;2026-08-17;13.1
+EQ:FR:EXAILTECHNOLOGIE;;Exail Technologies;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;EXA.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:NL:EXOR;;Exor N.V.;equity;Action;;XAMS;EUR;NL;50;Industrials;True;;loglin_20y;EXO.AS;;;;;;;2022-08-08;2026-08-17;4.0
+EQ:FR:EXOSENS;;Exosens;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;EXENS.PA;;;;;;;2024-06-03;2026-08-17;2.2
+EQ:ES:FAESFARMA;;Faes Farma, S.A.;equity;Action;;XMAD;EUR;ES;20;Health Care;True;;loglin_20y;FAE.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:BE:FAGRON;;Fagron NV;equity;Action;;XBRU;EUR;BE;20;Health Care;True;;loglin_20y;FAGR.BR;;;;;;;2007-10-01;2026-08-17;18.9
+EQ:FR:FDJUNITED;;FDJ United;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;FDJU.PA;;;;;;;2019-11-18;2026-08-17;6.7
+EQ:IT:FERRARI;NL0011585146;Ferrari;equity;Action;;XMIL;EUR;NL;40;Consumer Discretionary;True;;loglin_20y;RACE.MI;;;;;;;2016-01-04;2026-08-17;10.6
+EQ:IT:FERRETTI;;Ferretti S.p.A.;equity;Action;;XMIL;EUR;IT;40;Consumer Discretionary;True;;loglin_20y;YACHT.MI;;;;;;;2023-06-26;2026-08-17;3.1
+EQ:NL:FERROVIAL;;Ferrovial N.V.;equity;Action;;XAMS;EUR;NL;50;Industrials;True;;loglin_20y;FER.AS;;;;;;;2023-06-12;2026-08-17;3.2
+EQ:DE:FIELMANNGROUP;;Fielmann Group AG;equity;Action;;XETR;EUR;DE;20;Health Care;True;;loglin_20y;FIE.DE;;;;;;;2000-10-02;2026-08-17;25.9
+EQ:BE:FINANCIERETUBIZE;;Financière de Tubize SA;equity;Action;;XBRU;EUR;BE;20;Health Care;True;;loglin_20y;TUB.BR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:FINANCIEREMONCEY;;Financière Moncey Société anonyme;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;FMONC.PA;;;;;;;2000-07-10;2026-08-17;26.1
+EQ:IT:FINCANTIERI;;Fincantieri S.p.A.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;FCT.MI;;;;;;;2014-06-30;2026-08-17;12.1
+EQ:IT:FINECOBANKBANCAF;;FinecoBank Banca Fineco S.p.A.;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;FBK.MI;;;;;;;2014-06-30;2026-08-17;12.1
+EQ:FI:FINNAIR;;Finnair Oyj;equity;Action;;XHEL;EUR;FI;50;Industrials;True;;loglin_20y;FIA1S.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FI:FISKARS;;Fiskars Oyj Abp;equity;Action;;XHEL;EUR;FI;40;Consumer Discretionary;True;;loglin_20y;FSKRS.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:FLATEXDEGIRO;;flatexDEGIRO SE;equity;Action;;XETR;EUR;DE;30;Financials;True;;loglin_20y;FTK.DE;;;;;;;2010-08-02;2026-08-17;16.0
+EQ:NL:FLOWTRADERS;;Flow Traders Ltd.;equity;Action;;XAMS;EUR;NL;30;Financials;True;;loglin_20y;FLOW.AS;;;;;;;2015-07-06;2026-08-17;11.1
+EQ:AT:FLUGHAFENWIEN;AT0000A2Z7Z5;Flughafen Wien Aktiengesellschaft;equity;Action;;XWBO;EUR;AT;50;Industrials;True;;loglin_20y;FLU.VI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:ES:FLUIDRA;;Fluidra, S.A.;equity;Action;;XMAD;EUR;ES;40;Consumer Discretionary;True;;loglin_20y;FDR.MC;;;;;;;2007-10-29;2026-08-17;18.8
+EQ:BE:FLUXYSBELGIUM;;Fluxys Belgium SA;equity;Action;;XBRU;EUR;BE;60;Energy;True;;loglin_20y;FLUX.BR;;;;;;;2001-12-10;2026-08-17;24.7
+EQ:FR:FNACDARTY;;Fnac Darty SA;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;FNAC.PA;;;;;;;2013-06-24;2026-08-17;13.1
+EQ:FI:FORTUM;;Fortum Oyj;equity;Action;;XHEL;EUR;FI;65;Utilities;True;;loglin_20y;FORTUM.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:FORVIA;;Forvia SE;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;FRVIA.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:FRAPORT;;Fraport AG;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;FRA.DE;;;;;;;2001-06-11;2026-08-17;25.2
+EQ:AT:FREQUENTIS;;Frequentis AG;equity;Action;;XWBO;EUR;AT;10;Technology;True;;loglin_20y;FQT.VI;;;;;;;2019-05-13;2026-08-17;7.3
+EQ:DE:FRESENIUSMEDICAL;;Fresenius Medical Care AG;equity;Action;;XETR;EUR;DE;20;Health Care;True;;loglin_20y;FME.DE;;;;;;;1998-07-20;2026-08-17;28.1
+EQ:DE:FRIEDRICHVORWERK;;Friedrich Vorwerk Group SE;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;VH2.DE;;;;;;;2021-03-22;2026-08-17;5.4
+EQ:DE:FUCHS;;FUCHS SE;equity;Action;;XETR;EUR;DE;55;Basic Materials;True;;loglin_20y;FPE3.DE;;;;;;;1999-03-15;2026-08-17;27.4
+EQ:NL:FUGRO;;Fugro N.V.;equity;Action;;XAMS;EUR;NL;60;Energy;True;;loglin_20y;FUR.AS;;;;;;;1998-07-20;2026-08-17;28.1
+EQ:PT:GALPENERGIASGPS;;Galp Energia, SGPS, S.A.;equity;Action;;XLIS;EUR;PT;60;Energy;True;;loglin_20y;GALP.LS;;;;;;;2006-10-23;2026-08-17;19.8
+EQ:FR:GAZTRANSPORTTECH;;Gaztransport & Technigaz SA;equity;Action;;XPAR;EUR;FR;60;Energy;True;;loglin_20y;GTT.PA;;;;;;;2014-02-24;2026-08-17;12.5
+EQ:DE:GERRESHEIMER;;Gerresheimer AG;equity;Action;;XETR;EUR;DE;20;Health Care;True;;loglin_20y;GXI.DE;;;;;;;2007-06-11;2026-08-17;19.2
+EQ:ES:GESTAMPAUTOMOCIO;;Gestamp Automoción, S.A.;equity;Action;;XMAD;EUR;ES;40;Consumer Discretionary;True;;loglin_20y;GEST.MC;;;;;;;2017-04-03;2026-08-17;9.4
+EQ:FR:GETLINK;FR0010533075;Getlink;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;GET.PA;;;;;;;2007-07-02;2026-08-17;19.1
+EQ:BE:GIMV;;Gimv NV;equity;Action;;XBRU;EUR;BE;30;Financials;True;;loglin_20y;GIMB.BR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:EVENTS;;GL Events SA;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;GLO.PA;;;;;;;1998-11-23;2026-08-17;27.7
+EQ:IE:GLENVEAGHPROPERT;;Glenveagh Properties PLC;equity;Action;;XDUB;EUR;IE;40;Consumer Discretionary;True;;loglin_20y;GVR.IR;;;;;;;2017-10-09;2026-08-17;8.9
+EQ:ES:GRENERGYRENOVABL;;Grenergy Renovables, S.A.;equity;Action;;XMAD;EUR;ES;50;Industrials;True;;loglin_20y;GRE.MC;;;;;;;2015-07-06;2026-08-17;11.1
+EQ:ES:GRIFOLS;;Grifols, S.A.;equity;Action;;XMAD;EUR;ES;20;Health Care;True;;loglin_20y;GRF.MC;;;;;;;2006-05-15;2026-08-17;20.3
+EQ:FI:GRKINFRA;;GRK Infra Oyj;equity;Action;;XHEL;EUR;FI;50;Industrials;True;;loglin_20y;GRK.HE;;;;;;;2025-03-31;2026-08-17;1.4
+EQ:BE:GROUPEBRUXELLESL;;Groupe Bruxelles Lambert SA;equity;Action;;XBRU;EUR;BE;30;Financials;True;;loglin_20y;GBLB.BR;;;;;;;2001-04-23;2026-08-17;25.3
+EQ:IT:GVS;;GVS S.p.A.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;GVS.MI;;;;;;;2020-06-15;2026-08-17;6.2
+EQ:NL:HALTRUST;;HAL Trust;equity;Action;;XAMS;EUR;NL;30;Financials;True;;loglin_20y;HAL.AS;;;;;;;1998-07-20;2026-08-17;28.1
+EQ:DE:HAMBURGERHAFENUN;;Hamburger Hafen und Logistik Aktiengesellschaft;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;HHFA.DE;;;;;;;2007-10-29;2026-08-17;18.8
+EQ:DE:HANNOVERRUCK;;Hannover Rück SE;equity;Action;;XETR;EUR;DE;30;Financials;True;;loglin_20y;HNR1.DE;;;;;;;2000-10-23;2026-08-17;25.8
+EQ:DE:HAPAGLLOYD;;Hapag-Lloyd Aktiengesellschaft;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;HLAG.DE;;;;;;;2015-11-02;2026-08-17;10.8
+EQ:DE:HEIDELBERGMATERI;;Heidelberg Materials AG;equity;Action;;XETR;EUR;DE;55;Basic Materials;True;;loglin_20y;HEI.DE;;;;;;;1998-07-27;2026-08-17;28.1
+EQ:NL:HEINEKEN;NL0000009165;Heineken;equity;Action;;XAMS;EUR;NL;45;Consumer Staples;True;;loglin_20y;HEIA.AS;;;;;;;1995-03-27;2026-08-17;31.4
+EQ:DE:HENKEL;;Henkel AG & Co. KGaA;equity;Action;;XETR;EUR;DE;45;Consumer Staples;True;;loglin_20y;HEN3.DE;;;;;;;1998-06-22;2026-08-17;28.2
+EQ:DE:HENSOLDT;;Hensoldt AG;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;HAG.DE;;;;;;;2020-09-21;2026-08-17;5.9
+EQ:IT:HERA;;Hera S.p.A.;equity;Action;;XMIL;EUR;IT;65;Utilities;True;;loglin_20y;HER.MI;;;;;;;2003-03-24;2026-08-17;23.4
+EQ:FR:HERMES;FR0000052292;Hermes International;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;RMS.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:SE:HEXAGONPUBL;;Hexagon AB (publ);equity;Action;;XMIL;EUR;SE;10;Technology;True;;loglin_20y;1HEXA.MI;;;;;;;2025-03-10;2026-08-17;1.4
+EQ:FI:HIAB;;Hiab Oyj;equity;Action;;XHEL;EUR;FI;50;Industrials;True;;loglin_20y;HIAB.HE;;;;;;;2005-05-30;2026-08-17;21.2
+EQ:DE:HOCHTIEF;;HOCHTIEF Aktiengesellschaft;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;HOT.DE;;;;;;;1998-07-20;2026-08-17;28.1
+EQ:DE:HORNBACHHOLDING;;HORNBACH Holding AG & Co. KGaA;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;HBH.DE;;;;;;;2007-12-24;2026-08-17;18.6
+EQ:DE:HUGOBOSS;;Hugo Boss AG;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;BOSS.DE;;;;;;;1999-01-25;2026-08-17;27.6
+EQ:FI:HUHTAMAKI;;Huhtamäki Oyj;equity;Action;;XHEL;EUR;FI;40;Consumer Discretionary;True;;loglin_20y;HUH1V.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:ICOPSOCIETABENEF;;I.CO.P. S.p.A. Società Benefit;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;ICOP.MI;;;;;;;2024-07-22;2026-08-17;2.1
+EQ:FR:LOGISTICSGROUP;;ID Logistics Group SA;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;IDL.PA;;;;;;;2012-04-16;2026-08-17;14.3
+EQ:NL:IMCD;;IMCD N.V.;equity;Action;;XAMS;EUR;NL;55;Basic Materials;True;;loglin_20y;IMCD.AS;;;;;;;2014-06-23;2026-08-17;12.2
+EQ:FR:IMERYS;;Imerys S.A.;equity;Action;;XPAR;EUR;FR;55;Basic Materials;True;;loglin_20y;NK.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:ES:INDRASISTEMAS;;Indra Sistemas, S.A.;equity;Action;;XMAD;EUR;ES;10;Technology;True;;loglin_20y;IDR.MC;;;;;;;2000-10-02;2026-08-17;25.9
+EQ:DE:INDUSHOLDING;;INDUS Holding AG;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;INH.DE;;;;;;;1998-11-09;2026-08-17;27.8
+EQ:ES:INDITEX;ES0148396007;Industria de Diseno Textil;equity;Action;;XMAD;EUR;ES;40;Consumer Discretionary;True;;loglin_20y;ITX.MC;;;;;;;2001-05-21;2026-08-17;25.2
+EQ:IT:INDUSTRIENORA;;Industrie De Nora S.p.A.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;DNR.MI;;;;;;;2022-07-11;2026-08-17;4.1
+EQ:DE:INFINEON;DE0006231004;Infineon Technologies;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;IFX.DE;;;;;;;2000-03-13;2026-08-17;26.4
+EQ:IT:INFRASTRUTTUREWI;;Infrastrutture Wireless Italiane S.p.A.;equity;Action;;XMIL;EUR;IT;35;Real Estate;True;;loglin_20y;INW.MI;;;;;;;2015-06-22;2026-08-17;11.2
+EQ:NL:ING;NL0011821202;ING Groep;equity;Action;;XAMS;EUR;NL;30;Financials;True;;loglin_20y;INGA.AS;;;;;;;1995-03-27;2026-08-17;31.4
+EQ:ES:INMOCEMENTO;;Inmocemento, S.A.;equity;Action;;XMAD;EUR;ES;50;Industrials;True;;loglin_20y;IMC.MC;;;;;;;2024-11-11;2026-08-17;1.8
+EQ:DE:INNOSCRIPTA;;innoscripta SE;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;1INN.DE;;;;;;;2025-05-19;2026-08-17;1.2
+EQ:IT:INTERCOS;;Intercos S.p.A.;equity;Action;;XMIL;EUR;IT;45;Consumer Staples;True;;loglin_20y;ICOS.MI;;;;;;;2021-11-08;2026-08-17;4.8
+EQ:FR:INTERPARFUMS;;Interparfums SA;equity;Action;;XPAR;EUR;FR;45;Consumer Staples;True;;loglin_20y;ITP.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:INTERPUMPGROUP;;Interpump Group S.p.A.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;IP.MI;;;;;;;1996-12-16;2026-08-17;29.7
+EQ:IT:INTESA;IT0000072618;Intesa Sanpaolo;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;ISP.MI;;;;;;;1995-03-20;2026-08-17;31.4
+EQ:FR:INVENTIVA;;Inventiva S.A.;equity;Action;;XPAR;EUR;FR;20;Health Care;True;;loglin_20y;IVA.PA;;;;;;;2017-02-13;2026-08-17;9.5
+EQ:DE:IONOSGROUP;;IONOS Group SE;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;IOS.DE;;;;;;;2023-02-06;2026-08-17;3.5
+EQ:FR:IPSEN;;Ipsen S.A.;equity;Action;;XPAR;EUR;FR;20;Health Care;True;;loglin_20y;IPN.PA;;;;;;;2005-12-05;2026-08-17;20.7
+EQ:FR:IPSOS;;Ipsos SA;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;IPS.PA;;;;;;;2001-01-01;2026-08-17;25.6
+EQ:IT:IREN;;Iren SpA;equity;Action;;XMIL;EUR;IT;65;Utilities;True;;loglin_20y;IRE.MI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IE:IRISHCONTINENTAL;;Irish Continental Group plc;equity;Action;;XDUB;EUR;IE;50;Industrials;True;;loglin_20y;IR5B.IR;;;;;;;2003-07-28;2026-08-17;23.1
+EQ:IT:ITALGAS;;Italgas S.p.A.;equity;Action;;XMIL;EUR;IT;65;Utilities;True;;loglin_20y;IG.MI;;;;;;;2016-11-07;2026-08-17;9.8
+EQ:IT:ITALMOBILIARE;;Italmobiliare S.p.A.;equity;Action;;XMIL;EUR;IT;45;Consumer Staples;True;;loglin_20y;ITM.MI;;;;;;;1987-02-02;2026-08-17;39.5
+EQ:IT:IVECOGROUP;;Iveco Group N.V.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;IVG.MI;;;;;;;2022-01-03;2026-08-17;4.6
+EQ:FR:JCDECAUX;;JCDecaux SE;equity;Action;;XPAR;EUR;FR;15;Telecommunications;True;;loglin_20y;DEC.PA;;;;;;;2001-06-18;2026-08-17;25.2
+EQ:DE:JENOPTIK;;JENOPTIK;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;JEN.DE;;;;;;;1998-11-09;2026-08-17;27.8
+EQ:PT:JERONIMOMARTINSS;;Jerónimo Martins, SGPS, S.A.;equity;Action;;XLIS;EUR;PT;45;Consumer Staples;True;;loglin_20y;JMT.LS;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:JOSTWERKE;;JOST Werke SE;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;JST.DE;;;;;;;2017-07-17;2026-08-17;9.1
+EQ:DE:JUNGHEINRICH;;Jungheinrich Aktiengesellschaft;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;JUN3.DE;;;;;;;1998-07-20;2026-08-17;28.1
+EQ:IT:JUVENTUSFOOTBALL;;Juventus Football Club S.p.A.;equity;Action;;XMIL;EUR;IT;15;Telecommunications;True;;loglin_20y;JUVE.MI;;;;;;;2001-12-17;2026-08-17;24.7
+EQ:FI:KALMAR;;Kalmar Oyj;equity;Action;;XHEL;EUR;FI;50;Industrials;True;;loglin_20y;KALMAR.HE;;;;;;;2024-07-01;2026-08-17;2.1
+EQ:BE:KBCANCORA;;KBC Ancora SA;equity;Action;;XBRU;EUR;BE;30;Financials;True;;loglin_20y;KBCA.BR;;;;;;;2001-04-02;2026-08-17;25.4
+EQ:BE:KBC;BE0003565737;KBC Groep;equity;Action;;XBRU;EUR;BE;30;Financials;True;;loglin_20y;KBC.BR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FI:KEMIRA;;Kemira Oyj;equity;Action;;XHEL;EUR;FI;55;Basic Materials;True;;loglin_20y;KEMIRA.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:KERING;FR0000121485;Kering;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;KER.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IE:KERRYGROUP;;Kerry Group plc;equity;Action;;XDUB;EUR;IE;45;Consumer Staples;True;;loglin_20y;KRZ.IR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FI:KESKO;;Kesko Oyj;equity;Action;;XHEL;EUR;FI;45;Consumer Staples;True;;loglin_20y;KESKOB.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:BE:KINEPOLISGROUP;;Kinepolis Group NV;equity;Action;;XBRU;EUR;BE;15;Telecommunications;True;;loglin_20y;KIN.BR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:KIONGROUP;;KION GROUP;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;KGX.DE;;;;;;;2013-07-08;2026-08-17;13.1
+EQ:DE:KNORRBREMSE;;Knorr-Bremse AG;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;KBX.DE;;;;;;;2018-10-08;2026-08-17;7.9
+EQ:FI:KONE;;KONE Oyj;equity;Action;;XHEL;EUR;FI;50;Industrials;True;;loglin_20y;KNEBV.HE;;;;;;;2005-05-30;2026-08-17;21.2
+EQ:FI:KONECRANES;;Konecranes Oyj;equity;Action;;XHEL;EUR;FI;50;Industrials;True;;loglin_20y;KCR.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:NL:AHOLD;NL0011794037;Koninklijke Ahold Delhaize;equity;Action;;XAMS;EUR;NL;45;Consumer Staples;True;;loglin_20y;AD.AS;;;;;;;2008-10-20;2026-08-17;17.8
+EQ:NL:KONINKLIJKEBAMGR;;Koninklijke BAM Groep nv;equity;Action;;XAMS;EUR;NL;50;Industrials;True;;loglin_20y;BAMNB.AS;;;;;;;2000-12-18;2026-08-17;25.7
+EQ:NL:KONINKLIJKEHEIJM;;Koninklijke Heijmans N.V.;equity;Action;;XAMS;EUR;NL;50;Industrials;True;;loglin_20y;HEIJM.AS;;;;;;;1998-07-20;2026-08-17;28.1
+EQ:NL:KONINKLIJKEKPN;;Koninklijke KPN N.V.;equity;Action;;XAMS;EUR;NL;15;Telecommunications;True;;loglin_20y;KPN.AS;;;;;;;1995-03-27;2026-08-17;31.4
+EQ:NL:KONINKLIJKEPHILI;;Koninklijke Philips N.V.;equity;Action;;XAMS;EUR;NL;20;Health Care;True;;loglin_20y;PHIA.AS;;;;;;;1995-03-27;2026-08-17;31.4
+EQ:NL:KONINKLIJKEVOPAK;;Koninklijke Vopak N.V.;equity;Action;;XAMS;EUR;NL;60;Energy;True;;loglin_20y;VPK.AS;;;;;;;1999-11-01;2026-08-17;26.8
+EQ:AT:KONTRON;;Kontron AG;equity;Action;;XWBO;EUR;AT;10;Technology;True;;loglin_20y;KTN.VI;;;;;;;2017-09-04;2026-08-17;9.0
+EQ:DE:KRONES;;Krones AG;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;KRN.DE;;;;;;;1998-11-23;2026-08-17;27.7
+EQ:DE:KSB;;KSB SE & Co. KGaA;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;KSB.DE;;;;;;;1998-11-30;2026-08-17;27.7
+EQ:DE:KWSSAAT;;KWS SAAT SE & Co. KGaA;equity;Action;;XETR;EUR;DE;55;Basic Materials;True;;loglin_20y;KWS.DE;;;;;;;2000-07-24;2026-08-17;26.1
+EQ:FR:LDC;;L.D.C. S.A.;equity;Action;;XPAR;EUR;FR;45;Consumer Staples;True;;loglin_20y;LOUP.PA;;;;;;;1995-11-27;2026-08-17;30.7
+EQ:ES:LABORATORIOSFARM;;Laboratorios Farmaceuticos Rovi, S.A.;equity;Action;;XMAD;EUR;ES;20;Health Care;True;;loglin_20y;ROVI.MC;;;;;;;2007-12-03;2026-08-17;18.7
+EQ:FR:LAGARDERE;;Lagardere SA;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;MMB.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:LECTRA;;Lectra SA;equity;Action;;XPAR;EUR;FR;10;Technology;True;;loglin_20y;LSS.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:LEGRAND;FR0010307819;Legrand;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;LR.PA;;;;;;;2006-04-03;2026-08-17;20.4
+EQ:IT:LEONARDO;;Leonardo S.p.a.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;LDO.MI;;;;;;;2005-07-18;2026-08-17;21.1
+EQ:ES:LINEADIRECTAASEG;;Línea Directa Aseguradora, S.A., Compañía de Seguros y Reaseguros;equity;Action;;XMAD;EUR;ES;30;Financials;True;;loglin_20y;LDA.MC;;;;;;;2021-05-03;2026-08-17;5.3
+EQ:FR:LISI;;Lisi S.A.;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;FII.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:ES:LOGISTAINTEGRAL;;Logista Integral;equity;Action;;XMAD;EUR;ES;50;Industrials;True;;loglin_20y;LOG.MC;;;;;;;2014-07-14;2026-08-17;12.1
+EQ:IT:LOTTOMATICAGROUP;;Lottomatica Group S.p.A.;equity;Action;;XMIL;EUR;IT;40;Consumer Discretionary;True;;loglin_20y;LTMC.MI;;;;;;;2023-05-01;2026-08-17;3.3
+EQ:BE:LOTUSBAKERIES;;Lotus Bakeries NV;equity;Action;;XBRU;EUR;BE;45;Consumer Staples;True;;loglin_20y;LOTB.BR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:LOUISHACHETTEGRO;;Louis Hachette Group S.A.;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;ALHG.PA;;;;;;;2024-12-16;2026-08-17;1.7
+EQ:IT:LUVE;;LU-VE S.p.A.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;LUVE.MI;;;;;;;2015-07-06;2026-08-17;11.1
+EQ:FI:LUMOKODIT;;Lumo Kodit Oyj;equity;Action;;XHEL;EUR;FI;35;Real Estate;True;;loglin_20y;LUMO.HE;;;;;;;2018-06-11;2026-08-17;8.2
+EQ:FR:LVMH;FR0000121014;LVMH Moet Hennessy Louis Vuitton;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;MC.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:MAIRE;;Maire S.p.A.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;MAIRE.MI;;;;;;;2007-11-26;2026-08-17;18.7
+EQ:FI:MANDATUM;;MANDATUM OYJ;equity;Action;;XHEL;EUR;FI;30;Financials;True;;loglin_20y;MANTA.HE;;;;;;;2023-10-02;2026-08-17;2.9
+EQ:ES:MAPFRE;;Mapfre, S.A.;equity;Action;;XMAD;EUR;ES;30;Financials;True;;loglin_20y;MAP.MC;;;;;;;2001-09-17;2026-08-17;24.9
+EQ:AT:MAYRMELNHOFKARTO;;Mayr-Melnhof Karton AG;equity;Action;;XWBO;EUR;AT;40;Consumer Discretionary;True;;loglin_20y;MMK.VI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:MBB;;MBB SE;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;MBB.DE;;;;;;;2006-05-08;2026-08-17;20.3
+EQ:FR:MEDINCELL;;MedinCell S.A.;equity;Action;;XPAR;EUR;FR;20;Health Care;True;;loglin_20y;MEDCL.PA;;;;;;;2018-10-08;2026-08-17;7.9
+EQ:IT:MEDIOBANCABANCAC;;Mediobanca Banca di Credito Finanziario S.p.A.;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;MB.MI;;;;;;;1987-05-04;2026-08-17;39.3
+EQ:BE:MELEXIS;;Melexis NV;equity;Action;;XBRU;EUR;BE;10;Technology;True;;loglin_20y;MELE.BR;;;;;;;2002-05-13;2026-08-17;24.3
+EQ:ES:MELIAHOTELSINTER;;Meliá Hotels International, S.A.;equity;Action;;XMAD;EUR;ES;40;Consumer Discretionary;True;;loglin_20y;MEL.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:MERCK;;Merck KGaA;equity;Action;;XETR;EUR;DE;20;Health Care;True;;loglin_20y;MRK.DE;;;;;;;1998-06-22;2026-08-17;28.2
+EQ:FR:MERSEN;;Mersen S.A.;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;MRN.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:METROPOLETELEVIS;;Métropole Télévision S.A.;equity;Action;;XPAR;EUR;FR;15;Telecommunications;True;;loglin_20y;MMT.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:ES:METROVACESA;;Metrovacesa S.A.;equity;Action;;XMAD;EUR;ES;35;Real Estate;True;;loglin_20y;MVC.MC;;;;;;;2018-02-05;2026-08-17;8.5
+EQ:FI:METSABOARD;;Metsä Board Oyj;equity;Action;;XHEL;EUR;FI;40;Consumer Discretionary;True;;loglin_20y;METSA.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FI:METSO;;Metso Oyj;equity;Action;;XHEL;EUR;FI;50;Industrials;True;;loglin_20y;METSO.HE;;;;;;;2006-10-09;2026-08-17;19.9
+EQ:IT:MFEMEDIAFOREUROP;;MFE-Mediaforeurope N.V.;equity;Action;;XMIL;EUR;IT;15;Telecommunications;True;;loglin_20y;MFEB.MI;;;;;;;1996-07-15;2026-08-17;30.1
+EQ:FR:MICHELIN;FR001400AJ45;Michelin;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;ML.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:MLP;;MLP SE;equity;Action;;XETR;EUR;DE;30;Financials;True;;loglin_20y;MLP.DE;;;;;;;1998-11-23;2026-08-17;27.7
+EQ:IT:MOLTIPLYGROUP;;Moltiply Group S.p.A.;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;MOL.MI;;;;;;;2007-06-04;2026-08-17;19.2
+EQ:IT:MONCLER;;Moncler S.p.A.;equity;Action;;XMIL;EUR;IT;40;Consumer Discretionary;True;;loglin_20y;MONC.MI;;;;;;;2013-12-16;2026-08-17;12.7
+EQ:DE:MTUAEROENGINES;;MTU AERO ENGINES;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;MTX.DE;;;;;;;2005-06-06;2026-08-17;21.2
+EQ:DE:MVVENERGIE;;MVV Energie AG;equity;Action;;XETR;EUR;DE;65;Utilities;True;;loglin_20y;MVV1.DE;;;;;;;2000-02-14;2026-08-17;26.5
+EQ:DE:NAGARRO;;Nagarro SE;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;NA9.DE;;;;;;;2020-12-14;2026-08-17;5.7
+EQ:FR:NANOBIOTIX;;Nanobiotix S.A.;equity;Action;;XPAR;EUR;FR;20;Health Care;True;;loglin_20y;NANO.PA;;;;;;;2012-10-29;2026-08-17;13.8
+EQ:ES:NATURGYENERGYGRO;;Naturgy Energy Group, S.A.;equity;Action;;XMAD;EUR;ES;65;Utilities;True;;loglin_20y;NTGY.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:ES:NEINORHOMES;;Neinor Homes, S.A.;equity;Action;;XMAD;EUR;ES;35;Real Estate;True;;loglin_20y;HOME.MC;;;;;;;2017-03-27;2026-08-17;9.4
+EQ:DE:NEMETSCHEK;;Nemetschek SE;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;NEM.DE;;;;;;;1999-03-08;2026-08-17;27.4
+EQ:NL:NEPIROCKCASTLE;;NEPI Rockcastle N.V.;equity;Action;;XAMS;EUR;NL;35;Real Estate;True;;loglin_20y;NRP.AS;;;;;;;2017-07-17;2026-08-17;9.1
+EQ:FI:NESTE;;Neste Oyj;equity;Action;;XHEL;EUR;FI;60;Energy;True;;loglin_20y;NESTE.HE;;;;;;;2005-04-18;2026-08-17;21.3
+EQ:FR:NEURONES;;Neurones S.A.;equity;Action;;XPAR;EUR;FR;10;Technology;True;;loglin_20y;NRO.PA;;;;;;;2000-05-22;2026-08-17;26.2
+EQ:FR:NEXANS;;Nexans S.A.;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;NEX.PA;;;;;;;2001-06-11;2026-08-17;25.2
+EQ:IT:NEXI;;Nexi S.p.A.;equity;Action;;XMIL;EUR;IT;10;Technology;True;;loglin_20y;NEXI.MI;;;;;;;2019-04-15;2026-08-17;7.3
+EQ:NL:GROUP;;NN Group N.V.;equity;Action;;XAMS;EUR;NL;30;Financials;True;;loglin_20y;NN.AS;;;;;;;2014-06-30;2026-08-17;12.1
+EQ:FI:NOKIA;;Nokia Oyj;equity;Action;;XHEL;EUR;FI;10;Technology;True;;loglin_20y;NOKIA.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FI:NOKIANRENKAAT;;Nokian Renkaat Oyj;equity;Action;;XHEL;EUR;FI;40;Consumer Discretionary;True;;loglin_20y;TYRES.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FI:NORDEABANK;;NORDEA BANK;equity;Action;;XHEL;EUR;FI;30;Financials;True;;loglin_20y;NDA-FI.HE;;;;;;;2000-01-24;2026-08-17;26.6
+EQ:DE:NORDEX;;Nordex SE;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;NDX1.DE;;;;;;;2001-04-02;2026-08-17;25.4
+EQ:FR:NORTHATLANTICENE;;North Atlantic Energies;equity;Action;;XPAR;EUR;FR;60;Energy;True;;loglin_20y;NAE.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:PT:NOSSGPS;;NOS, S.G.P.S., S.A.;equity;Action;;XLIS;EUR;PT;15;Telecommunications;True;;loglin_20y;NOS.LS;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DK:NOVOZYMES;;Novozymes A/S;equity;Action;;XETR;EUR;DK;55;Basic Materials;True;;loglin_20y;NZM2.DE;;;;;;;2000-11-27;2026-08-17;25.7
+EQ:DE:NURNBERGERBETEIL;;NÜRNBERGER Beteiligungs-AG;equity;Action;;XETR;EUR;DE;30;Financials;True;;loglin_20y;NBG6.DE;;;;;;;1999-04-19;2026-08-17;27.3
+EQ:BE:BEKAERT;;NV Bekaert SA;equity;Action;;XBRU;EUR;BE;50;Industrials;True;;loglin_20y;BEKB.BR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:AT:OBERBANK;;Oberbank AG;equity;Action;;XWBO;EUR;AT;30;Financials;True;;loglin_20y;OBS.VI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:OHB;;OHB SE;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;OHB.DE;;;;;;;2001-03-12;2026-08-17;25.4
+EQ:AT:OMV;;OMV Aktiengesellschaft;equity;Action;;XWBO;EUR;AT;60;Energy;True;;loglin_20y;OMV.VI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:OPMOBILITY;;OPmobility SE;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;OPM.PA;;;;;;;2000-12-11;2026-08-17;25.7
+EQ:BE:ORANGEBELGIUM;;Orange Belgium S.A.;equity;Action;;XBRU;EUR;BE;15;Telecommunications;True;;loglin_20y;OBEL.BR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FI:ORION;;Orion Oyj;equity;Action;;XHEL;EUR;FI;20;Health Care;True;;loglin_20y;ORNBV.HE;;;;;;;2004-10-04;2026-08-17;21.9
+EQ:AT:OSTERREICHISCHEP;;Österreichische Post AG;equity;Action;;XWBO;EUR;AT;50;Industrials;True;;loglin_20y;POST.VI;;;;;;;2006-05-29;2026-08-17;20.2
+EQ:FI:OUTOKUMPU;;Outokumpu Oyj;equity;Action;;XHEL;EUR;FI;55;Basic Materials;True;;loglin_20y;OUT1V.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:OVHGROUPE;;OVH Groupe S.A.;equity;Action;;XPAR;EUR;FR;10;Technology;True;;loglin_20y;OVH.PA;;;;;;;2021-10-11;2026-08-17;4.8
+EQ:IT:OVS;;OVS S.p.A.;equity;Action;;XMIL;EUR;IT;40;Consumer Discretionary;True;;loglin_20y;OVS.MI;;;;;;;2015-03-02;2026-08-17;11.5
+EQ:AT:PALFINGER;;Palfinger AG;equity;Action;;XWBO;EUR;AT;50;Industrials;True;;loglin_20y;PAL.VI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IE:PERMANENTTSBGROU;;Permanent TSB Group Holdings plc;equity;Action;;XDUB;EUR;IE;30;Financials;True;;loglin_20y;PTSB.IR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:PERNOD;FR0000120693;Pernod Ricard;equity;Action;;XPAR;EUR;FR;45;Consumer Staples;True;;loglin_20y;RI.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:PEUGEOTINVESTSOC;;Peugeot Invest Société anonyme;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;PEUG.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:PFISTERERHOLDING;;PFISTERER Holding SE;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;PFSE.DE;;;;;;;2025-05-12;2026-08-17;1.3
+EQ:ES:PHARMAMAR;;Pharma Mar, S.A.;equity;Action;;XMAD;EUR;ES;20;Health Care;True;;loglin_20y;PHM.MC;;;;;;;2000-09-04;2026-08-17;25.9
+EQ:IT:PHILOGEN;;Philogen S.p.A.;equity;Action;;XMIL;EUR;IT;20;Health Care;True;;loglin_20y;PHIL.MI;;;;;;;2021-03-01;2026-08-17;5.5
+EQ:FR:PIERREVACANCES;;Pierre et Vacances SA;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;VAC.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:PIRELLI;;Pirelli & C. S.p.A.;equity;Action;;XMIL;EUR;IT;40;Consumer Discretionary;True;;loglin_20y;PIRC.MI;;;;;;;2017-10-02;2026-08-17;8.9
+EQ:FR:PLANISWARE;;PLANISWARE;equity;Action;;XPAR;EUR;FR;10;Technology;True;;loglin_20y;PLNW.PA;;;;;;;2024-04-15;2026-08-17;2.3
+EQ:FR:PLUXEE;;Pluxee N.V.;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;PLX.PA;;;;;;;2024-01-29;2026-08-17;2.5
+EQ:AT:PORR;AT0000609607;PORR AG;equity;Action;;XWBO;EUR;AT;50;Industrials;True;;loglin_20y;POS.VI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:PORSCHEAUTOMOBIL;;Porsche Automobil Holding SE;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;PAH3.DE;;;;;;;2009-01-26;2026-08-17;17.6
+EQ:IT:POSTEITALIANE;;Poste Italiane S.p.A.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;PST.MI;;;;;;;2015-10-26;2026-08-17;10.8
+EQ:ES:PROSEGURCASH;;Prosegur Cash, S.A.;equity;Action;;XMAD;EUR;ES;50;Industrials;True;;loglin_20y;CASH.MC;;;;;;;2017-03-13;2026-08-17;9.4
+EQ:ES:PROSEGURCOMPANIA;;Prosegur Compañía de Seguridad, S.A.;equity;Action;;XMAD;EUR;ES;50;Industrials;True;;loglin_20y;PSG.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:PROSIEBENSAT1MED;;ProSiebenSat.1 Media SE;equity;Action;;XETR;EUR;DE;15;Telecommunications;True;;loglin_20y;PSM.DE;;;;;;;2001-05-21;2026-08-17;25.2
+EQ:NL:PROSUS;NL0013654783;Prosus;equity;Action;;XAMS;EUR;NL;10;Technology;True;;loglin_20y;PRX.AS;;;;;;;2019-09-09;2026-08-17;6.9
+EQ:BE:PROXIMUS;;Proximus PLC;equity;Action;;XBRU;EUR;BE;15;Telecommunications;True;;loglin_20y;PROX.BR;;;;;;;2004-03-22;2026-08-17;22.4
+EQ:IT:PRYSMIAN;;Prysmian S.p.A.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;PRY.MI;;;;;;;2007-04-30;2026-08-17;19.3
+EQ:FR:PUBLICIS;FR0000130577;Publicis Groupe;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;PUB.PA;;;;;;;2000-09-18;2026-08-17;25.9
+EQ:ES:PUIGBRANDS;;Puig Brands SA;equity;Action;;XMAD;EUR;ES;45;Consumer Staples;True;;loglin_20y;PUIG.MC;;;;;;;2024-04-29;2026-08-17;2.3
+EQ:FI:PUUILO;;Puuilo Oyj;equity;Action;;XHEL;EUR;FI;40;Consumer Discretionary;True;;loglin_20y;PUUILO.HE;;;;;;;2021-06-21;2026-08-17;5.2
+EQ:FI:GROUP;;Qt Group Oyj;equity;Action;;XHEL;EUR;FI;10;Technology;True;;loglin_20y;QTCOM.HE;;;;;;;2016-05-02;2026-08-17;10.3
+EQ:IT:RAIWAY;;Rai Way S.p.A.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;RWAY.MI;;;;;;;2014-11-17;2026-08-17;11.7
+EQ:FR:RAMSAYGENERALESA;;Ramsay Générale de Santé SA;equity;Action;;XPAR;EUR;FR;20;Health Care;True;;loglin_20y;GDS.PA;;;;;;;2001-06-18;2026-08-17;25.2
+EQ:NL:RANDSTAD;;Randstad N.V.;equity;Action;;XAMS;EUR;NL;50;Industrials;True;;loglin_20y;RAND.AS;;;;;;;1995-05-08;2026-08-17;31.3
+EQ:DE:RATIONAL;;RATIONAL Aktiengesellschaft;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;RAA.DE;;;;;;;2000-03-06;2026-08-17;26.4
+EQ:ES:REALIABUSINESS;;Realia Business, S.A.;equity;Action;;XMAD;EUR;ES;35;Real Estate;True;;loglin_20y;RLIA.MC;;;;;;;2007-06-04;2026-08-17;19.2
+EQ:IT:RECORDATIINDUSTR;;Recordati Industria Chimica e Farmaceutica S.p.A.;equity;Action;;XMIL;EUR;IT;20;Health Care;True;;loglin_20y;REC.MI;;;;;;;1995-03-20;2026-08-17;31.4
+EQ:ES:REDEIACORPORACIO;;Redeia Corporación, S.A.;equity;Action;;XMAD;EUR;ES;65;Utilities;True;;loglin_20y;RED.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:LU:REINETINVESTMENT;;Reinet Investments S.C.A.;equity;Action;;XAMS;EUR;LU;30;Financials;True;;loglin_20y;REINA.AS;;;;;;;2017-11-13;2026-08-17;8.8
+EQ:PT:RENREDESENERGETI;;REN - Redes Energéticas Nacionais, SGPS, S.A.;equity;Action;;XLIS;EUR;PT;65;Utilities;True;;loglin_20y;RENE.LS;;;;;;;2007-07-09;2026-08-17;19.1
+EQ:FR:RENAULT;;Renault SA;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;RNO.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:RENKGROUP;;RENK GROUP AG;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;R3NK.DE;;;;;;;2024-02-05;2026-08-17;2.5
+EQ:IT:REPLY;;Reply S.p.A.;equity;Action;;XMIL;EUR;IT;10;Technology;True;;loglin_20y;REY.MI;;;;;;;2000-12-04;2026-08-17;25.7
+EQ:ES:REPSOL;;Repsol, S.A.;equity;Action;;XMAD;EUR;ES;60;Energy;True;;loglin_20y;REP.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:REXEL;;Rexel S.A.;equity;Action;;XPAR;EUR;FR;10;Technology;True;;loglin_20y;RXL.PA;;;;;;;2007-04-02;2026-08-17;19.4
+EQ:DE:RHEINMETALL;;Rheinmetall AG;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;RHM.DE;;;;;;;1998-08-03;2026-08-17;28.0
+EQ:AT:RHIMAGNESITA;;RHI Magnesita N.V.;equity;Action;;XWBO;EUR;AT;50;Industrials;True;;loglin_20y;RHIM.VI;;;;;;;2017-10-23;2026-08-17;8.8
+EQ:DE:RHONKLINIKUM;;RHÖN-KLINIKUM Aktiengesellschaft;equity;Action;;XETR;EUR;DE;20;Health Care;True;;loglin_20y;RHK.DE;;;;;;;1998-11-23;2026-08-17;27.7
+EQ:FR:ROBERTET;;Robertet SA;equity;Action;;XPAR;EUR;FR;55;Basic Materials;True;;loglin_20y;RBT.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:LU:RTLGROUP;;RTL Group S.A.;equity;Action;;XETR;EUR;LU;15;Telecommunications;True;;loglin_20y;RRTL.DE;;;;;;;2007-10-29;2026-08-17;18.8
+EQ:DE:RWE;;RWE Aktiengesellschaft;equity;Action;;XETR;EUR;DE;65;Utilities;True;;loglin_20y;RWE.DE;;;;;;;1996-12-16;2026-08-17;29.7
+EQ:IE:RYANAIRHOLDINGS;;Ryanair Holdings plc;equity;Action;;XDUB;EUR;IE;50;Industrials;True;;loglin_20y;RYA.IR;;;;;;;2001-12-03;2026-08-17;24.7
+EQ:ES:SACYR;;Sacyr, S.A.;equity;Action;;XMAD;EUR;ES;50;Industrials;True;;loglin_20y;SCYR.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:SAFHOLLAND;;SAF-Holland SE;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;SFQ.DE;;;;;;;2007-07-23;2026-08-17;19.1
+EQ:FR:SAFRAN;FR0000073272;Safran;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;SAF.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:SALVATOREFERRAGA;;Salvatore Ferragamo S.p.A.;equity;Action;;XMIL;EUR;IT;40;Consumer Discretionary;True;;loglin_20y;SFER.MI;;;;;;;2011-06-27;2026-08-17;15.1
+EQ:DE:SALZGITTER;;Salzgitter AG;equity;Action;;XETR;EUR;DE;55;Basic Materials;True;;loglin_20y;SZG.DE;;;;;;;1998-11-09;2026-08-17;27.8
+EQ:FI:SAMPO;;Sampo Oyj;equity;Action;;XHEL;EUR;FI;30;Financials;True;;loglin_20y;SAMPO.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:SANLORENZO;;Sanlorenzo S.p.A.;equity;Action;;XMIL;EUR;IT;40;Consumer Discretionary;True;;loglin_20y;SL.MI;;;;;;;2019-12-09;2026-08-17;6.7
+EQ:FI:SANOMA;;Sanoma Oyj;equity;Action;;XHEL;EUR;FI;45;Consumer Staples;True;;loglin_20y;SANOMA.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:SAP;DE0007164600;SAP;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;SAP.DE;;;;;;;1998-04-06;2026-08-17;28.4
+EQ:DE:SARTORIUS;;Sartorius Aktiengesellschaft;equity;Action;;XETR;EUR;DE;20;Health Care;True;;loglin_20y;SRT3.DE;;;;;;;1999-04-26;2026-08-17;27.3
+EQ:FR:SARTORIUSSTEDIMB;;Sartorius Stedim Biotech S.A.;equity;Action;;XPAR;EUR;FR;20;Health Care;True;;loglin_20y;DIM.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:SCHAEFFLER;;Schaeffler AG;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;SHA0.DE;;;;;;;2015-10-05;2026-08-17;10.9
+EQ:DE:SCHOTTPHARMA;;SCHOTT Pharma AG & Co. KGaA;equity;Action;;XETR;EUR;DE;20;Health Care;True;;loglin_20y;1SXP.DE;;;;;;;2023-09-25;2026-08-17;2.9
+EQ:FR:SCOR;;SCOR SE;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;SCR.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:SCOUT24;;Scout24 SE;equity;Action;;XETR;EUR;DE;15;Telecommunications;True;;loglin_20y;G24.DE;;;;;;;2015-09-28;2026-08-17;10.9
+EQ:FR:SEB;FR0000121709;SEB;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;SK.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:SECUNETSECURITYN;;secunet Security Networks Aktiengesellschaft;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;YSN.DE;;;;;;;1999-11-08;2026-08-17;26.8
+EQ:PT:SEMAPASOCIEDADEI;;Semapa - Sociedade de Investimento e Gestão, SGPS, S.A.;equity;Action;;XLIS;EUR;PT;55;Basic Materials;True;;loglin_20y;SEM.LS;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:LU:SES;;SES S.A.;equity;Action;;XPAR;EUR;LU;15;Telecommunications;True;;loglin_20y;SESG.PA;;;;;;;2004-05-03;2026-08-17;22.3
+EQ:IT:SESA;;SeSa S.p.A.;equity;Action;;XMIL;EUR;IT;10;Technology;True;;loglin_20y;SES.MI;;;;;;;2011-06-27;2026-08-17;15.1
+EQ:BG:SHELLYGROUP;;Shelly Group SE;equity;Action;;XETR;EUR;BG;50;Industrials;True;;loglin_20y;SLYG.DE;;;;;;;2024-04-29;2026-08-17;2.3
+EQ:LU:SHURGARDSELFSTOR;;Shurgard Self Storage Ltd;equity;Action;;XBRU;EUR;LU;35;Real Estate;True;;loglin_20y;SHUR.BR;;;;;;;2018-10-15;2026-08-17;7.8
+EQ:DE:SIEMENS;DE0007236101;Siemens;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;SIE.DE;;;;;;;1996-11-04;2026-08-17;29.8
+EQ:DE:SIEMENSENERGY;;Siemens Energy AG;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;ENR.DE;;;;;;;2020-09-28;2026-08-17;5.9
+EQ:DE:SIEMENSHEALTHINE;;SIEMENS HEALTHINEERS;equity;Action;;XETR;EUR;DE;20;Health Care;True;;loglin_20y;SHL.DE;;;;;;;2018-04-09;2026-08-17;8.4
+EQ:NL:SIGNIFY;;Signify N.V.;equity;Action;;XAMS;EUR;NL;50;Industrials;True;;loglin_20y;LIGHT.AS;;;;;;;2016-05-23;2026-08-17;10.2
+EQ:DE:SILTRONIC;;SILTRONIC;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;WAF.DE;;;;;;;2015-06-08;2026-08-17;11.2
+EQ:DE:SIXT;;SIXT;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;SIX2.DE;;;;;;;1998-11-09;2026-08-17;27.8
+EQ:IT:SNAM;;Snam S.p.A.;equity;Action;;XMIL;EUR;IT;65;Utilities;True;;loglin_20y;SRG.MI;;;;;;;2001-12-03;2026-08-17;24.7
+EQ:FR:SOCIETEBIC;;Société BIC SA;equity;Action;;XPAR;EUR;FR;45;Consumer Staples;True;;loglin_20y;BB.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:SOCIETEGENERALES;;Société Générale Société anonyme;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;GLE.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:SODEXO;;Sodexo S.A.;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;SW.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:BE:SOFINASOCIETE;;Sofina Société Anonyme;equity;Action;;XBRU;EUR;BE;30;Financials;True;;loglin_20y;SOF.BR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:SOITEC;;Soitec SA;equity;Action;;XPAR;EUR;FR;10;Technology;True;;loglin_20y;SOI.PA;;;;;;;1998-11-09;2026-08-17;27.8
+EQ:IT:SOL;;SOL S.p.A.;equity;Action;;XMIL;EUR;IT;55;Basic Materials;True;;loglin_20y;SOL.MI;;;;;;;1998-07-13;2026-08-17;28.1
+EQ:ES:SOLARIAENERGIAME;;Solaria Energía y Medio Ambiente, S.A.;equity;Action;;XMAD;EUR;ES;65;Utilities;True;;loglin_20y;SLR.MC;;;;;;;2007-06-18;2026-08-17;19.2
+EQ:BE:SOLVAC;;Solvac S.A.;equity;Action;;XBRU;EUR;BE;55;Basic Materials;True;;loglin_20y;SOLV.BR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:BE:SOLVAY;;Solvay SA;equity;Action;;XBRU;EUR;BE;55;Basic Materials;True;;loglin_20y;SOLB.BR;;;;;;;2001-06-18;2026-08-17;25.2
+EQ:PT:SONAESGPS;;Sonae, SGPS, S.A.;equity;Action;;XLIS;EUR;PT;45;Consumer Staples;True;;loglin_20y;SON.LS;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:PT:SONAECOMSGPS;;Sonaecom, SGPS, S.A.;equity;Action;;XLIS;EUR;PT;15;Telecommunications;True;;loglin_20y;SNC.LS;;;;;;;2000-05-29;2026-08-17;26.2
+EQ:FR:SOPRASTERIAGROUP;;Sopra Steria Group SA;equity;Action;;XPAR;EUR;FR;10;Technology;True;;loglin_20y;SOP.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:BE:SPADEL;;Spadel SA;equity;Action;;XBRU;EUR;BE;45;Consumer Staples;True;;loglin_20y;SPA.BR;;;;;;;2001-04-16;2026-08-17;25.3
+EQ:FR:SPIE;;SPIE SA;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;SPIE.PA;;;;;;;2015-06-08;2026-08-17;11.2
+EQ:SE:SPOTIFYTECHNOLOG;;Spotify Technology S.A.;equity;Action;;XETR;EUR;SE;15;Telecommunications;True;;loglin_20y;639.DE;;;;;;;2024-03-11;2026-08-17;2.4
+EQ:DE:SPRINGERNATURE;;Springer Nature AG & Co. KGaA;equity;Action;;XETR;EUR;DE;15;Telecommunications;True;;loglin_20y;SPG.DE;;;;;;;2024-09-30;2026-08-17;1.9
+EQ:FR:STEF;;STEF SA;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;STF.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FI:STORAENSO;;Stora Enso Oyj;equity;Action;;XHEL;EUR;FI;40;Consumer Discretionary;True;;loglin_20y;STEAV.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:AT:STRABAG;AT0000A36HJ5;Strabag SE;equity;Action;;XWBO;EUR;AT;50;Industrials;True;;loglin_20y;STR.VI;;;;;;;2007-10-15;2026-08-17;18.8
+EQ:DE:STROER;;Ströer SE & Co. KGaA;equity;Action;;XETR;EUR;DE;15;Telecommunications;True;;loglin_20y;SAX.DE;;;;;;;2010-07-19;2026-08-17;16.1
+EQ:DE:SUDZUCKER;;Südzucker AG;equity;Action;;XETR;EUR;DE;45;Consumer Staples;True;;loglin_20y;SZU.DE;;;;;;;1998-11-09;2026-08-17;27.8
+EQ:DE:SUSSMICROTEC;;SUSS MicroTec SE;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;SMHN.DE;;;;;;;1999-05-17;2026-08-17;27.3
+EQ:BE:SYENSQOSANV;;Syensqo SA/NV;equity;Action;;XBRU;EUR;BE;55;Basic Materials;True;;loglin_20y;SYENS.BR;;;;;;;2023-12-11;2026-08-17;2.7
+EQ:DE:SYMRISE;;Symrise AG;equity;Action;;XETR;EUR;DE;55;Basic Materials;True;;loglin_20y;SY1.DE;;;;;;;2006-12-11;2026-08-17;19.7
+EQ:DE:TALANX;;Talanx AG;equity;Action;;XETR;EUR;DE;30;Financials;True;;loglin_20y;TLX.DE;;;;;;;2012-10-01;2026-08-17;13.9
+EQ:IT:TAMBURIINVESTMEN;;Tamburi Investment Partners S.p.A.;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;TIP.MI;;;;;;;2005-11-07;2026-08-17;20.8
+EQ:DE:TEAMVIEWER;;TEAMVIEWER;equity;Action;;XETR;EUR;DE;10;Technology;True;;loglin_20y;TMV.DE;;;;;;;2019-09-23;2026-08-17;6.9
+EQ:FR:TECHNIPENERGIES;;Technip Energies N.V.;equity;Action;;XPAR;EUR;FR;60;Energy;True;;loglin_20y;TE.PA;;;;;;;2021-02-15;2026-08-17;5.5
+EQ:IT:TECHNOGYM;;Technogym S.p.A.;equity;Action;;XMIL;EUR;IT;40;Consumer Discretionary;True;;loglin_20y;TGYM.MI;;;;;;;2016-05-02;2026-08-17;10.3
+EQ:IT:TECHNOPROBE;;Technoprobe S.p.A.;equity;Action;;XMIL;EUR;IT;10;Technology;True;;loglin_20y;TPRO.MI;;;;;;;2022-02-14;2026-08-17;4.5
+EQ:ES:TECNICASREUNIDAS;;Técnicas Reunidas, S.A.;equity;Action;;XMAD;EUR;ES;50;Industrials;True;;loglin_20y;TRE.MC;;;;;;;2006-06-19;2026-08-17;20.2
+EQ:IT:TELECOMITALIA;;Telecom Italia S.p.A.;equity;Action;;XMIL;EUR;IT;15;Telecommunications;True;;loglin_20y;TIT.MI;;;;;;;1987-02-09;2026-08-17;39.5
+EQ:ES:TELEFONICA;ES0178430E18;Telefonica;equity;Action;;XMAD;EUR;ES;15;Telecommunications;True;;loglin_20y;TEF.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:TELEPERFORMANCE;;Teleperformance SE;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;TEP.PA;;;;;;;1992-06-01;2026-08-17;34.2
+EQ:IT:TERNA;;Terna S.p.A.;equity;Action;;XMIL;EUR;IT;65;Utilities;True;;loglin_20y;TRN.MI;;;;;;;2004-06-21;2026-08-17;22.2
+EQ:FI:TERVEYSTALO;;Terveystalo Oyj;equity;Action;;XHEL;EUR;FI;20;Health Care;True;;loglin_20y;TTALO.HE;;;;;;;2017-10-09;2026-08-17;8.9
+EQ:BE:TESSENDERLOGROUP;;Tessenderlo Group NV;equity;Action;;XBRU;EUR;BE;55;Basic Materials;True;;loglin_20y;TESB.BR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:TF1;;TF1 SA;equity;Action;;XPAR;EUR;FR;15;Telecommunications;True;;loglin_20y;TFI.PA;;;;;;;1992-07-13;2026-08-17;34.1
+EQ:FR:THALES;FR0000121329;Thales;equity;Action;;XPAR;EUR;FR;50;Industrials;True;;loglin_20y;HO.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:PT:THENAVIGATORCOMP;;The Navigator Company, S.A.;equity;Action;;XLIS;EUR;PT;55;Basic Materials;True;;loglin_20y;NVG.LS;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:CY:THEONINTERNATION;;THEON INTERNATIONAL PLC;equity;Action;;XAMS;EUR;CY;50;Industrials;True;;loglin_20y;THEON.AS;;;;;;;2024-02-05;2026-08-17;2.5
+EQ:DE:THYSSENKRUPP;;thyssenkrupp AG;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;TKA.DE;;;;;;;1999-03-22;2026-08-17;27.4
+EQ:DE:THYSSENKRUPPNUCE;;thyssenkrupp nucera AG & Co. KGaA;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;NCH2.DE;;;;;;;2023-07-03;2026-08-17;3.1
+EQ:FI:TIETO;;Tieto Oyj;equity;Action;;XHEL;EUR;FI;10;Technology;True;;loglin_20y;TIETO.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:TIKEHAUCAPITAL;;Tikehau Capital;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;TKO.PA;;;;;;;2017-03-06;2026-08-17;9.4
+EQ:BE:TITAN;;Titan S.A.;equity;Action;;XBRU;EUR;BE;55;Basic Materials;True;;loglin_20y;TITC.BR;;;;;;;2019-07-22;2026-08-17;7.1
+EQ:NL:TKHGROUP;;TKH Group N.V.;equity;Action;;XAMS;EUR;NL;10;Technology;True;;loglin_20y;TWEKA.AS;;;;;;;1998-07-20;2026-08-17;28.1
+EQ:LU:TONIES;;tonies SE;equity;Action;;XETR;EUR;LU;40;Consumer Discretionary;True;;loglin_20y;TNIE.DE;;;;;;;2021-05-03;2026-08-17;5.3
+EQ:DE:TRATON;;Traton SE;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;8TRA.DE;;;;;;;2019-07-01;2026-08-17;7.1
+EQ:FR:TRIGANO;;Trigano S.A.;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;TRI.PA;;;;;;;1998-03-16;2026-08-17;28.4
+EQ:DE:TUI;;TUI AG;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;TUI1.DE;;;;;;;1998-02-02;2026-08-17;28.5
+EQ:BE:UCB;BE0003739530;UCB;equity;Action;;XBRU;EUR;BE;20;Health Care;True;;loglin_20y;UCB.BR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:BE:UMICORE;;Umicore SA;equity;Action;;XBRU;EUR;BE;50;Industrials;True;;loglin_20y;UMI.BR;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:ES:UNICAJABANCO;;Unicaja Banco, S.A.;equity;Action;;XMAD;EUR;ES;30;Financials;True;;loglin_20y;UNI.MC;;;;;;;2017-06-26;2026-08-17;9.1
+EQ:DE:UNIPER;;Uniper SE;equity;Action;;XETR;EUR;DE;65;Utilities;True;;loglin_20y;UN0.DE;;;;;;;2016-09-12;2026-08-17;9.9
+EQ:IE:UNIPHAR;;Uniphar plc;equity;Action;;XDUB;EUR;IE;20;Health Care;True;;loglin_20y;UPR.IR;;;;;;;2019-07-15;2026-08-17;7.1
+EQ:IT:UNIPOLASSICURAZI;;Unipol Assicurazioni S.p.A.;equity;Action;;XMIL;EUR;IT;30;Financials;True;;loglin_20y;UNI.MI;;;;;;;1991-01-07;2026-08-17;35.6
+EQ:AT:UNIQAINSURANCE;;UNIQA Insurance;equity;Action;;XWBO;EUR;AT;30;Financials;True;;loglin_20y;UQA.VI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:UNITEDINTERNET;;UNITED INTERNET;equity;Action;;XETR;EUR;DE;15;Telecommunications;True;;loglin_20y;UTDI.DE;;;;;;;2000-01-10;2026-08-17;26.6
+EQ:NL:UNIVERSALMUSICGR;;Universal Music Group N.V.;equity;Action;;XAMS;EUR;NL;15;Telecommunications;True;;loglin_20y;UMG.AS;;;;;;;2021-09-20;2026-08-17;4.9
+EQ:FI:UPMKYMMENE;;UPM-Kymmene Oyj;equity;Action;;XHEL;EUR;FI;55;Basic Materials;True;;loglin_20y;UPM.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FI:VAISALA;;Vaisala Oyj;equity;Action;;XHEL;EUR;FI;10;Technology;True;;loglin_20y;VAIAS.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:VALEO;;Valeo SE;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;FR.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FI:VALMET;;Valmet Oyj;equity;Action;;XHEL;EUR;FI;50;Industrials;True;;loglin_20y;VALMT.HE;;;;;;;2014-01-01;2026-08-19;12.6
+EQ:NL:VANLANSCHOTKEMPE;;Van Lanschot Kempen NV;equity;Action;;XAMS;EUR;NL;30;Financials;True;;loglin_20y;VLK.AS;;;;;;;1999-06-28;2026-08-17;27.1
+EQ:FR:VEOLIA;FR0000124141;Veolia Environnement;equity;Action;;XPAR;EUR;FR;65;Utilities;True;;loglin_20y;VIE.PA;;;;;;;2000-07-17;2026-08-17;26.1
+EQ:FR:VERALLIASOCIETE;;Verallia Société Anonyme;equity;Action;;XPAR;EUR;FR;40;Consumer Discretionary;True;;loglin_20y;VRLA.PA;;;;;;;2019-09-30;2026-08-17;6.9
+EQ:DE:VERBIO;;Verbio SE;equity;Action;;XETR;EUR;DE;55;Basic Materials;True;;loglin_20y;VBK.DE;;;;;;;2006-10-16;2026-08-17;19.8
+EQ:DK:VESTASWINDSYSTEM;;Vestas Wind Systems A/S;equity;Action;;XETR;EUR;DK;50;Industrials;True;;loglin_20y;VWSB.DE;;;;;;;2000-08-14;2026-08-17;26.0
+EQ:BE:VGP;;VGP NV;equity;Action;;XBRU;EUR;BE;35;Real Estate;True;;loglin_20y;VGP.BR;;;;;;;2007-12-03;2026-08-17;18.7
+EQ:FR:VICAT;;Vicat S.A.;equity;Action;;XPAR;EUR;FR;55;Basic Materials;True;;loglin_20y;VCT.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:ES:VIDRALA;;Vidrala, S.A.;equity;Action;;XMAD;EUR;ES;40;Consumer Discretionary;True;;loglin_20y;VID.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:VIELCIESOCIETE;;VIEL & Cie, société anonyme;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;VIL.PA;;;;;;;1991-01-14;2026-08-17;35.6
+EQ:BE:VIOHALCO;;Viohalco S.A.;equity;Action;;XBRU;EUR;BE;50;Industrials;True;;loglin_20y;VIO.BR;;;;;;;2013-11-18;2026-08-17;12.7
+EQ:FR:VIRBAC;;Virbac SA;equity;Action;;XPAR;EUR;FR;20;Health Care;True;;loglin_20y;VIRP.PA;;;;;;;1992-07-06;2026-08-17;34.1
+EQ:ES:VISCOFAN;;Viscofan, S.A.;equity;Action;;XMAD;EUR;ES;40;Consumer Discretionary;True;;loglin_20y;VIS.MC;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:VIVENDI;;Vivendi SE;equity;Action;;XPAR;EUR;FR;15;Telecommunications;True;;loglin_20y;VIV.PA;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:AT:VOESTALPINE;;Voestalpine AG;equity;Action;;XWBO;EUR;AT;55;Basic Materials;True;;loglin_20y;VOE.VI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:DE:VOLKSWAGEN;;Volkswagen AG;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;VOW.DE;;;;;;;1995-03-20;2026-08-17;31.4
+EQ:FR:VOLTALIA;;Voltalia SA;equity;Action;;XPAR;EUR;FR;65;Utilities;True;;loglin_20y;VLTSA.PA;;;;;;;2006-05-01;2026-08-17;20.3
+EQ:DE:VOSSLOH;;Vossloh AG;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;VOS.DE;;;;;;;1998-07-27;2026-08-17;28.1
+EQ:FR:VUSION;;Vusion S.A.;equity;Action;;XPAR;EUR;FR;10;Technology;True;;loglin_20y;VU.PA;;;;;;;2006-01-30;2026-08-17;20.5
+EQ:DE:WACKERNEUSON;;Wacker Neuson SE;equity;Action;;XETR;EUR;DE;50;Industrials;True;;loglin_20y;WAC.DE;;;;;;;2007-05-14;2026-08-17;19.3
+EQ:FI:WARTSILA;;Wartsila OYJ Abp;equity;Action;;XHEL;EUR;FI;50;Industrials;True;;loglin_20y;WRT1V.HE;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:IT:WEBUILD;;Webuild S.p.A.;equity;Action;;XMIL;EUR;IT;50;Industrials;True;;loglin_20y;WBD.MI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:FR:WENDEL;;Wendel;equity;Action;;XPAR;EUR;FR;30;Financials;True;;loglin_20y;MF.PA;;;;;;;1989-10-02;2026-08-17;36.9
+EQ:AT:WIENERBERGER;;Wienerberger AG;equity;Action;;XWBO;EUR;AT;55;Basic Materials;True;;loglin_20y;WIE.VI;;;;;;;2000-01-03;2026-08-17;26.6
+EQ:NL:WOLTERS;NL0000395903;Wolters Kluwer;equity;Action;;XAMS;EUR;NL;50;Industrials;True;;loglin_20y;WKL.AS;;;;;;;1995-03-27;2026-08-17;31.4
+EQ:DE:WUSTENROTWURTTEM;;Wüstenrot & Württembergische AG;equity;Action;;XETR;EUR;DE;30;Financials;True;;loglin_20y;WUW.DE;;;;;;;1999-09-13;2026-08-17;26.9
+EQ:DE:ZALANDO;;Zalando SE;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;ZAL.DE;;;;;;;2014-09-29;2026-08-17;11.9
+EQ:DE:ZEALNETWORK;;ZEAL Network SE;equity;Action;;XETR;EUR;DE;40;Consumer Discretionary;True;;loglin_20y;TIMA.DE;;;;;;;1998-12-14;2026-08-17;27.7
+ETF:FR:C40;FR0007052782;Amundi CAC 40 ESG UCITS ETF EUR (C);etf;ETF;Actions France Large Cap;XPAR;EUR;;;;True;True;loglin_20y;C40.PA;Amundi;0.0025;Capitalisation;Physique;CAC 40 ESG Net Total Return;;2008-01-01;2026-08-25;18.6
+ETF:FR:C50;FR0007054316;Amundi Core EURO STOXX 50 UCITS ETF EUR Acc;etf;ETF;Actions Zone Euro;XPAR;EUR;;;;True;True;loglin_20y;C50.PA;Amundi;0.0015;Capitalisation;Physique;Euro Stoxx 50 Gross Total Return;;2008-09-15;2026-08-24;17.9
+ETF:FR:MSE;FR0013412020;Amundi EURO STOXX 50 II UCITS ETF Acc;etf;ETF;Actions Zone Euro;XPAR;EUR;;;;True;True;loglin_20y;MSE.PA;Amundi;0.0018;Capitalisation;Synthétique;Euro Stoxx 50 Net Total Return;;2008-01-01;2026-08-25;18.6
+ETF:FR:CL2;FR0010755611;Amundi MSCI USA Daily (2x) Leveraged UCITS ETF Acc;etf;ETF;Actions US Levier (PEA);XPAR;EUR;;;;True;True;loglin_20y;CL2.PA;Amundi;0.005;Capitalisation;Synthétique;MSCI USA Leveraged 2x Net TR;;2009-06-15;2026-08-24;17.2
+ETF:FR:WAT;FR0014002CH1;Amundi MSCI Water UCITS ETF Dist;etf;ETF;Thématique Eau mondiale;XPAR;EUR;;;;True;True;loglin_20y;WAT.PA;Amundi;0.006;Distribution;Synthétique;World Water CW Net Total Return;;2008-01-01;2026-08-25;18.6
+ETF:FR:CW8;FR0010315770;Amundi MSCI World UCITS ETF EUR (C);etf;ETF;Actions Monde;XPAR;EUR;;;;True;True;loglin_15y;CW8.PA;Amundi;0.0038;Capitalisation;Synthétique;MSCI World Net Total Return;;2009-06-15;2026-08-24;17.2
+ETF:FR:LQQ;FR0010342592;Amundi Nasdaq-100 Daily (2x) Leveraged UCITS ETF Acc;etf;ETF;Actions US Tech Levier (PEA);XPAR;EUR;;;;True;True;loglin_20y;LQQ.PA;Amundi;0.006;Capitalisation;Synthétique;Nasdaq 100 Leveraged 2x Net TR;;2009-01-01;2026-08-20;17.6
+ETF:FR:PAASI;FR0013412004;Amundi PEA Asie Émergente (MSCI Emerging Asia);etf;ETF;Actions Asie Émergente;XPAR;EUR;;;;True;True;loglin_10y;PAASI.PA;Amundi;0.003;Capitalisation;Synthétique;MSCI Emerging Asia Net TR;;2019-04-22;2026-08-24;7.3
+ETF:FR:PAEEM;FR0013412012;Amundi PEA Émergent (MSCI Emerging) ESG Transition;etf;ETF;Actions Marchés Émergents;XPAR;EUR;;;;True;True;loglin_10y;PAEEM.PA;Amundi;0.003;Capitalisation;Synthétique;MSCI Emerging ESG Net Return;;2019-04-22;2026-08-24;7.3
+ETF:FR:PLEM;FR0011440478;Amundi PEA Émergent EMEA ESG UCITS ETF;etf;ETF;Actions Marchés Émergents;XPAR;EUR;;;;True;True;loglin_15y;PLEM.PA;Amundi;0.003;Capitalisation;Synthétique;MSCI Emerging EMEA ESG Screened Net TR;;2014-05-05;2026-08-24;12.3
+ETF:FR:PCEU;FR0013412053;Amundi PEA MSCI Europe UCITS ETF Acc;etf;ETF;Actions Europe;XPAR;EUR;;;;True;True;loglin_10y;PCEU.PA;Amundi;0.002;Capitalisation;Synthétique;MSCI Europe Net Total Return;;2019-04-22;2026-08-24;7.3
+ETF:FR:PUST;FR0013412269;Amundi PEA Nasdaq 100 UCITS ETF Acc;etf;ETF;Actions US Tech;XPAR;EUR;;;;True;True;loglin_15y;PUST.PA;Amundi;0.003;Capitalisation;Synthétique;Nasdaq 100 Net Total Return;;2014-05-19;2026-08-24;12.3
+ETF:FR:PSP5;FR0013412285;Amundi PEA S&P 500 UCITS ETF Acc;etf;ETF;Actions US Large Cap;XPAR;EUR;;;;True;True;loglin_15y;PSP5.PA;Amundi;0.0015;Capitalisation;Synthétique;S&P 500 Net Total Return;;2014-05-19;2026-08-24;12.3
+ETF:FR:MEH;FR0013412038;Amundi PEA Stoxx Europe 600 UCITS ETF (C);etf;ETF;Actions Europe Large & Mid;XPAR;EUR;;;;True;True;loglin_10y;MEH.PA;Amundi;0.002;Capitalisation;Synthétique;Stoxx Europe 600 Net Return;;2022-11-14;2026-08-24;3.8
+ETF:FR:PANX;FR0010713784;Amundi PEA US Tech Screened UCITS ETF Acc;etf;ETF;Actions US Tech;XPAR;EUR;;;;True;True;loglin_10y;PANX.PA;Amundi;0.003;Capitalisation;Synthétique;MSCI USA Tech Screened Net TR;;2019-04-22;2026-08-24;7.3
+ETF:FR:RS2K;FR0013412277;Amundi Russell 2000 ETF-C EUR;etf;ETF;Actions US Small Cap;XPAR;EUR;;;;True;True;loglin_15y;RS2K.PA;Amundi;0.0035;Capitalisation;Synthétique;Russell 2000 Net Total Return;;2014-01-06;2026-08-24;12.6
+ETF:FR:EESM;FR0011550201;BNP Paribas Easy MSCI Europe Small Caps SRI PAB;etf;ETF;Actions Europe Small Cap;XPAR;EUR;;;;True;True;loglin_20y;EESM.PA;BNP Paribas Easy;0.0035;Capitalisation;Physique;MSCI Europe Small Cap SRI Net TR;;2010-11-29;2026-08-24;15.7
+ETF:FR:ESE;FR0011550185;BNP Paribas Easy S&P 500 UCITS ETF EUR (C);etf;ETF;Actions US Large Cap;XPAR;EUR;;;;True;True;loglin_15y;ESE.PA;BNP Paribas Easy;0.0015;Capitalisation;Synthétique;S&P 500 Net Total Return;;2013-09-16;2026-08-24;12.9
+ETF:FR:ETZ;FR0011550193;BNP Paribas Easy Stoxx Europe 600 UCITS ETF EUR (C);etf;ETF;Actions Europe Large & Mid;XPAR;EUR;;;;True;True;loglin_15y;ETZ.PA;BNP Paribas Easy;0.0018;Capitalisation;Synthétique;Stoxx Europe 600 Net Return;;2013-09-16;2026-08-24;12.9
+ETF:IE:WPEA;IE0002XZSHO1;iShares MSCI World Swap PEA UCITS ETF (Acc);etf;ETF;Actions Monde;XPAR;EUR;;;;True;True;loglin_10y;WPEA.PA;iShares (BlackRock);0.0025;Capitalisation;Synthétique;MSCI World Net Total Return;;2024-04-01;2026-08-24;2.4

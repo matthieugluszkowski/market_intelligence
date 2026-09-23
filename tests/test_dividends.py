@@ -89,3 +89,73 @@ def test_screener_dividendes_sql_retourne_des_lignes():
     first = rows[0]
     # Vérifier que le rendement est calculé
     assert first[16] is not None  # rendement_actuel_pct
+
+
+def test_evalue_11_regles_dividende():
+    """Vérifie la logique d'attribution des points et verdicts sur les 11 règles d'investissement."""
+    from market_intelligence.analytics.dividends import evalue_11_regles_dividende
+
+    # Cas idéal : Entreprise solide cochant toutes les cases
+    facts_ideaux = {
+        "revenue": [(date(2023, 12, 31), 10_000_000_000.0)],
+        "ebit": [(date(2023, 12, 31), 2_000_000_000.0)],
+        "interest_expense": [(date(2023, 12, 31), 100_000_000.0)],
+        "net_income": [
+            (date(2021, 12, 31), 1_000_000_000.0),
+            (date(2022, 12, 31), 1_200_000_000.0),
+            (date(2023, 12, 31), 1_500_000_000.0),
+        ],
+        "total_equity": [(date(2023, 12, 31), 8_000_000_000.0)],
+        "total_debt": [(date(2023, 12, 31), 4_000_000_000.0)],
+        "net_debt": [(date(2023, 12, 31), 2_000_000_000.0)],
+        "shares_basic": [(date(2023, 12, 31), 200_000_000.0)],
+        "fcf": [(date(2023, 12, 31), 1_200_000_000.0)],
+    }
+
+    # Cours = 50.0, DPA = 3.0 (Rdt = 6.0% >= 5%), Cap = 10 Mrd, PER = 6.67x in [3; 14], P/B = 1.25x < 4
+    # Marge avant impôts = (2 Mrd - 100M) / 10 Mrd = 19% > 13%
+    # Dettes / Equity = 4 / 8 = 50% <= 110%
+    # RN croissant sur 3 ans : 1.0 -> 1.2 -> 1.5 Mrd
+    # Streak dividende = 8 ans >= 5 ans
+    # Slope annual = +8% >= +5%
+    score_ideal = evalue_11_regles_dividende(
+        cours=50.0,
+        slope_annual=0.08,
+        dernier_dpa=3.0,
+        dpa_moyen_5a=2.8,
+        streak_annees=8,
+        facts_series=facts_ideaux,
+        quality_tier="solid",
+        secteur_nom="Industrie",
+    )
+
+    assert score_ideal.total_oui == 11
+    assert score_ideal.total_capitaux_oui == 6
+    assert score_ideal.est_investissable is True
+    assert "INVESTISSABLE" in score_ideal.verdict
+
+    # Cas dégradé : faible rendement, endettement lourd, PER cher, baisse du cours
+    facts_degrades = {
+        "revenue": [(date(2023, 12, 31), 500_000_000.0)],
+        "ebit": [(date(2023, 12, 31), 20_000_000.0)],
+        "interest_expense": [(date(2023, 12, 31), 15_000_000.0)],
+        "net_income": [(date(2023, 12, 31), 5_000_000.0)],
+        "total_equity": [(date(2023, 12, 31), 100_000_000.0)],
+        "total_debt": [(date(2023, 12, 31), 300_000_000.0)],  # Gearing = 300% > 110%
+        "shares_basic": [(date(2023, 12, 31), 10_000_000.0)],
+    }
+    score_degrade = evalue_11_regles_dividende(
+        cours=20.0,  # Cap = 200M < 500M, PER = 200M/5M = 40x > 14x
+        slope_annual=-0.03,  # Pente négative
+        dernier_dpa=0.20,  # Rdt = 1% < 5%
+        dpa_moyen_5a=0.20,
+        streak_annees=2,  # < 5 ans
+        facts_series=facts_degrades,
+        quality_tier="eroded",
+        secteur_nom="",
+    )
+
+    assert score_degrade.total_oui < 8
+    assert score_degrade.est_investissable is False
+    assert "RISQUÉ" in score_degrade.verdict
+

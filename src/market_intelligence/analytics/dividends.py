@@ -1,11 +1,12 @@
 """Analyse quantitative des dividendes, rendements moyens et pérennité.
 
 Ce module extrait et calcule les indicateurs clés pour les investisseurs de rendement :
-1. Le DPA actuel et le DPA potentiel moyen (sur 3 et 5 ans) pour neutraliser les dividendes exceptionnels.
-2. Le rendement actuel, le rendement potentiel moyen sur cours actuel et le rendement normalisé sur tendance (Yield on Trend).
-3. La dynamique de croissance du dividende (CAGR 3a et 5a).
-4. La pérennité / couverture du dividende par le Free Cash Flow (FCF Payout) et le résultat net.
-5. La régularité historique (track record, années consécutives, baisses constatées).
+1. La grille d'évaluation des 11 règles d'investissement en actions à dividende (Investing.com & Morningstar).
+2. Le DPA actuel et le DPA potentiel moyen (sur 3 et 5 ans) pour neutraliser les dividendes exceptionnels.
+3. Le rendement actuel, le rendement potentiel moyen sur cours actuel et le rendement normalisé sur tendance.
+4. La dynamique de croissance du dividende (CAGR 3a et 5a).
+5. La pérennité / couverture du dividende par le Free Cash Flow (FCF Payout) et le résultat net.
+6. La régularité historique (track record, années consécutives, baisses constatées).
 """
 
 from __future__ import annotations
@@ -13,6 +14,30 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Any
+
+
+@dataclass
+class RegleDividende:
+    numero: int
+    nom: str
+    est_capitale: bool
+    seuil_requis: str
+    valeur_observee: str
+    passe: bool
+    explication: str
+    source_info: str
+
+
+@dataclass
+class ScoreDividende11Regles:
+    total_oui: int
+    total_non: int
+    total_capitaux_oui: int
+    total_capitaux: int
+    est_investissable: bool
+    verdict: str
+    synthese_explication: str
+    regles: list[RegleDividende] = field(default_factory=list)
 
 
 @dataclass
@@ -48,6 +73,7 @@ class ProfilDividende:
     securite_verdict: str  # 'sécurisé' | 'soutenable' | 'tendu' | 'exceptionnel' | 'indéterminable'
     securite_motif: str
     historique_annuel: list[DividendeHistorique] = field(default_factory=list)
+    score_11_regles: ScoreDividende11Regles | None = None
 
 
 def calcul_cagr(valeur_debut: float | None, valeur_fin: float | None, annees: int) -> float | None:
@@ -109,20 +135,342 @@ def evalue_securite_dividende(
     return "soutenable", "Dividende dans la moyenne des ratios de distribution"
 
 
+def evalue_11_regles_dividende(
+    cours: float | None,
+    slope_annual: float | None,
+    dernier_dpa: float | None,
+    dpa_moyen_5a: float | None,
+    streak_annees: int,
+    facts_series: dict[str, list[tuple[date, float]]],
+    quality_tier: str = "unqualified",
+    secteur_nom: str = "",
+) -> ScoreDividende11Regles:
+    """Évalue les 11 règles d'investissement de la stratégie action à dividende."""
+    regles: list[RegleDividende] = []
+
+    # Extraire les derniers faits comptables
+    def dernier_fait(code: str) -> float | None:
+        serie = facts_series.get(code, [])
+        return serie[-1][1] if serie else None
+
+    revenue = dernier_fait("revenue")
+    ebit = dernier_fait("ebit")
+    interets = dernier_fait("interest_expense") or 0.0
+    net_income = dernier_fait("net_income")
+    equity = dernier_fait("total_equity")
+    total_debt = dernier_fait("total_debt")
+    net_debt = dernier_fait("net_debt")
+    shares = dernier_fait("shares_basic") or dernier_fait("shares_diluted")
+
+    # Capitalisation estimée
+    capitalisation = (cours * shares) if (cours and shares and shares > 0) else None
+
+    # 1. Règle 1 (CAPITALE) : +5% de dividendes versés chaque année
+    rdt_actuel = ((dernier_dpa / cours) * 100.0) if (cours and dernier_dpa and cours > 0) else None
+    passe_1 = (rdt_actuel is not None and rdt_actuel >= 5.0)
+    regles.append(
+        RegleDividende(
+            numero=1,
+            nom="Rendement du dividende ≥ 5 %",
+            est_capitale=True,
+            seuil_requis="≥ 5.0 %",
+            valeur_observee=f"{rdt_actuel:.2f} %" if rdt_actuel is not None else "n/d",
+            passe=passe_1,
+            explication=(
+                f"Le rendement actuel ressort à {rdt_actuel:.2f} % (≥ 5.0 % requis)."
+                if passe_1
+                else f"Le rendement actuel ({rdt_actuel:.2f} % si disponible) est inférieur au seuil de 5.0 %."
+                if rdt_actuel is not None
+                else "Rendement non calculable (aucun dividende récent ou cours manquant)."
+            ),
+            source_info="Investing.com > Principaux > Rendement de dividendes (%)",
+        )
+    )
+
+    # 2. Règle 2 : PER compris entre 3 et 14
+    per = (capitalisation / net_income) if (capitalisation and net_income and net_income > 0) else None
+    passe_2 = (per is not None and 3.0 <= per <= 14.0)
+    regles.append(
+        RegleDividende(
+            numero=2,
+            nom="PER compris entre 3 et 14",
+            est_capitale=False,
+            seuil_requis="3.0 ≤ PER ≤ 14.0",
+            valeur_observee=f"{per:.1f}x" if per is not None else "n/d",
+            passe=passe_2,
+            explication=(
+                f"PER attractif et modéré à {per:.1f}x (compris dans l'intervalle [3 ; 14])."
+                if passe_2
+                else f"PER de {per:.1f}x hors fourchette (valorisation trop chère > 14x ou sous 3x)."
+                if per is not None
+                else "PER non calculable (résultat net négatif ou capitalisation indisponible)."
+            ),
+            source_info="Investing.com > PER",
+        )
+    )
+
+    # 3. Règle 3 (CAPITALE) : Capitalisation boursière > 500 millions $ / €
+    seuil_cap = 500_000_000.0
+    passe_3 = (capitalisation is not None and capitalisation >= seuil_cap)
+    val_cap_str = f"{capitalisation / 1e6:.0f} M€" if capitalisation else "> 500 M€ (Large Cap)" if shares is None else "n/d"
+    # Si le nombre d'actions manque mais qu'il s'agit d'un grand titre établi du CAC40/DAX
+    if capitalisation is None and equity and equity >= seuil_cap:
+        passe_3 = True
+        val_cap_str = f"Fonds propres > {equity / 1e6:.0f} M€"
+
+    regles.append(
+        RegleDividende(
+            numero=3,
+            nom="Capitalisation > 500 millions",
+            est_capitale=True,
+            seuil_requis="> 500 M€ / M$",
+            valeur_observee=val_cap_str,
+            passe=passe_3,
+            explication=(
+                f"Société de taille significative avec capitalisation estimée à {val_cap_str}."
+                if passe_3
+                else "Capitalisation inférieure à 500 millions ou données insuffisantes."
+            ),
+            source_info="Investing.com > Cap.Bours.",
+        )
+    )
+
+    # 4. Règle 4 : Price to Book (P/B) < 4
+    pb = (capitalisation / equity) if (capitalisation and equity and equity > 0) else None
+    passe_4 = (pb is not None and 0 < pb < 4.0)
+    regles.append(
+        RegleDividende(
+            numero=4,
+            nom="Price to Book (P/B) < 4",
+            est_capitale=False,
+            seuil_requis="P/B < 4.0",
+            valeur_observee=f"{pb:.2f}x" if pb is not None else "n/d",
+            passe=passe_4,
+            explication=(
+                f"Multiple de valeur comptable sain à {pb:.2f}x (< 4.0)."
+                if passe_4
+                else f"Price to Book élevé à {pb:.2f}x (≥ 4.0) ou capitaux propres négatifs."
+                if pb is not None
+                else "Price to Book non calculable."
+            ),
+            source_info="Investing.com > Ratios > Cours / Valeur Comptable (MRQ)",
+        )
+    )
+
+    # 5. Règle 5 (CAPITALE) : Marge avant impôts > 13%
+    resultat_ebt = (ebit - interets) if (ebit is not None) else None
+    marge_ebt = (resultat_ebt / revenue) if (resultat_ebt is not None and revenue and revenue > 0) else (ebit / revenue if (ebit is not None and revenue and revenue > 0) else None)
+    passe_5 = (marge_ebt is not None and marge_ebt >= 0.13)
+    regles.append(
+        RegleDividende(
+            numero=5,
+            nom="Taux de marge avant impôts > 13 %",
+            est_capitale=True,
+            seuil_requis="> 13.0 %",
+            valeur_observee=f"{marge_ebt * 100:.1f} %" if marge_ebt is not None else "n/d",
+            passe=passe_5,
+            explication=(
+                f"Forte rentabilité opérationnelle avec une marge avant impôts de {marge_ebt * 100:.1f} % (> 13 %)."
+                if passe_5
+                else f"Marge avant impôts de {marge_ebt * 100:.1f} % (≤ 13.0 % requis)."
+                if marge_ebt is not None
+                else "Marge avant impôts non calculable."
+            ),
+            source_info="Investing.com > Fondamentaux > Marge bénéficiaire avant impôts (TTM)",
+        )
+    )
+
+    # 6. Règle 6 (CAPITALE) : Dettes / Capitaux Propres ≤ 110%
+    dette_ref = total_debt if total_debt is not None else net_debt
+    ratio_dette_equity = (dette_ref / equity) if (dette_ref is not None and equity and equity > 0) else None
+    passe_6 = (ratio_dette_equity is not None and ratio_dette_equity <= 1.10)
+    # Si dette nette négative (trésorerie nette), le critère est tenu à 100%
+    if net_debt is not None and net_debt <= 0:
+        passe_6 = True
+        ratio_dette_equity = min(ratio_dette_equity or 0.0, 0.0)
+
+    regles.append(
+        RegleDividende(
+            numero=6,
+            nom="Dettes / Capitaux Propres ≤ 110 %",
+            est_capitale=True,
+            seuil_requis="≤ 110 % (1.10x)",
+            valeur_observee=f"{ratio_dette_equity * 100:.0f} %" if ratio_dette_equity is not None else "n/d",
+            passe=passe_6,
+            explication=(
+                f"Endettement maîtrisé à {ratio_dette_equity * 100:.0f} % des fonds propres (≤ 110 %)."
+                if passe_6
+                else f"Endettement excessif représentant {ratio_dette_equity * 100:.0f} % des fonds propres (> 110 %)."
+                if ratio_dette_equity is not None
+                else "Ratio d'endettement non calculable."
+            ),
+            source_info="Investing.com > Fondamentaux > Dettes / Capitaux Propres",
+        )
+    )
+
+    # 7. Règle 7 : Résultat net en hausse depuis 3 années consécutives
+    serie_rn = facts_series.get("net_income", [])
+    passe_7 = False
+    if len(serie_rn) >= 3:
+        rn_recents = [v for _, v in serie_rn[-3:]]
+        if rn_recents[2] > rn_recents[1] > rn_recents[0] and rn_recents[0] > 0:
+            passe_7 = True
+    elif len(serie_rn) == 2 and serie_rn[-1][1] > serie_rn[-2][1] > 0:
+        passe_7 = True
+
+    val_rn_str = "Croissance 3 ans ✅" if passe_7 else "Irrégulier / Baisse ❌" if serie_rn else "n/d"
+    regles.append(
+        RegleDividende(
+            numero=7,
+            nom="Résultat net en hausse sur 3 ans",
+            est_capitale=False,
+            seuil_requis="RN(t) > RN(t-1) > RN(t-2)",
+            valeur_observee=val_rn_str,
+            passe=passe_7,
+            explication=(
+                "Bénéfice net en progression ininterrompue sur les 3 derniers exercices."
+                if passe_7
+                else "Le résultat net a marqué au moins une baisse ou stagnation sur les 3 dernières années."
+            ),
+            source_info="Investing.com > Profil financier > Compte de résultat > Annuel > Résultat net",
+        )
+    )
+
+    # 8. Règle 8 (CAPITALE) : Verse des dividendes depuis ≥ 5 années consécutives
+    passe_8 = (streak_annees >= 5)
+    regles.append(
+        RegleDividende(
+            numero=8,
+            nom="Dividendes versés depuis ≥ 5 ans",
+            est_capitale=True,
+            seuil_requis="≥ 5 années consécutives",
+            valeur_observee=f"{streak_annees} an(s)",
+            passe=passe_8,
+            explication=(
+                f"Historique de distribution robuste et continu sur {streak_annees} années consécutives (≥ 5 ans)."
+                if passe_8
+                else f"Historique de distribution récent insuffisant ({streak_annees} an(s) consécutif(s) < 5 ans requis)."
+            ),
+            source_info="Morningstar.fr > Finance > Dividendes",
+        )
+    )
+
+    # 9. Règle 9 (CAPITALE) : Croissance des actions / tendance > 5% sur 5 ans
+    passe_9 = (slope_annual is not None and slope_annual >= 0.05)
+    regles.append(
+        RegleDividende(
+            numero=9,
+            nom="Croissance de l'action > 5 % / an",
+            est_capitale=True,
+            seuil_requis="≥ +5.0 % / an",
+            valeur_observee=f"{slope_annual * 100:+.1f} % / an" if slope_annual is not None else "n/d",
+            passe=passe_9,
+            explication=(
+                f"Tendance haussière structurelle de fond à {slope_annual * 100:+.1f} % / an (≥ +5 % requis)."
+                if passe_9
+                else f"Tendance de long terme insuffisante à {slope_annual * 100:+.1f} % / an (< +5 %)."
+                if slope_annual is not None
+                else "Pente de régression non calculable."
+            ),
+            source_info="Morningstar.fr > Ratios Clés > Taux de croissance > Moyenne sur 5 ans",
+        )
+    )
+
+    # 10. Règle 10 (Qualitative) : Compréhension de l'activité de l'entreprise
+    passe_10 = bool(secteur_nom and secteur_nom != "-")
+    regles.append(
+        RegleDividende(
+            numero=10,
+            nom="Compréhension de l'activité",
+            est_capitale=False,
+            seuil_requis="Modèle économique clair",
+            valeur_observee="Compris ✅" if passe_10 else "À vérifier",
+            passe=passe_10,
+            explication=(
+                f"Activité et positionnement sectoriel identifiés ({secteur_nom})."
+                if passe_10
+                else "Modèle économique et activités à valider par l'investisseur."
+            ),
+            source_info="Analyse fondamentale & Positionnement métier",
+        )
+    )
+
+    # 11. Règle 11 (Qualitative) : L'entreprise sera-t-elle toujours là dans 10 ans ?
+    passe_11 = (quality_tier in ("solid", "watch") or (streak_annees >= 5 and (marge_ebt or 0) > 0.10))
+    regles.append(
+        RegleDividende(
+            numero=11,
+            nom="Pérennité de l'entreprise à 10 ans",
+            est_capitale=False,
+            seuil_requis="Barrières & Rente pérennes",
+            valeur_observee="Pérenne ✅" if passe_11 else "Risque d'érosion",
+            passe=passe_11,
+            explication=(
+                f"Solidité concurrentielle et pérennité établies (Statut qualité : {quality_tier})."
+                if passe_11
+                else "Visibilité à 10 ans incertaine (position en érosion ou non qualifiée)."
+            ),
+            source_info="Bloc D · Position concurrentielle & Moat durable",
+        )
+    )
+
+    # Calculs du score
+    total_oui = sum(1 for r in regles if r.passe)
+    total_non = len(regles) - total_oui
+    capitaux_oui = sum(1 for r in regles if r.est_capitale and r.passe)
+    total_capitaux = sum(1 for r in regles if r.est_capitale)
+
+    est_investissable = (total_oui >= 8)
+    if est_investissable:
+        verdict = f"INVESTISSABLE ({total_oui}/11 OUI)"
+        synthese = (
+            f"Cette action valide {total_oui} critères sur 11 (dont {capitaux_oui}/{total_capitaux} règles capitales). "
+            f"Le profil de dividende et la solidité financière justifient une décision d'investissement."
+        )
+    else:
+        verdict = f"RISQUÉ ({total_oui}/11 OUI)"
+        echecs_capitaux = [r.nom for r in regles if r.est_capitale and not r.passe]
+        if echecs_capitaux:
+            synthese = (
+                f"L'action n'obtient que {total_oui}/11 OUI (< 8 requis). "
+                f"Attention : {len(echecs_capitaux)} règle(s) capitale(s) non validée(s) : {', '.join(echecs_capitaux)}."
+            )
+        else:
+            synthese = (
+                f"L'action obtient {total_oui}/11 OUI (< 8 requis pour être investissable selon la stratégie)."
+            )
+
+    return ScoreDividende11Regles(
+        total_oui=total_oui,
+        total_non=total_non,
+        total_capitaux_oui=capitaux_oui,
+        total_capitaux=total_capitaux,
+        est_investissable=est_investissable,
+        verdict=verdict,
+        synthese_explication=synthese,
+        regles=regles,
+    )
+
+
 def analyse_dividendes_instrument(cur: Any, instrument_id: int, as_of: date | None = None) -> ProfilDividende | None:
-    """Analyse complète du profil de dividende d'un instrument donné."""
+    """Analyse complète du profil de dividende d'un instrument donné avec le score des 11 règles."""
     as_of = as_of or date.today()
     annee_courante = as_of.year
 
     # Récupérer l'instrument et son fit de régression
     cur.execute(
         """
-        select i.id, i.internal_code, i.name, i.currency,
-               f.last_close, f.z_score, f.fitted_value
+        select i.id, i.internal_code, i.name, i.currency, s.label as secteur,
+               f.last_close, f.z_score, f.fitted_value, f.slope_annual,
+               coalesce(q.quality_tier, 'unqualified') as quality_tier
           from instruments i
+          left join sectors s on s.code = i.sector_code
           left join regression_fits f
             on f.instrument_id = i.id
            and f.as_of_date = (select max(as_of_date) from regression_fits where instrument_id = i.id)
+          left join quality_scores q
+            on q.instrument_id = i.id
+           and q.as_of_date = (select max(as_of_date) from quality_scores where instrument_id = i.id)
          where i.id = %(id)s
         """,
         {"id": instrument_id},
@@ -131,7 +479,7 @@ def analyse_dividendes_instrument(cur: Any, instrument_id: int, as_of: date | No
     if not inst:
         return None
 
-    inst_id, code, nom, devise, cours, z_score, fitted_val = inst
+    inst_id, code, nom, devise, secteur_label, cours, z_score, fitted_val, slope_ann, qual_tier = inst
 
     # Récupérer l'historique des dividendes
     cur.execute(
@@ -149,33 +497,6 @@ def analyse_dividendes_instrument(cur: Any, instrument_id: int, as_of: date | No
         {"id": instrument_id, "as_of": as_of},
     )
     rows = cur.fetchall()
-    if not rows:
-        return ProfilDividende(
-            instrument_id=inst_id,
-            internal_code=code,
-            name=nom,
-            currency=devise,
-            cours_actuel=cours,
-            z_score=z_score,
-            fitted_value=fitted_val,
-            dernier_dpa=None,
-            dpa_moyen_3a=None,
-            dpa_moyen_5a=None,
-            rendement_actuel_pct=None,
-            rendement_moyen_5a_pct=None,
-            rendement_sur_tendance_pct=None,
-            croissance_dpa_3a_pct=None,
-            croissance_dpa_5a_pct=None,
-            annees_consecutives=0,
-            nb_baisses_5a=0,
-            fcf_dernier=None,
-            dividendes_verses_dernier=None,
-            payout_fcf_pct=None,
-            payout_rn_pct=None,
-            securite_verdict="sans_dividende",
-            securite_motif="Aucun dividende dans l'historique",
-            historique_annuel=[],
-        )
 
     historique = [DividendeHistorique(annee=r[0], montant_total=r[1], nb_versements=r[2]) for r in rows]
     par_annee = {h.annee: h.montant_total for h in historique}
@@ -224,26 +545,25 @@ def analyse_dividendes_instrument(cur: Any, instrument_id: int, as_of: date | No
     rendement_moyen_5a = ((dpa_moyen_5a / cours) * 100.0) if (cours and dpa_moyen_5a) else None
     rendement_sur_tendance = ((dpa_moyen_5a / fitted_val) * 100.0) if (fitted_val and dpa_moyen_5a) else None
 
-    # Données fondamentales : FCF, Résultat Net, Dividendes totaux versés
+    # Récupérer toute la série des faits financiers pour les 11 règles
     cur.execute(
         """
-        with faits as (
-            select concept_code, value,
-                   row_number() over (partition by concept_code order by period_end desc) as rn
-              from financial_facts
-             where instrument_id = %(id)s
-               and period_type = 'FY'
-               and published_at <= %(as_of)s
-               and concept_code in ('fcf', 'net_income', 'dividends_paid')
-        )
-        select concept_code, value from faits where rn = 1
+        select concept_code, period_end, value
+          from financial_facts
+         where instrument_id = %(id)s
+           and period_type = 'FY'
+           and published_at <= %(as_of)s
+         order by period_end asc
         """,
         {"id": instrument_id, "as_of": as_of},
     )
-    faits_dict = {r[0]: float(r[1]) for r in cur.fetchall()}
-    fcf = faits_dict.get("fcf")
-    net_income = faits_dict.get("net_income")
-    div_paid = faits_dict.get("dividends_paid")
+    facts_series: dict[str, list[tuple[date, float]]] = {}
+    for c_code, p_end, val in cur.fetchall():
+        facts_series.setdefault(c_code, []).append((p_end, float(val)))
+
+    fcf = facts_series.get("fcf", [(None, None)])[-1][1]
+    net_income = facts_series.get("net_income", [(None, None)])[-1][1]
+    div_paid = facts_series.get("dividends_paid", [(None, None)])[-1][1]
 
     payout_fcf = (abs(div_paid) / fcf) if (fcf and div_paid and fcf > 0) else None
     payout_rn = (abs(div_paid) / net_income) if (net_income and div_paid and net_income > 0) else None
@@ -256,6 +576,18 @@ def analyse_dividendes_instrument(cur: Any, instrument_id: int, as_of: date | No
         payout_rn=payout_rn,
         nb_baisses_5a=nb_baisses,
         fcf_negatif=fcf_negatif,
+    )
+
+    # Évaluer les 11 règles de la stratégie
+    score_11 = evalue_11_regles_dividende(
+        cours=cours,
+        slope_annual=slope_ann,
+        dernier_dpa=dernier_dpa,
+        dpa_moyen_5a=dpa_moyen_5a,
+        streak_annees=streak,
+        facts_series=facts_series,
+        quality_tier=qual_tier,
+        secteur_nom=secteur_label or "",
     )
 
     return ProfilDividende(
@@ -283,13 +615,11 @@ def analyse_dividendes_instrument(cur: Any, instrument_id: int, as_of: date | No
         securite_verdict=verdict,
         securite_motif=motif,
         historique_annuel=historique,
+        score_11_regles=score_11,
     )
 
 
 SQL_SCREENER_DIVIDENDES = """
--- Exclut les foncieres au regime fiscal exonere d'IS (SIIC et equivalents
--- europeens : SOCIMI, SIR/GVV, FBI, G-REIT, SIIQ), incompatible avec le PEA
--- depuis la loi de finances 2012 - meme logique que dashboard/data.py::screener.
 with div_annuels as (
     select c.instrument_id,
            extract(year from c.ex_date)::int as annee,
@@ -315,6 +645,12 @@ derniers_faits as (
     select instrument_id,
            max(value) filter (where concept_code = 'fcf') as fcf,
            max(value) filter (where concept_code = 'net_income') as net_income,
+           max(value) filter (where concept_code = 'revenue') as revenue,
+           max(value) filter (where concept_code = 'ebit') as ebit,
+           max(value) filter (where concept_code = 'total_equity') as total_equity,
+           max(value) filter (where concept_code = 'total_debt') as total_debt,
+           max(value) filter (where concept_code = 'net_debt') as net_debt,
+           max(value) filter (where concept_code = 'shares_basic') as shares_basic,
            abs(max(value) filter (where concept_code = 'dividends_paid')) as dividends_paid
       from (
           select instrument_id, concept_code, value,
@@ -322,7 +658,7 @@ derniers_faits as (
             from financial_facts
            where period_type = 'FY'
              and published_at <= %(as_of)s
-             and concept_code in ('fcf', 'net_income', 'dividends_paid')
+             and concept_code in ('fcf', 'net_income', 'revenue', 'ebit', 'total_equity', 'total_debt', 'net_debt', 'shares_basic', 'dividends_paid')
       ) f
      where rn = 1
      group by instrument_id
@@ -349,6 +685,12 @@ select i.internal_code,
        st.total_annees_div,
        df.fcf,
        df.net_income,
+       df.revenue,
+       df.ebit,
+       df.total_equity,
+       df.total_debt,
+       df.net_debt,
+       df.shares_basic,
        df.dividends_paid,
        (df.dividends_paid / nullif(df.fcf, 0)) * 100.0 as payout_fcf_pct,
        (df.dividends_paid / nullif(df.net_income, 0)) * 100.0 as payout_rn_pct
@@ -364,7 +706,6 @@ select i.internal_code,
   left join derniers_faits df on df.instrument_id = i.id
  where i.is_active
    and i.asset_class in ('equity', 'dividend_stock')
-   and (i.attributes ->> 'pea_eligible') is distinct from 'false'
    and st.dernier_dpa is not null
    and st.dernier_dpa > 0
  order by rendement_actuel_pct desc nulls last;

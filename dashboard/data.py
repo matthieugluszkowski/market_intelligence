@@ -514,11 +514,12 @@ def screener_dividendes(as_of: date) -> pd.DataFrame:
     if df.empty:
         return df
 
-    # Calcul du statut de sécurité sur chaque ligne
-    from market_intelligence.analytics.dividends import evalue_securite_dividende
+    # Calcul du statut de sécurité et des 11 règles sur chaque ligne
+    from market_intelligence.analytics.dividends import evalue_11_regles_dividende, evalue_securite_dividende
 
     statuts = []
     motifs = []
+    scores_11 = []
     for _, row in df.iterrows():
         fcf = row.get("fcf")
         fcf_neg = (pd.notna(fcf) and fcf < 0)
@@ -537,8 +538,35 @@ def screener_dividendes(as_of: date) -> pd.DataFrame:
         statuts.append(verdict)
         motifs.append(motif)
 
+        # Simulation des séries financières pour le calcul vectoriel des 11 règles
+        facts_map: dict[str, list[tuple[date, float]]] = {}
+        for c_code in ["revenue", "ebit", "net_income", "total_equity", "total_debt", "net_debt", "shares_basic", "fcf"]:
+            val = row.get(c_code)
+            if pd.notna(val):
+                facts_map[c_code] = [(as_of, float(val))]
+
+        score_res = evalue_11_regles_dividende(
+            cours=row.get("last_close"),
+            slope_annual=row.get("slope_annual"),
+            dernier_dpa=last_dpa,
+            dpa_moyen_5a=dpa_5a,
+            streak_annees=int(row.get("total_annees_div") or 0),
+            facts_series=facts_map,
+            quality_tier=str(row.get("quality_tier") or "unqualified"),
+            secteur_nom=str(row.get("secteur") or ""),
+        )
+        scores_11.append(score_res)
+
     df["securite_dividende"] = statuts
     df["securite_motif"] = motifs
+    df["score_11_oui"] = [s.total_oui for s in scores_11]
+    df["score_11_capitaux"] = [f"{s.total_capitaux_oui}/{s.total_capitaux}" for s in scores_11]
+    df["est_investissable"] = [s.est_investissable for s in scores_11]
+    df["verdict_11_regles"] = [s.verdict for s in scores_11]
+    df["score_11_badge"] = [
+        f"{'🟢' if s.est_investissable else '🟡' if s.total_oui >= 6 else '🔴'} {s.total_oui}/11 (Cap. {s.total_capitaux_oui}/6)"
+        for s in scores_11
+    ]
     return df
 
 

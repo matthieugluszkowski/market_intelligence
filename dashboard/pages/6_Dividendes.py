@@ -61,9 +61,9 @@ if df.empty:
     st.stop()
 
 # --------------------------------------------------------------------------- #
-# Filtres
+# Filtres & Stratégie 11 Règles
 # --------------------------------------------------------------------------- #
-f1, f2, f3, f4, f5 = st.columns([1.2, 1.2, 1.3, 1.3, 1.2])
+f1, f2, f3, f4 = st.columns([1.2, 1.2, 1.3, 1.3])
 
 with f1:
     seuil_z = st.slider(
@@ -95,13 +95,21 @@ with f3:
     )
 
 with f4:
+    strat_choix = st.selectbox(
+        "Checklist 11 Règles",
+        ["Toutes", "Investissables (≥ 8/11 OUI)", "Capitaux 100% validés (6/6)"],
+        index=0,
+        help="Filtre basé sur la stratégie d'investissement dividende (11 règles, ≥ 8 OUI pour investir).",
+    )
+
+f_sec, f_pays = st.columns(2)
+with f_sec:
     secteurs = st.multiselect(
         "Secteur",
         sorted([s for s in df["secteur"].dropna().unique()]),
         help="Filtrer par secteur ICB.",
     )
-
-with f5:
+with f_pays:
     pays = st.multiselect(
         "Pays",
         sorted([c for c in df["country_iso2"].dropna().unique()]),
@@ -116,6 +124,11 @@ filtre = filtre[filtre["rendement_actuel_pct"] >= min_rdt]
 if "Tous" not in secu_choix and secu_choix:
     filtre = filtre[filtre["securite_dividende"].isin(secu_choix)]
 
+if strat_choix == "Investissables (≥ 8/11 OUI)":
+    filtre = filtre[filtre["est_investissable"]]
+elif strat_choix == "Capitaux 100% validés (6/6)":
+    filtre = filtre[filtre["score_11_capitaux"] == "6/6"]
+
 if secteurs:
     filtre = filtre[filtre["secteur"].isin(secteurs)]
 
@@ -129,14 +142,34 @@ c1, c2, c3, c4 = st.columns(4)
 with c1:
     st.metric("Titres qualifiés", len(filtre))
 with c2:
+    invest_nb = int(filtre["est_investissable"].sum()) if not filtre.empty else 0
+    st.metric("Éligibles (≥ 8/11 OUI)", f"{invest_nb} / {len(filtre)}")
+with c3:
     rdt_med = filtre["rendement_actuel_pct"].median() if not filtre.empty else 0
     st.metric("Rendement médian actuel", f"{rdt_med:.2f} %" if rdt_med else "-")
-with c3:
-    rdt_5a_med = filtre["rendement_moyen_5a_pct"].median() if not filtre.empty else 0
-    st.metric("Rendement moyen 5 ans", f"{rdt_5a_med:.2f} %" if rdt_5a_med else "-")
 with c4:
     z_med = filtre["z_score"].median() if not filtre.empty else 0
     st.metric("Décote médiane (z-score)", f"{z_med:+.2f} σ" if z_med else "-")
+
+with st.expander("📖 Les 11 Règles d'Investissement Dividende (Investing.com & Morningstar)"):
+    st.markdown(
+        """
+        Pour décider d'investir sur une action à dividendes, la stratégie évalue **11 règles précises** :
+        - **Règle 1 (⭐ CAPITAL)** : Rendement du dividende $\ge 5\%$ (*Investing.com > Rendement*)
+        - **Règle 2** : PER compris entre 3 et 14 (*Investing.com > PER*)
+        - **Règle 3 (⭐ CAPITAL)** : Capitalisation boursière $> 500$ millions (*Investing.com > Cap.Bours.*)
+        - **Règle 4** : Price to Book (P/B) $< 4$ (*Investing.com > Ratios > Cours / Valeur Comptable*)
+        - **Règle 5 (⭐ CAPITAL)** : Marge bénéficiaire avant impôts $> 13\%$ (*Investing.com > Fondamentaux*)
+        - **Règle 6 (⭐ CAPITAL)** : Dettes / Capitaux Propres $\le 110\%$ (*Investing.com > Dettes / Capitaux Propres*)
+        - **Règle 7** : Résultat net en hausse sur 3 années consécutives (*Investing.com > Résultat net annuel*)
+        - **Règle 8 (⭐ CAPITAL)** : Dividendes versés depuis au moins 5 années consécutives (*Morningstar.fr > Dividendes*)
+        - **Règle 9 (⭐ CAPITAL)** : Croissance de l'action / tendance $> +5\%$ sur 5 ans (*Morningstar.fr > Taux de croissance 5 ans*)
+        - **Règle 10** : Compréhension de l'activité de l'entreprise
+        - **Règle 11** : Pérennité de l'entreprise à 10 ans (rente et barrières concurrentielles)
+
+        **Décision :** $\ge 8$ OUI $\rightarrow$ **Investissable** (les critères 1, 3, 5, 6, 8 et 9 sont CAPITAUX).
+        """
+    )
 
 st.markdown("---")
 
@@ -176,7 +209,7 @@ if not filtre.empty:
 
     scatter = (
         alt.Chart(graphe_df)
-        .mark_circle(size=120, opacity=0.85)
+        .mark_circle(size=130, opacity=0.85)
         .encode(
             x=alt.X("z_score:Q", axis=axe_x),
             y=alt.Y("rendement_plafonne:Q", axis=axe_y),
@@ -191,12 +224,12 @@ if not filtre.empty:
             tooltip=[
                 alt.Tooltip("name:N", title="Société"),
                 alt.Tooltip("internal_code:N", title="Code"),
+                alt.Tooltip("score_11_badge:N", title="Score 11 Règles"),
                 alt.Tooltip("last_close:Q", title="Cours", format=".2f"),
                 alt.Tooltip("z_score:Q", title="Z-score", format="+.2f"),
                 alt.Tooltip("rendement_actuel_pct:Q", title="Rdt actuel (%)", format=".2f"),
                 alt.Tooltip("rendement_moyen_5a_pct:Q", title="Rdt moy 5a (%)", format=".2f"),
                 alt.Tooltip("dernier_dpa:Q", title="Dernier DPA", format=".2f"),
-                alt.Tooltip("dpa_moyen_5a:Q", title="DPA moyen 5a", format=".2f"),
                 alt.Tooltip("payout_fcf_pct:Q", title="Payout FCF (%)", format=".1f"),
                 alt.Tooltip("securite_dividende:N", title="Diagnostic"),
             ],
@@ -208,15 +241,20 @@ if not filtre.empty:
     st.altair_chart(scatter, use_container_width=True)
 
 # --------------------------------------------------------------------------- #
-# Tableau complet
+# Tableau complet avec navigation directe
 # --------------------------------------------------------------------------- #
 st.subheader("Tableau des opportunités de dividende")
+st.caption("💡 **Cliquer sur une ligne** pour ouvrir directement la **Fiche instrument** complète avec l'explication des 11 règles.")
 
 if filtre.empty:
     st.info("Aucune action ne correspond aux critères sélectionnés.")
 else:
     suivis = data.codes_suivis()
 
+    # Trier par score 11 règles décroissant puis par z-score croissant
+    filtre = filtre.sort_values(["score_11_oui", "z_score"], ascending=[False, True])
+
+    codes_lignes = list(filtre["internal_code"])
     table_data = []
     for _, r in filtre.iterrows():
         code = r["internal_code"]
@@ -234,12 +272,13 @@ else:
 
         # FCF payout format
         fcf_str = f"{r['payout_fcf_pct']:.0f} %" if pd.notna(r.get("payout_fcf_pct")) else "n/d"
-        rn_str = f"{r['payout_rn_pct']:.0f} %" if pd.notna(r.get("payout_rn_pct")) else "n/d"
 
         table_data.append({
             "Suivi": etoile,
             "Code": code,
             "Société": r["name"],
+            "Score 11 Règles": r["score_11_badge"],
+            "Décision": "Investissable" if r["est_investissable"] else "Risqué",
             "Secteur": r["secteur"] or "-",
             "Pays": r["country_iso2"] or "-",
             "Cours": f"{r['last_close']:.2f} {r['currency']}",
@@ -249,15 +288,10 @@ else:
             "Dernier DPA": f"{r['dernier_dpa']:.2f} {r['currency']}",
             "DPA Moy 5a": f"{r['dpa_moyen_5a']:.2f} {r['currency']}" if pd.notna(r.get("dpa_moyen_5a")) else "-",
             "Couverture FCF": fcf_str,
-            "Payout RN": rn_str,
             "Sécurité": badge_secu,
             "Qualité": r["quality_tier"],
         })
 
     t_df = pd.DataFrame(table_data)
-    st.dataframe(t_df, use_container_width=True, hide_index=True)
+    navigation.tableau_vers_fiche(t_df, codes_lignes, "selection_screener_dividendes")
 
-    st.caption(
-        "Conseil : cliquer sur une ligne dans la *Fiche instrument* pour analyser l'historique complet, "
-        "la trajectoire de régression et les flux de trésorerie."
-    )
