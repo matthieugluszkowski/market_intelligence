@@ -31,9 +31,9 @@ insert into asset_classes (code, label, supports_fundamentals, default_policy_co
   ('etf',            'ETF',                 false, 'loglin_15y'),
   ('index',          'Indice',              false, 'loglin_30y'),
   ('commodity',      'Matière première',   false, 'real_deflated'),
-  ('crypto',    'Crypto-actif',      false, 'excluded'),
-  ('fx',        'Devise',            false, 'excluded'),
-  ('bond',      'Obligation',        false, 'excluded')
+  ('crypto',         'Cryptomonnaie',       false, 'loglin_10y'),
+  ('fx',             'Devise',              false, 'excluded'),
+  ('bond',           'Obligation',          false, 'excluded')
 on conflict (code) do update set
   label = excluded.label,
   supports_fundamentals = excluded.supports_fundamentals,

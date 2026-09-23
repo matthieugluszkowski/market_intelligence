@@ -139,7 +139,13 @@ serie = charts.serie_de_regression(barres, f)
 # rien pour cette ligne. Les blocs A, B et C, eux, sont identiques a ceux d'une
 # action : meme serie hebdomadaire, meme droite log-lineaire, meme z-score.
 sans_fondamentaux = f["asset_class"] not in ("equity", "dividend_stock")
-if f["asset_class"] == "etf":
+if f["asset_class"] == "crypto":
+    SANS_OBJET = (
+        "Sans objet pour une cryptomonnaie : actif numérique sans bilan d'entreprise "
+        "ni dividende. L'aide à la décision se lit sur les blocs A à C (canal "
+        "logarithmique séculaire, z-score de décote/surévaluation, volatilité et vitesse de rappel)."
+    )
+elif f["asset_class"] == "etf":
     SANS_OBJET = (
         "Sans objet pour un ETF : panier indiciel diversifié sans bilan d'entreprise "
         "unique ni position concurrentielle individuelle. L'aide à la décision se lit "

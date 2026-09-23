@@ -141,7 +141,8 @@ def run(as_of: date | None = None, limit: int = 0, only: str = "") -> dict:
             instruments = cur.fetchall()
 
         if only:
-            instruments = [i for i in instruments if i[1] == only]
+            codes = {c.strip() for c in only.split(",") if c.strip()}
+            instruments = [i for i in instruments if i[1] in codes]
         if limit:
             instruments = instruments[:limit]
 
