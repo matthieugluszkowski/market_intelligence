@@ -90,12 +90,12 @@ def test_politique_par_defaut_resolue_pour_chaque_classe_dactif():
     assert orphans == []
 
 
-def test_crypto_et_fx_sont_hors_modele():
-    """La crypto est exclue dans la donnee, pas dans un if enfoui (doc 01 SS2.1)."""
+def test_crypto_et_fx_politiques():
+    """FX est exclu, Crypto utilise loglin_10y."""
     rows = dict(
         fetch_all("select code, default_policy_code from asset_classes where code in ('crypto','fx')")
     )
-    assert rows == {"crypto": "excluded", "fx": "excluded"}
+    assert rows == {"crypto": "loglin_10y", "fx": "excluded"}
 
 
 def test_isin_unique():
