@@ -67,7 +67,8 @@ def screener(as_of: date) -> pd.DataFrame:
                f.ar1_ci_low, f.ar1_ci_high, f.regime_stats, i.currency,
                coalesce(q.quality_tier, 'unqualified') as quality_tier,
                coalesce(q.regime, 'unknown') as regime,
-               q.erosion_flags, q.roic_vs_threshold
+               q.erosion_flags, q.roic_vs_threshold,
+               i.attributes ->> 'pea_eligible' as pea_eligible
           from regression_fits f
           join instruments i on i.id = f.instrument_id
           join asset_classes ac on ac.code = i.asset_class
@@ -77,7 +78,6 @@ def screener(as_of: date) -> pd.DataFrame:
            and q.as_of_date = (select max(as_of_date) from quality_scores
                                 where instrument_id = i.id)
          where f.as_of_date = %(as_of)s
-           and (i.attributes ->> 'pea_eligible') is distinct from 'false'
          order by f.z_score
         """,
         {"as_of": as_of},
