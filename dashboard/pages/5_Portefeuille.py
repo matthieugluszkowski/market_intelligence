@@ -22,6 +22,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
+import altair as alt
 import pandas as pd
 import streamlit as st
 
@@ -53,12 +54,26 @@ def charge(sql: str, params=None) -> pd.DataFrame:
         return pd.DataFrame(cur.fetchall(), columns=[c.name for c in cur.description])
 
 
+def get_secteurs_map() -> dict[int, str]:
+    with connect_direct() as conn, conn.cursor() as cur:
+        cur.execute("""
+            SELECT i.id, coalesce(s.label, ac.label, 'Non sectorisé') as secteur
+              FROM instruments i
+              JOIN asset_classes ac ON ac.code = i.asset_class
+              LEFT JOIN sectors s ON s.code = i.sector_code
+        """)
+        return dict(cur.fetchall())
+
+
 st.title("Portefeuille")
 st.caption("Le système propose, vous décidez. Aucun ordre n'est passé, aucun "
            "courtier n'est contacté, aucune fiscalité n'est calculée.")
 
+SECTEURS_MAP = get_secteurs_map()
 supports = charge(P.SUPPORTS)
 positions = charge(P.POSITIONS, {"ouvertes": False})
+if not positions.empty:
+    positions["secteur"] = positions["instrument_id"].map(SECTEURS_MAP).fillna("Non sectorisé")
 
 onglet_lignes, onglet_ouvrir, onglet_supports = st.tabs(
     ["Positions", "Prendre une position", "Supports (réglages)"])
@@ -84,8 +99,12 @@ def lignes_valorisees(rows: pd.DataFrame, courant: pd.Series,
         for _, position in rows.iterrows():
             v = P.valorise(cur, position.to_dict(), AUJOURDHUI)
             code = position["internal_code"]
+            secteur = position.get("secteur")
+            if not secteur or secteur == "Non sectorisé":
+                secteur = SECTEURS_MAP.get(int(position["instrument_id"]), "Non sectorisé")
             ligne = {
                 "Titre": position["name"],
+                "Secteur": secteur,
                 "Qté": v.quantite,
                 "PRU": round(v.prix_de_revient, 2),
                 "Cours": round(v.cours, 2) if v.cours else None,
@@ -114,11 +133,84 @@ def lignes_valorisees(rows: pd.DataFrame, courant: pd.Series,
                 # Le support reste une colonne, jamais un onglet : une
                 # concentration sur un seul support doit se voir d'un coup d'œil.
                 ligne = {"Titre": ligne.pop("Titre"),
+                         "Secteur": ligne.pop("Secteur"),
                          "Support": position["support"] or "—", **ligne}
             lignes.append(ligne)
             totaux["investi"] += v.montant_investi
             totaux["valeur"] += v.valeur or 0
     return lignes, totaux
+
+
+
+
+def graphique_camembert_secteurs(lignes: list[dict], etiquette: str) -> None:
+    """Affiche la repartition en camembert des possessions par secteur d'activite."""
+    if not lignes:
+        return
+
+    df = pd.DataFrame(lignes)
+    col_montant = "Valeur" if df["Valeur"].fillna(0).sum() > 0 else "Investi"
+    df_calc = df.copy()
+    df_calc[col_montant] = df_calc[col_montant].fillna(0)
+
+    repartition = (
+        df_calc.groupby("Secteur", as_index=False)
+        .agg(
+            montant=(col_montant, "sum"),
+            titres=("Titre", "nunique"),
+        )
+    )
+    total_montant = repartition["montant"].sum()
+    if total_montant <= 0:
+        return
+
+    repartition["part_pct"] = repartition["montant"] / total_montant
+    repartition = repartition.sort_values("montant", ascending=False)
+
+    st.markdown(f"##### Repartition par secteur d'activite ({etiquette})")
+    col_chart, col_table = st.columns([3, 2])
+
+    with col_chart:
+        base = alt.Chart(repartition).encode(
+            theta=alt.Theta("montant:Q", stack=True),
+            color=alt.Color(
+                "Secteur:N",
+                legend=alt.Legend(title="Secteurs", orient="bottom", columns=2),
+                scale=alt.Scale(scheme="tableau10"),
+            ),
+            tooltip=[
+                alt.Tooltip("Secteur:N", title="Secteur"),
+                alt.Tooltip("montant:Q", title=f"{col_montant} (€)", format=",.2f"),
+                alt.Tooltip("part_pct:Q", title="Part", format=".1%"),
+                alt.Tooltip("titres:Q", title="Nombre de titres"),
+            ],
+        )
+
+        arc = base.mark_arc(innerRadius=45, outerRadius=110)
+        text = base.mark_text(radius=80, fontSize=11, fontWeight="bold").encode(
+            text=alt.condition(
+                alt.datum.part_pct >= 0.05,
+                alt.Text("part_pct:Q", format=".1%"),
+                alt.value(""),
+            ),
+            color=alt.value("#ffffff"),
+        )
+
+        st.altair_chart((arc + text).properties(height=280), use_container_width=True)
+
+    with col_table:
+        table_rep = repartition.copy()
+        table_rep["Part"] = table_rep["part_pct"] * 100
+        table_rep = table_rep.rename(columns={"montant": f"{col_montant} (€)", "titres": "Titres"})
+        st.dataframe(
+            table_rep[["Secteur", f"{col_montant} (€)", "Part", "Titres"]],
+            hide_index=True,
+            use_container_width=True,
+            column_config={
+                "Part": st.column_config.NumberColumn("Part", format="%.1f%%"),
+                f"{col_montant} (€)": st.column_config.NumberColumn(f"{col_montant}", format="%.2f €"),
+            },
+        )
 
 
 def section_positions(titre: str, rows: pd.DataFrame, courant: pd.Series,
@@ -143,6 +235,8 @@ def section_positions(titre: str, rows: pd.DataFrame, courant: pd.Series,
 
     st.dataframe(pd.DataFrame(lignes), use_container_width=True,
                  hide_index=True, column_config=COLONNES_FORMAT)
+
+    graphique_camembert_secteurs(lignes, etiquette)
 
     if est_paper:
         st.markdown(

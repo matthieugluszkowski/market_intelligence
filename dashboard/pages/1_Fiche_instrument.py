@@ -254,8 +254,9 @@ portefeuille = data.portefeuille()
 entete.bandeau_portefeuille(portefeuille)
 
 st.title(("★ " if suivi else "") + f["name"])
+secteur_txt = f" · {f['secteur']}" if f.get("secteur") else ""
 st.caption(f"{f['isin'] or (f['attributes'] or {}).get('unite') or f['classe_actif']}"
-           f" · {choix} · politique {f['policy_code']} · "
+           f"{secteur_txt} · {choix} · politique {f['policy_code']} · "
            f"calcul du {as_of} · methode v{f['method_version']}")
 
 # Les positions ouvertes sur CE titre : elles marquent le graphe du bloc A et

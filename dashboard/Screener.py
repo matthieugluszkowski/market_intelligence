@@ -37,7 +37,7 @@ from dashboard.rechargement import recharge_si_modifie  # noqa: E402
 recharge_si_modifie()
 
 from dashboard import data, entete, navigation  # noqa: E402
-from dashboard.theme import css, palette, statut  # noqa: E402
+from dashboard.theme import css, palette  # noqa: E402
 
 st.set_page_config(page_title="Screener - market intelligence",
                    page_icon="◧", layout="wide")
@@ -100,7 +100,7 @@ frame = data.screener(as_of)
 portefeuille = data.portefeuille()
 detenus = entete.detentions(portefeuille)
 
-entete.bandeau_portefeuille(portefeuille)
+entete.bandeau_portefeuille(portefeuille, legende=False)
 
 st.title("Screener")
 
@@ -141,61 +141,33 @@ elif datetime.now(timezone.utc) - cours["finished_at"] > SEUIL_RETARD:
 if alerte:
     st.markdown(f"<div class='avertissement'>{alerte}</div>", unsafe_allow_html=True)
 
-st.caption(f"Calcul du {as_of}. Le dashboard sert a creuser un titre, "
-           f"pas a surveiller : le canal principal est le rapport hebdomadaire.")
 
-with st.expander("Detail de la derniere actualisation"):
-    if etat.empty:
-        st.info("Aucun passage journalise dans `ingestion_runs`.")
-    else:
-        detail = pd.DataFrame({
-            "Etape": etat["job_name"].map(
-                lambda j: data.JOBS_EN_CLAIR.get(j, j)),
-            "Statut": etat["status"],
-            "Termine le": etat["finished_at"].map(
-                lambda t: "en cours" if pd.isna(t) else horodate(t)),
-            "Age": etat["finished_at"].map(
-                lambda t: "-" if pd.isna(t) else f"il y a {age(t)}"),
-            "Lignes creees": etat["rows_inserted"],
-            "Lignes mises a jour": etat["rows_updated"],
-            "Erreur": etat["error_message"].fillna(""),
-        }).sort_values("Etape")
-        st.dataframe(detail, use_container_width=True, hide_index=True)
-        st.caption(
-            "Heures en Europe/Paris. `partial` signale qu'une etape a abouti en "
-            "laissant des titres de cote - le detail est dans `ingestion_runs`."
-        )
 
 # --------------------------------------------------------------------------- #
 # Une seule rangee de filtres, au-dessus de tout ce qu'ils cadrent.
 # Jamais de filtre a l'interieur d'une carte de graphe.
 # --------------------------------------------------------------------------- #
-f0, f1, f2, f3, f4, f5 = st.columns([1.2, 1.1, 1.4, 1.3, 1.3, 1.1])
+col_z, col_zone = st.columns([1, 1])
 
-with f0:
-    # Le type d'actif vient en premier parce que c'est le seul filtre qui change
-    # le sens des autres : « secteur » ne veut rien dire pour une matiere
-    # premiere, et une qualite de fit ne se compare pas d'une classe a l'autre.
-    classes = st.multiselect(
-        "Type d'actif", sorted(frame["classe_actif"].dropna().unique()),
-        help="Capitalisation boursiere, matiere premiere, indice... "
-             "Vide = toutes les classes.",
-    )
-
-with f1:
+with col_z:
     seuil_z = st.slider("Seuil de z-score", -4.0, 4.0, -1.5, 0.1,
                         help="Ne garder que les titres sous ce seuil.")
-with f2:
-    qualites = st.multiselect(
-        "Qualite du fit", ["good", "weak", "rejected"], default=["good", "weak"],
-        format_func=lambda q: f"{statut(q)[1]} {q}",
+with col_zone:
+    zone = st.selectbox(
+        "Zone",
+        ["Tout", "PEA", "Reste du monde"],
+        help="Classement indicatif selon le pays du siege (UE/EEE pour PEA), "
+             "avec prise en compte des exclusions PEA connues.",
+        key="screener_zone_geographique",
     )
-with f3:
-    secteurs = st.multiselect("Secteur", sorted(frame["secteur"].dropna().unique()))
-with f4:
-    pays = st.multiselect("Pays", sorted(frame["country_iso2"].dropna().unique()))
-with f5:
-    persistance = st.number_input("Sem. sous seuil ≥", min_value=0, value=0, step=1)
+
+pays_pea = frame["country_iso2"].fillna("").str.upper().isin(data.PAYS_PEA_ISO2)
+pea_exclu = frame["pea_eligible"].fillna("true").astype(str).str.lower().eq("false")
+dans_pea = pays_pea & ~pea_exclu
+if zone == "PEA":
+    frame = frame.loc[dans_pea].copy()
+elif zone == "Reste du monde":
+    frame = frame.loc[~dans_pea].copy()
 
 suivis = data.codes_suivis()
 c1, c2 = st.columns(2)
@@ -222,14 +194,6 @@ if favoris_seuls:
     filtre = frame[frame["internal_code"].isin(suivis)]
 if detenus_seuls:
     filtre = frame[frame["internal_code"].isin(detenus.index)]
-if classes:
-    filtre = filtre[filtre["classe_actif"].isin(classes)]
-if qualites:
-    filtre = filtre[filtre["fit_quality"].isin(qualites)]
-if secteurs:
-    filtre = filtre[filtre["secteur"].isin(secteurs)]
-if pays:
-    filtre = filtre[filtre["country_iso2"].isin(pays)]
 
 
 def semaines_sous_seuil(stats) -> int:
@@ -238,8 +202,6 @@ def semaines_sous_seuil(stats) -> int:
 
 filtre = filtre.copy()
 filtre["semaines"] = filtre["regime_stats"].map(semaines_sous_seuil)
-if persistance:
-    filtre = filtre[filtre["semaines"] >= persistance]
 
 # --------------------------------------------------------------------------- #
 # L'ecran matrice qualite x prix arrive avec L6b. En attendant, tous les titres
@@ -293,134 +255,126 @@ def colonne_detenue(code: str, champ: str):
 
 
 # --------------------------------------------------------------------------- #
-# Le cours, sa tendance, l'ecart entre les deux, le temps que met cet ecart a se
-# resorber : lues ensemble, ces colonnes disent combien, et sous combien de temps.
-#
-# La tendance est `exp(fitted_value)` - la valeur **ecrite en base** par le
-# moteur. La reconstruire ici depuis l'intercept et la pente donnerait le meme
-# nombre aujourd'hui et pourrait diverger en silence demain : c'est exactement la
-# raison pour laquelle le graphe de la fiche ne recalcule pas sa droite non plus.
-#
-# Le potentiel est un ecart mesure, pas un objectif de cours. Il suppose un
-# retour exact sur la droite et ne dit rien de la date de ce retour - le temps
-# est porte par la demi-vie, et elle ne porte que la moitie du chemin.
+# Un tableau par type d'actif, a la suite sur la page.
 # --------------------------------------------------------------------------- #
-# Une colonne qui ne prend qu'une valeur sur tout l'univers n'apprend rien et
-# coute une colonne. « Devise » et « Type » n'apparaissent donc qu'a partir du
-# moment ou l'univers en compte plusieurs - tant qu'il est 100 % actions en
-# euros, le tableau reste celui d'avant. La devise, elle, ne peut pas rester
-# implicite : un prix de matiere premiere en dollars affiche « 12,34 EUR »
-# serait faux, pas imprecis.
-devises = frame["currency"].dropna().unique()
-devise_unique = devises[0] if len(devises) == 1 else None
-format_prix = f"%.2f {devise_unique}" if devise_unique is not None else "%.2f"
-plusieurs_classes = frame["classe_actif"].nunique() > 1
+ORDRE_CLASSES = [
+    "Action",
+    "Action à dividende",
+    "ETF",
+    "Matière première",
+    "Cryptomonnaie",
+    "Indice",
+    "Devise",
+    "Obligation",
+]
 
-tendance = np.exp(filtre["fitted_value"])
-potentiel = (tendance / filtre["last_close"] - 1.0) * 100
-
-table = pd.DataFrame({
-    "★": filtre["internal_code"].map(lambda c: "★" if c in suivis else ""),
-    "Nom": filtre["name"],
-    "Code": filtre["internal_code"],
-    **({"Type": filtre["classe_actif"]} if plusieurs_classes else {}),
-    "Detenu": filtre["internal_code"].map(mode_detention),
-    "Qte": filtre["internal_code"].map(lambda c: colonne_detenue(c, "quantite")),
-    "PRU": filtre["internal_code"].map(
-        lambda c: colonne_detenue(c, "prix_de_revient")),
-    # En points, pas en fraction : `%+.1f%%` ecrit un signe pourcent, il ne
-    # convertit pas — meme convention que « Potentiel » plus bas.
-    "+/- %": filtre["internal_code"].map(
-        lambda c: colonne_detenue(c, "plus_value_pct")) * 100,
-    "Prix": filtre["last_close"].round(2),
-    **({"Devise": filtre["currency"]} if devise_unique is None else {}),
-    "z": filtre["z_score"].round(2),
-    # Zero semaine sous le seuil, ce n'est pas « depuis zero semaine » : c'est
-    # que le titre n'est pas sous le seuil. La case reste vide.
-    "Sous -2σ depuis": filtre["semaines"].replace(0, float("nan")),
-    "Tendance": tendance.round(2),
-    "Potentiel": potentiel.round(1),
-    "Demi-vie": (filtre["half_life_days"] / JOURS_PAR_MOIS).round(0),
-    "Secteur": filtre["secteur"],
-    "Pays": filtre["country_iso2"],
-})
-
-affiches = set(filtre["internal_code"]) & set(detenus.index)
-manquants = len(detenus) - len(affiches)
-st.caption(
-    f"{len(table)} titre(s) sur {len(frame)}. "
-    f"Tri : qualite du fit, puis z croissant. "
-    f"**Selectionner une ligne ouvre la fiche instrument.**"
-    + (f" {len(affiches)} titre(s) detenu(s) dans cette vue"
-       + (f", {manquants} hors filtres — cocher « Portefeuille seulement » "
-          f"pour les voir." if manquants else ".")
-       if len(detenus) else ""))
-
-navigation.tableau_vers_fiche(
-    table, list(filtre["internal_code"]), cle="screener_table",
-    use_container_width=True, hide_index=True,
-    column_config={
-        "Qte": st.column_config.NumberColumn(
-            "Qte", format="%g", help="Quantite detenue, tous supports confondus."),
-        "PRU": st.column_config.NumberColumn(
-            "PRU", format="%.2f",
-            help="Prix de revient unitaire, moyenne ponderee des achats, hors "
-                 "frais."),
-        "+/- %": st.column_config.NumberColumn(
-            "+/- %", format="%+.1f%%",
-            help="Ecart entre la valeur au dernier cours et le montant investi, "
-                 "frais compris. Latente : rien n'est acquis avant la vente."),
-        "Prix": st.column_config.NumberColumn(
-            "Prix", format=format_prix,
-            help="Dernier cours de la fenetre de calcul, ajuste des splits. "
-                 "Ce n'est pas un cours temps reel : il date du dernier passage "
-                 "du moteur, indique en tete de page."),
-        "z": st.column_config.NumberColumn(
-            "z", format="%+.2f",
-            help="Ecart du cours a sa tendance, en ecarts-types des residus."),
-        "Sous -2σ depuis": st.column_config.NumberColumn(
-            "Sous -2σ depuis", format="%d sem.",
-            help="Semaines consecutives sous -2σ dans l'episode en cours. "
-                 "Vide = le titre est au-dessus du seuil aujourd'hui. Un titre qui "
-                 "passe sous -2σ tous les trois ans n'envoie pas le meme signal "
-                 "qu'un titre qui y reste depuis deux ans."),
-        "Tendance": st.column_config.NumberColumn(
-            "Tendance", format=format_prix,
-            help="Valeur de la droite de regression a la date de calcul. "
-                 "C'est un repere statistique, pas un objectif de cours."),
-        "Potentiel": st.column_config.NumberColumn(
-            "Potentiel", format="%+.1f%%",
-            help="Ce que rapporterait un retour exact du cours sur sa tendance, "
-                 "hors derive de la droite elle-meme. Mesure d'un ecart, pas une "
-                 "prevision : rien ne garantit ce retour, ni qu'il ait lieu."),
-        "Demi-vie": st.column_config.NumberColumn(
-            "Demi-vie", format="%.0f mois",
-            help="Temps moyen pour combler la **moitie** de cet ecart, estime sur "
-                 "l'autocorrelation des residus et in-sample. En combler 90 % "
-                 "demande environ 3,3 fois cette duree. Vide : estimation non "
-                 "exploitable."),
-    },
+classes_disponibles = frame["classe_actif"].dropna().unique()
+classes_ordonnees = sorted(
+    classes_disponibles,
+    key=lambda c: ORDRE_CLASSES.index(c) if c in ORDRE_CLASSES else 999,
 )
 
-st.markdown(
-    "<div class='avertissement'>"
-    "Aucune colonne de score composite sur 100 : un z-score et un verdict de "
-    "qualite de donnee ne s'agregent pas en une note."
-    "</div>",
-    unsafe_allow_html=True,
-)
+for idx, classe in enumerate(classes_ordonnees):
+    frame_classe = frame[frame["classe_actif"] == classe]
+    filtre_classe = filtre[filtre["classe_actif"] == classe]
 
-with st.expander("Repartition des verdicts sur l'univers"):
-    repartition = frame["fit_quality"].value_counts().rename_axis("Verdict")
-    resume = pd.DataFrame({
-        "Titres": repartition,
-        "Libelle": [statut(q)[2] for q in repartition.index],
-    })
-    st.dataframe(resume, use_container_width=True)
+    st.subheader(classe)
+
+    if filtre_classe.empty:
+        st.caption(f"Aucun titre sur {len(frame_classe)} ne passe ces filtres.")
+        continue
+
+    tendance = np.exp(filtre_classe["fitted_value"])
+    potentiel = (tendance / filtre_classe["last_close"] - 1.0) * 100
+
+    devises = frame_classe["currency"].dropna().unique()
+    devise_unique = devises[0] if len(devises) == 1 else None
+    format_prix = f"%.2f {devise_unique}" if devise_unique is not None else "%.2f"
+
+    colonnes = {
+        "★": filtre_classe["internal_code"].map(lambda c: "★" if c in suivis else ""),
+        "Nom": filtre_classe["name"],
+        "Code": filtre_classe["internal_code"],
+        "Detenu": filtre_classe["internal_code"].map(mode_detention),
+        "Qte": filtre_classe["internal_code"].map(
+            lambda c: colonne_detenue(c, "quantite")),
+        "PRU": filtre_classe["internal_code"].map(
+            lambda c: colonne_detenue(c, "prix_de_revient")),
+        "+/- %": filtre_classe["internal_code"].map(
+            lambda c: colonne_detenue(c, "plus_value_pct")) * 100,
+        "Prix": filtre_classe["last_close"].round(2),
+        **({"Devise": filtre_classe["currency"]} if devise_unique is None else {}),
+        "z": filtre_classe["z_score"].round(2),
+        "Sous -2σ depuis": filtre_classe["semaines"].replace(0, float("nan")),
+        "Tendance": tendance.round(2),
+        "Potentiel": potentiel.round(1),
+        "Demi-vie": (filtre_classe["half_life_days"] / JOURS_PAR_MOIS).round(0),
+    }
+    if frame_classe["secteur"].notna().any():
+        colonnes["Secteur"] = filtre_classe["secteur"]
+    if frame_classe["country_iso2"].notna().any():
+        colonnes["Pays"] = filtre_classe["country_iso2"]
+
+    table = pd.DataFrame(colonnes)
+
+    affiches = set(filtre_classe["internal_code"]) & set(detenus.index)
+    detenus_classe = set(frame_classe["internal_code"]) & set(detenus.index)
+    manquants = len(detenus_classe) - len(affiches)
     st.caption(
-        "`weak` doit etre le cas majoritaire. Une repartition a 80% de `good` "
-        "serait le signe d'un bug, pas d'un univers exceptionnel."
+        f"{len(table)} titre(s) sur {len(frame_classe)}. "
+        f"Tri : qualite du fit, puis z croissant. "
+        f"**Selectionner une ligne ouvre la fiche instrument.**"
+        + (f" {len(affiches)} titre(s) detenu(s) dans cette vue"
+           + (f", {manquants} hors filtres — cocher « Portefeuille seulement » "
+              f"pour les voir." if manquants else ".")
+           if len(detenus_classe) else ""))
+
+    navigation.tableau_vers_fiche(
+        table, list(filtre_classe["internal_code"]),
+        cle=f"screener_table_{idx}",
+        use_container_width=True, hide_index=True,
+        column_config={
+            "Qte": st.column_config.NumberColumn(
+                "Qte", format="%g",
+                help="Quantite detenue, tous supports confondus."),
+            "PRU": st.column_config.NumberColumn(
+                "PRU", format="%.2f",
+                help="Prix de revient unitaire, moyenne ponderee des achats, hors "
+                     "frais."),
+            "+/- %": st.column_config.NumberColumn(
+                "+/- %", format="%+.1f%%",
+                help="Ecart entre la valeur au dernier cours et le montant investi, "
+                     "frais compris. Latente : rien n'est acquis avant la vente."),
+            "Prix": st.column_config.NumberColumn(
+                "Prix", format=format_prix,
+                help="Dernier cours de la fenetre de calcul, ajuste des splits. "
+                     "Ce n'est pas un cours temps reel : il date du dernier passage "
+                     "du moteur, indique en tete de page."),
+            "z": st.column_config.NumberColumn(
+                "z", format="%+.2f",
+                help="Ecart du cours a sa tendance, en ecarts-types des residus."),
+            "Sous -2σ depuis": st.column_config.NumberColumn(
+                "Sous -2σ depuis", format="%d sem.",
+                help="Semaines consecutives sous -2σ dans l'episode en cours. "
+                     "Vide = le titre est au-dessus du seuil aujourd'hui. Un titre qui "
+                     "passe sous -2σ tous les trois ans n'envoie pas le meme signal "
+                     "qu'un titre qui y reste depuis deux ans."),
+            "Tendance": st.column_config.NumberColumn(
+                "Tendance", format=format_prix,
+                help="Valeur de la droite de regression a la date de calcul. "
+                     "C'est un repere statistique, pas un objectif de cours."),
+            "Potentiel": st.column_config.NumberColumn(
+                "Potentiel", format="%+.1f%%",
+                help="Ce que rapporterait un retour exact du cours sur sa tendance, "
+                     "hors derive de la droite elle-meme. Mesure d'un ecart, pas une "
+                     "prevision : rien ne garantit ce retour, ni qu'il ait lieu."),
+            "Demi-vie": st.column_config.NumberColumn(
+                "Demi-vie", format="%.0f mois",
+                help="Temps moyen pour combler la **moitie** de cet ecart, estime sur "
+                     "l'autocorrelation des residus et in-sample. En combler 90 % "
+                     "demande environ 3,3 fois cette duree. Vide : estimation non "
+                     "exploitable."),
+        },
     )
 
-st.page_link("pages/1_Fiche_instrument.py", label="Ouvrir une fiche instrument →")
-st.page_link("pages/4_Watchlist.py", label="Voir la watchlist →")
+

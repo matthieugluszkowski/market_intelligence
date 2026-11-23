@@ -26,6 +26,13 @@ from market_intelligence.db import connect  # noqa: E402
 
 TTL = 900  # le dashboard se consulte, il ne surveille pas (principe I1)
 
+# Issuer head office in EU/EEA: indicative PEA geography.
+PAYS_PEA_ISO2 = frozenset({
+    "AT", "BE", "BG", "CY", "CZ", "DE", "DK", "EE", "ES", "FI",
+    "FR", "GR", "HR", "HU", "IE", "IS", "IT", "LI", "LT", "LU",
+    "LV", "MT", "NL", "NO", "PL", "PT", "RO", "SE", "SI", "SK",
+})
+
 
 def _frame(sql: str, params: dict | None = None) -> pd.DataFrame:
     with connect() as conn, conn.cursor() as cur:
@@ -60,7 +67,7 @@ def screener(as_of: date) -> pd.DataFrame:
         """
         select i.internal_code, i.name, i.isin, i.country_iso2, i.exchange_code,
                i.asset_class, ac.label as classe_actif,
-               s.label as secteur, f.z_score, f.slope_annual, f.r_squared,
+               coalesce(s.label, i.attributes ->> 'sector_label') as secteur, f.z_score, f.slope_annual, f.r_squared,
                f.fit_quality, f.quality_reasons, f.half_life_days, f.n_obs,
                f.last_close, f.fitted_value, f.sigma_resid,
                f.window_start, f.window_end,
@@ -78,6 +85,7 @@ def screener(as_of: date) -> pd.DataFrame:
            and q.as_of_date = (select max(as_of_date) from quality_scores
                                 where instrument_id = i.id)
          where f.as_of_date = %(as_of)s
+           and i.is_active
          order by f.z_score
         """,
         {"as_of": as_of},
@@ -89,9 +97,11 @@ def instruments() -> pd.DataFrame:
     return _frame(
         """
         select i.id, i.internal_code, i.name, i.isin, i.currency, i.exchange_code,
-               i.sector_code, i.asset_class, ac.label as classe_actif
+               i.sector_code, coalesce(s.label, ac.label, 'Non sectorisé') as secteur,
+               i.asset_class, ac.label as classe_actif
           from instruments i
           join asset_classes ac on ac.code = i.asset_class
+          left join sectors s on s.code = i.sector_code
          where i.is_active
          order by i.name
         """
@@ -103,10 +113,12 @@ def fit(internal_code: str, as_of: date) -> pd.Series | None:
     frame = _frame(
         """
         select f.*, i.name, i.isin, i.currency, i.internal_code,
-               i.asset_class, i.attributes, ac.label as classe_actif
+               i.asset_class, i.attributes, ac.label as classe_actif,
+               coalesce(s.label, ac.label, 'Non sectorisé') as secteur
           from regression_fits f
           join instruments i on i.id = f.instrument_id
           join asset_classes ac on ac.code = i.asset_class
+          left join sectors s on s.code = i.sector_code
          where i.internal_code = %(code)s and f.as_of_date = %(as_of)s
          order by f.method_version desc limit 1
         """,
@@ -181,7 +193,7 @@ def codes_suivis() -> set[str]:
 
 
 COLONNES_PORTEFEUILLE = [
-    "id", "internal_code", "name", "currency", "is_paper", "support",
+    "id", "internal_code", "name", "secteur", "currency", "is_paper", "support",
     "quantity", "avg_price", "fees", "opened_at", "review_at", "z_at_entry",
     "cours", "date_cours", "investi", "valeur", "plus_value", "plus_value_pct",
     "rendement_total_pct", "jours",
@@ -213,6 +225,7 @@ def portefeuille() -> pd.DataFrame:
                 "id": position["id"],
                 "internal_code": position["internal_code"],
                 "name": position["name"],
+                "secteur": position.get("secteur") or "Non sectorisé",
                 "currency": position["currency"],
                 "is_paper": position["is_paper"],
                 "support": position["support"],

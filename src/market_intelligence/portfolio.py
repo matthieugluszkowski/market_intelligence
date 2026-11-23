@@ -104,9 +104,13 @@ select p.id, i.internal_code, i.name, i.country_iso2, a.code as support,
        p.closed_at, p.closed_price, p.close_reason, p.thesis_verdict,
        f.z_score as z_a_lentree, q.quality_tier as qualite_a_lentree,
        p.instrument_id, p.account_id, p.price_source,
-       (select count(*) from transactions t where t.position_id = p.id) as mouvements
+       (select count(*) from transactions t where t.position_id = p.id) as mouvements,
+       coalesce(s.label, ac.label, 'Non sectorisé') as secteur,
+       i.sector_code
   from positions p
   join instruments i on i.id = p.instrument_id
+  join asset_classes ac on ac.code = i.asset_class
+  left join sectors s on s.code = i.sector_code
   left join accounts a on a.id = p.account_id
   left join regression_fits f on f.id = p.fit_id
   left join quality_scores q on q.id = p.quality_score_id

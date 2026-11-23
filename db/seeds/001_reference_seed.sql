@@ -79,17 +79,17 @@ on conflict (code) do update set
 
 -- --- Secteurs ICB niveau 1 (industries, taxonomie 2019) ---------------------
 insert into sectors (code, scheme, level, parent_code, label) values
-  ('10', 'ICB', 1, null, 'Technology'),
-  ('15', 'ICB', 1, null, 'Telecommunications'),
-  ('20', 'ICB', 1, null, 'Health Care'),
-  ('30', 'ICB', 1, null, 'Financials'),
-  ('35', 'ICB', 1, null, 'Real Estate'),
-  ('40', 'ICB', 1, null, 'Consumer Discretionary'),
-  ('45', 'ICB', 1, null, 'Consumer Staples'),
-  ('50', 'ICB', 1, null, 'Industrials'),
-  ('55', 'ICB', 1, null, 'Basic Materials'),
-  ('60', 'ICB', 1, null, 'Energy'),
-  ('65', 'ICB', 1, null, 'Utilities')
+  ('10', 'ICB', 1, null, 'Technologies de l''information'),
+  ('15', 'ICB', 1, null, 'Télécommunications'),
+  ('20', 'ICB', 1, null, 'Santé'),
+  ('30', 'ICB', 1, null, 'Services financiers'),
+  ('35', 'ICB', 1, null, 'Immobilier'),
+  ('40', 'ICB', 1, null, 'Consommation discrétionnaire'),
+  ('45', 'ICB', 1, null, 'Consommation non discrétionnaire'),
+  ('50', 'ICB', 1, null, 'Industrie'),
+  ('55', 'ICB', 1, null, 'Matériaux de base'),
+  ('60', 'ICB', 1, null, 'Énergie'),
+  ('65', 'ICB', 1, null, 'Services aux collectivités')
 on conflict (code) do update set
   scheme = excluded.scheme, level = excluded.level, label = excluded.label;
 

@@ -29,7 +29,9 @@ import streamlit as st
 PAGE_PORTEFEUILLE = "pages/5_Portefeuille.py"
 
 
-def bandeau_portefeuille(positions: pd.DataFrame, lien: bool = True) -> None:
+def bandeau_portefeuille(
+    positions: pd.DataFrame, lien: bool = True, legende: bool = True
+) -> None:
     """Quelques KPI du portefeuille **reel**, au-dessus du titre de l'ecran."""
     if positions.empty:
         return
@@ -62,13 +64,14 @@ def bandeau_portefeuille(positions: pd.DataFrame, lien: bool = True) -> None:
     # en passant, on n'est pas interrompu par lui.
     vignettes[4].metric("Thèses à relire", a_relire)
 
-    st.caption(
-        "Latente : rien n'est acquis avant la vente. Le paper trading a ses "
-        "propres totaux, jamais melanges a ceux-ci — "
-        f"[voir le portefeuille]({PAGE_PORTEFEUILLE})."
-        if lien else
-        "Latente : rien n'est acquis avant la vente. Le paper trading a ses "
-        "propres totaux, jamais melanges a ceux-ci.")
+    if legende:
+        st.caption(
+            "Latente : rien n'est acquis avant la vente. Le paper trading a ses "
+            "propres totaux, jamais melanges a ceux-ci — "
+            f"[voir le portefeuille]({PAGE_PORTEFEUILLE})."
+            if lien else
+            "Latente : rien n'est acquis avant la vente. Le paper trading a ses "
+            "propres totaux, jamais melanges a ceux-ci.")
 
 
 def detentions(positions: pd.DataFrame) -> pd.DataFrame:
