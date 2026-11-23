@@ -21,6 +21,7 @@ la seule serie que ce projet ne rejouera jamais.
 
 from __future__ import annotations
 
+import sys
 import time
 import traceback
 from collections.abc import Callable
@@ -35,8 +36,13 @@ from . import (
     ingest_corporate_actions,
     ingest_fundamentals,
     ingest_veille,
+    parking,
     quality_checks,
 )
+
+# Enregistre les alias pour que les etapes pointant vers parking soient resolues
+sys.modules.setdefault(f"{__name__.rsplit('.', 1)[0]}.check_parked_live", parking)
+sys.modules.setdefault(f"{__name__.rsplit('.', 1)[0]}.delist_overvalued", parking)
 
 JOUR = timedelta(days=1)
 TOUJOURS = timedelta(0)
@@ -59,6 +65,8 @@ class Etape:
 
 
 ETAPES: tuple[Etape, ...] = (
+    Etape("check_parked_live", parking.run_check_parked,
+          7 * JOUR, "surveillance des titres parques et retour au screener"),
     Etape("backfill_prices", lambda: backfill_prices.run(freqs=("1w", "1d")),
           TOUJOURS, "cours hebdomadaires et quotidiens"),
     Etape("ingest_corporate_actions", ingest_corporate_actions.run,
@@ -70,6 +78,9 @@ ETAPES: tuple[Etape, ...] = (
     Etape("compute_fits", compute_fits.run,
           TOUJOURS, "regressions, z-scores du screener",
           depend_de=("backfill_prices",)),
+    Etape("delist_overvalued", parking.run_delist,
+          JOUR, "mise en antichambre des titres surcotes hors portefeuille",
+          depend_de=("compute_fits",)),
     # La jambe qualite suit les comptes, pas les cours : la recalculer a chaque
     # passage ne changerait rien. Mais ne pas la recalculer du tout apres une
     # ingestion de fondamentaux laisserait le screener classer les titres sur
